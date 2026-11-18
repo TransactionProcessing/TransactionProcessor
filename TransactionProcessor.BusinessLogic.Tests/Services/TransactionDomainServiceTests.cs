@@ -485,7 +485,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
         [Fact]
         public async Task TransactionDomainService_ProcessSaleTransaction_OperatorProxyThrowsException_TransactionIsProcessed()
         {
-            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
             this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithOperator()));
@@ -526,7 +526,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
 
         [Fact]
         public async Task TransactionDomainService_ProcessSaleTransaction_TransactionIsProcessed(){
-            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
             this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithOperator()));
@@ -590,7 +590,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
         [Fact]
         public async Task TransactionDomainService_ProcessSaleTransaction_NoFloatFound_TransactionIsProcessed()
         {
-            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
             this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithOperator()));
@@ -795,7 +795,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
             this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithOperator()));
-            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
             this.AggregateService.Get<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed, FeeType.Merchant)));
             this.FeeCalculationManager.CalculateFees(Arg<List<TransactionFeeToCalculate>>.Any(), Arg<Decimal>.Any(), Arg<DateTimeOffset>.Any()).Returns(TestData.CalculatedMerchantFees);
 
@@ -811,7 +811,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregate()));
             this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
             this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
-            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
             this.AggregateService.Get<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed, FeeType.Merchant)));
             this.FeeCalculationManager.CalculateFees(Arg<List<TransactionFeeToCalculate>>.Any(), Arg<Decimal>.Any(), Arg<DateTimeOffset>.Any()).Returns(TestData.CalculatedMerchantFees);
 
@@ -828,7 +828,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
             this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithOperator()));
-            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
             this.AggregateService.Get<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed, FeeType.ServiceProvider)));
             this.FeeCalculationManager.CalculateFees(Arg<List<TransactionFeeToCalculate>>.Any(), Arg<Decimal>.Any(), Arg<DateTimeOffset>.Any()).Returns(TestData.CalculatedServiceProviderFees);
 
@@ -844,7 +844,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetCompletedLogonTransactionAggregate()));
             this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
             this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithOperator()));
-            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
             this.FeeCalculationManager.CalculateFees(Arg<List<TransactionFeeToCalculate>>.Any(), Arg<Decimal>.Any(), Arg<DateTimeOffset>.Any()).Returns(TestData.CalculatedServiceProviderFees);
 
@@ -863,7 +863,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             //this.EstateClient.GetTransactionFeesForProduct(Arg<String>.Any(), Arg<Guid>.Any(), Arg<Guid>.Any(), Arg<Guid>.Any(), Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure("Test failure"));
             this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithOperator()));
-            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
             this.FeeCalculationManager.CalculateFees(Arg<List<TransactionFeeToCalculate>>.Any(), Arg<Decimal>.Any(), Arg<DateTimeOffset>.Any()).Returns(TestData.CalculatedServiceProviderFees);
 
@@ -898,13 +898,13 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
 
         [Fact]
         public async Task TransactionDomainService_SendCustomerEmailReceipt_ReceiptSent() {
-            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
             this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregate()));
             this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
             this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithOperator()));
             this.TransactionReceiptBuilder.GetEmailReceiptMessage(Arg<Models.Transaction>.Any(), Arg<Merchant>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync("EmailMessage");
-            this.MessagingServiceClient.SendEmail(Arg<String>.Any(), Arg<SendEmailRequest>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success());
+            this.MessagingServiceClient.SendEmail(Arg<String>.Any(), Arg<SendEmailRequest>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
             TransactionCommands.SendCustomerEmailReceiptCommand command = new(TestData.EstateId, TestData.TransactionId, Guid.NewGuid(), TestData.CustomerEmailAddress);
             var result = await this.TransactionDomainService.SendCustomerEmailReceipt(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
@@ -913,7 +913,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
         [Fact] 
         public async Task TransactionDomainService_SendCustomerEmailReceipt_GetTransactionFailed_ResultFailed()
         {
-            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
             this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure("Test failure"));
             
             TransactionCommands.SendCustomerEmailReceiptCommand command = new(TestData.EstateId, TestData.TransactionId, Guid.NewGuid(), TestData.CustomerEmailAddress);
@@ -924,10 +924,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
         [Fact]
         public async Task TransactionDomainService_ResendCustomerEmailReceipt_ReceiptSent()
         {
-            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
             this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregate()));
             
-            this.MessagingServiceClient.ResendEmail(Arg<String>.Any(), Arg<ResendEmailRequest>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success());
+            this.MessagingServiceClient.ResendEmail(Arg<String>.Any(), Arg<ResendEmailRequest>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
             TransactionCommands.ResendCustomerEmailReceiptCommand command = new(TestData.EstateId, TestData.TransactionId);
             var result = await this.TransactionDomainService.ResendCustomerEmailReceipt(command, TestContext.Current.CancellationToken);
             result.IsSuccess.ShouldBeTrue();
@@ -936,7 +936,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
         [Fact]
         public async Task TransactionDomainService_ResendCustomerEmailReceipt_GetTransactionFailed_ResultFailed()
         {
-            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
             this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure("Test failure"));
 
             TransactionCommands.ResendCustomerEmailReceiptCommand command = new(TestData.EstateId, TestData.TransactionId);
@@ -1161,7 +1161,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
         [Fact]
         public async Task TransactionDomainService_SendCustomerEmailReceipt_GetTokenFailed_ResultFailed()
         {
-            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Failure("Test failure"));
+            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure("Test failure"));
 
             TransactionCommands.SendCustomerEmailReceiptCommand command = new(TestData.EstateId, TestData.TransactionId, Guid.NewGuid(), TestData.CustomerEmailAddress);
             var result = await this.TransactionDomainService.SendCustomerEmailReceipt(command, TestContext.Current.CancellationToken);
@@ -1171,7 +1171,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
         [Fact]
         public async Task TransactionDomainService_SendCustomerEmailReceipt_GetMerchantFailed_ResultFailed()
         {
-            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
             this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregate()));
             this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Failure("Test failure"));
@@ -1184,7 +1184,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
         [Fact]
         public async Task TransactionDomainService_SendCustomerEmailReceipt_GetEstateFailed_ResultFailed()
         {
-            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
             this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregate()));
             this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithOperator()));
@@ -1198,7 +1198,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
         [Fact]
         public async Task TransactionDomainService_ResendCustomerEmailReceipt_GetTokenFailed_ResultFailed()
         {
-            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Failure("Test failure"));
+            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure("Test failure"));
 
             TransactionCommands.ResendCustomerEmailReceiptCommand command = new(TestData.EstateId, TestData.TransactionId);
             var result = await this.TransactionDomainService.ResendCustomerEmailReceipt(command, TestContext.Current.CancellationToken);
