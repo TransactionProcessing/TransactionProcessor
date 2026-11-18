@@ -1,4 +1,4 @@
-# Transaction Processor
+# Transaction Processor Test
 
 The interactive Scalar API reference is available at `/scalar` and its versioned OpenAPI documents are available under `/openapi/` (for example, `/openapi/v1.json`). The [endpoint and DTO inventory](docs/api-reference.md) is also available as Markdown.
 
