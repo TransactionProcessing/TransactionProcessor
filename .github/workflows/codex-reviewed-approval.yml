@@ -26,7 +26,6 @@ jobs:
     steps:
       - name: Verify Codex and CI, then approve
         uses: actions/github-script@v7
-        env:
         with:
           github-token: ${{ secrets.PR_REVIEW_USER_TOKEN }}
           script: |
