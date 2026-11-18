@@ -24,30 +24,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Create scoped reviewer token
-        id: app
-        uses: actions/create-github-app-token@v2
-        with:
-          app-id: ${{ secrets.PR_REVIEW_APP_ID }}
-          private-key: ${{ secrets.PR_REVIEW_APP_PRIVATE_KEY }}
-          permission-pull-requests: write
-          permission-issues: read
-          permission-checks: read
-          permission-contents: read
-
       - name: Verify Codex and CI, then approve
         uses: actions/github-script@v7
         env:
-          REVIEWER_USER_TOKEN: ${{ secrets.PR_REVIEW_USER_TOKEN }}
         with:
-          github-token: ${{ steps.app.outputs.token }}
+          github-token: ${{ secrets.PR_REVIEW_USER_TOKEN }}
           script: |
             const { owner, repo } = context.repo;
-            if (!process.env.REVIEWER_USER_TOKEN) {
-              core.setFailed('Missing PR_REVIEW_USER_TOKEN Actions secret');
-              return;
-            }
-            const reviewer = github.getOctokit(process.env.REVIEWER_USER_TOKEN);
+            const reviewer = github;
             const { data: reviewerIdentity } = await reviewer.rest.users.getAuthenticated();
             const reviewerLogin = reviewerIdentity.login;
             core.info(`Approval identity: ${reviewerLogin}`);
@@ -150,7 +134,7 @@ jobs:
               if (latest.head.sha !== sha || latest.state !== 'open' || latest.draft) {
                 skip('PR changed during verification'); continue;
               }
-              await reviewer.rest.pulls.createReview({
+              await github.rest.pulls.createReview({
                 owner, repo, pull_number, commit_id: sha,
                 event: 'APPROVE',
                 body: 'Codex review completed with no findings for this commit; required CI checks passed. This is an automated review, not a merge.'
