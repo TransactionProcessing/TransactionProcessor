@@ -38,11 +38,19 @@ jobs:
       - name: Verify Codex and CI, then approve
         uses: actions/github-script@v7
         env:
-          REVIEWER_APP_SLUG: ${{ steps.app.outputs.app-slug }}
+          REVIEWER_USER_TOKEN: ${{ secrets.PR_REVIEW_USER_TOKEN }}
         with:
           github-token: ${{ steps.app.outputs.token }}
           script: |
             const { owner, repo } = context.repo;
+            if (!process.env.REVIEWER_USER_TOKEN) {
+              core.setFailed('Missing PR_REVIEW_USER_TOKEN Actions secret');
+              return;
+            }
+            const reviewer = github.getOctokit(process.env.REVIEWER_USER_TOKEN);
+            const { data: reviewerIdentity } = await reviewer.rest.users.getAuthenticated();
+            const reviewerLogin = reviewerIdentity.login;
+            core.info(`Approval identity: ${reviewerLogin}`);
             const expectedBot = 'chatgpt-codex-connector[bot]';
             const required = [
               ['Build and Test Pull Requests', 'github-actions'],
@@ -128,10 +136,12 @@ jobs:
               const existing = await github.paginate(github.rest.pulls.listReviews, {
                 owner, repo, pull_number, per_page: 100
               });
-              const appLogin = `${process.env.REVIEWER_APP_SLUG}[bot]`;
-              if (existing.some(r => r.user?.login === appLogin &&
+              if (pr.user?.login?.toLowerCase() === reviewerLogin.toLowerCase()) {
+                skip('reviewer cannot approve own PR'); continue;
+              }
+              if (existing.some(r => r.user?.login?.toLowerCase() === reviewerLogin.toLowerCase() &&
                   r.state === 'APPROVED' && r.commit_id === sha)) {
-                skip('already approved by reviewer app'); continue;
+                skip('already approved by reviewer user'); continue;
               }
               // Re-read head immediately before submitting approval.
               const { data: latest } = await github.rest.pulls.get({
@@ -140,7 +150,7 @@ jobs:
               if (latest.head.sha !== sha || latest.state !== 'open' || latest.draft) {
                 skip('PR changed during verification'); continue;
               }
-              await github.rest.pulls.createReview({
+              await reviewer.rest.pulls.createReview({
                 owner, repo, pull_number, commit_id: sha,
                 event: 'APPROVE',
                 body: 'Codex review completed with no findings for this commit; required CI checks passed. This is an automated review, not a merge.'
