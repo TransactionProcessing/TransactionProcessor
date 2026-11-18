@@ -100,13 +100,29 @@ jobs:
                    security.has_unresolved_findings !== false)) {
                 skip('security review incomplete or has findings'); continue;
               }
-              const checks = await github.paginate(github.rest.checks.listForRef, {
-                owner, repo, ref: sha, per_page: 100, filter: 'latest'
-              }, response => response.data.check_runs);
+              // Check-runs is an object response ({ check_runs: [...] }), not
+              // a top-level array. Explicitly page it and fail closed on bad data.
+              const checks = [];
+              let checkResponseValid = true;
+              for (let page = 1; page <= 20; page++) {
+                const { data } = await github.rest.checks.listForRef({
+                  owner, repo, ref: sha, per_page: 100, page, filter: 'latest'
+                });
+                if (!Array.isArray(data?.check_runs)) {
+                  checkResponseValid = false;
+                  break;
+                }
+                checks.push(...data.check_runs);
+                if (data.check_runs.length < 100) break;
+                if (page === 20) checkResponseValid = false;
+              }
+              if (!checkResponseValid) {
+                skip('invalid or incomplete CI check-run response'); continue;
+              }
               const passed = required.every(([name, app]) =>
-                checks.some(c => c.name === name && c.app?.slug === app &&
-                  c.head_sha === sha && c.status === 'completed' &&
-                  c.conclusion === 'success'));
+                checks.some(c => c?.name === name && c?.app?.slug === app &&
+                  c?.head_sha === sha && c?.status === 'completed' &&
+                  c?.conclusion === 'success'));
               if (!passed) { skip('required CI checks missing or failing'); continue; }
 
               const existing = await github.paginate(github.rest.pulls.listReviews, {
