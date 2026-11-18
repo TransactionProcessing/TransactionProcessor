@@ -245,9 +245,9 @@ public class MerchantStatementDomainServiceTests {
 
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
 
-        this.MessagingServiceClient.SendEmail(Arg<String>.Any(), Arg<SendEmailRequest>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success());
+        this.MessagingServiceClient.SendEmail(Arg<String>.Any(), Arg<SendEmailRequest>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
 
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
         Result result = await this.DomainService.EmailStatement(TestData.Commands.EmailMerchantStatementCommand, TestContext.Current.CancellationToken);
         result.IsSuccess.ShouldBeTrue();
@@ -261,9 +261,9 @@ public class MerchantStatementDomainServiceTests {
 
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure("Test failure"));
 
-        this.MessagingServiceClient.SendEmail(Arg<String>.Any(), Arg<SendEmailRequest>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success());
+        this.MessagingServiceClient.SendEmail(Arg<String>.Any(), Arg<SendEmailRequest>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
 
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
         Result result = await this.DomainService.EmailStatement(TestData.Commands.EmailMerchantStatementCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
@@ -277,9 +277,9 @@ public class MerchantStatementDomainServiceTests {
 
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
 
-        this.MessagingServiceClient.SendEmail(Arg<String>.Any(), Arg<SendEmailRequest>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success());
+        this.MessagingServiceClient.SendEmail(Arg<String>.Any(), Arg<SendEmailRequest>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
 
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Failure("Test failure"));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure("Test failure"));
 
         Result result = await this.DomainService.EmailStatement(TestData.Commands.EmailMerchantStatementCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
@@ -389,9 +389,9 @@ public class MerchantStatementDomainServiceTests {
 
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
 
-        this.MessagingServiceClient.SendEmail(Arg<String>.Any(), Arg<SendEmailRequest>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success());
+        this.MessagingServiceClient.SendEmail(Arg<String>.Any(), Arg<SendEmailRequest>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
 
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
         Result result = await this.DomainService.EmailStatement(TestData.Commands.EmailMerchantStatementCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();

@@ -365,12 +365,12 @@ public class TransactionProcessorSteps
                     Location = request.request.Address.AddressLine1,
                     PhoneNumber = request.request.Contact.PhoneNumber
                 };
-                SimpleResults.Result enableAgencyBankingResult = await this.AgencyBankingClient.CreateRetailAgent(createAgentRequest, CancellationToken.None);
+                Result enableAgencyBankingResult = await this.AgencyBankingClient.CreateRetailAgent(createAgentRequest, CancellationToken.None);
                 enableAgencyBankingResult.IsSuccess.ShouldBeTrue(enableAgencyBankingResult.Message);
 
                 await Retry.For(async () =>
                 {
-                    SimpleResults.Result<AgentResponse> agentResult = await this.AgencyBankingClient.GetAgentById(createAgentRequest.AgentId, CancellationToken.None);
+                    Result<AgentResponse> agentResult = await this.AgencyBankingClient.GetAgentById(createAgentRequest.AgentId, CancellationToken.None);
                     agentResult.IsSuccess.ShouldBeTrue(agentResult.Message);
                     AgentResponse? agent = agentResult.Data;
                     agent.ShouldNotBeNull();
@@ -380,12 +380,12 @@ public class TransactionProcessorSteps
 
                 // Activate the agent
                 ActivateAgentRequest activateAgentRequest = new ActivateAgentRequest { ActivatedBy = "INTEGRATIONTEST" };
-                SimpleResults.Result activateAgentResult = await this.AgencyBankingClient.ActivateAgent(createAgentRequest.AgentId, activateAgentRequest, CancellationToken.None);
+                Result activateAgentResult = await this.AgencyBankingClient.ActivateAgent(createAgentRequest.AgentId, activateAgentRequest, CancellationToken.None);
                 activateAgentResult.IsSuccess.ShouldBeTrue(activateAgentResult.Message);
 
                 await Retry.For(async () =>
                 {
-                    SimpleResults.Result<AgentResponse> agentResult = await this.AgencyBankingClient.GetAgentById(createAgentRequest.AgentId, CancellationToken.None);
+                    Result<AgentResponse> agentResult = await this.AgencyBankingClient.GetAgentById(createAgentRequest.AgentId, CancellationToken.None);
                     agentResult.IsSuccess.ShouldBeTrue(agentResult.Message);
                     AgentResponse? agent = agentResult.Data;
                     agent.ShouldNotBeNull();
@@ -396,12 +396,12 @@ public class TransactionProcessorSteps
                 ConfigureFloatRequest configureFloatRequest = new ConfigureFloatRequest {
                     AgentId = createAgentRequest.AgentId, DailyFloatLimit = 100000, MaximumFloat = 100000, MinimumFloat = 10000,
                 };
-                SimpleResults.Result configureFloatResult = await this.AgencyBankingClient.ConfigureFloat(configureFloatRequest, CancellationToken.None);
+                Result configureFloatResult = await this.AgencyBankingClient.ConfigureFloat(configureFloatRequest, CancellationToken.None);
                 configureFloatResult.IsSuccess.ShouldBeTrue(configureFloatResult.Message);
 
                 await Retry.For(async () =>
                 {
-                    SimpleResults.Result<FloatConfigurationResponse> floatConfigurationResult = await this.AgencyBankingClient.GetFloatConfigurationByAgentId(
+                    Result<FloatConfigurationResponse> floatConfigurationResult = await this.AgencyBankingClient.GetFloatConfigurationByAgentId(
                         createAgentRequest.AgentId,
                         CancellationToken.None);
                     floatConfigurationResult.IsSuccess.ShouldBeTrue(floatConfigurationResult.Message);
@@ -420,12 +420,12 @@ public class TransactionProcessorSteps
                     SourceAccount = "Test Account",
                     TransactionId = Guid.NewGuid().ToString()
                 };
-                SimpleResults.Result floatCreditResult = await this.AgencyBankingClient.CreditFloat(floatCreditRequest, CancellationToken.None);
+                Result floatCreditResult = await this.AgencyBankingClient.CreditFloat(floatCreditRequest, CancellationToken.None);
                 floatCreditResult.IsSuccess.ShouldBeTrue(floatCreditResult.Message);
 
                 await Retry.For(async () =>
                 {
-                    SimpleResults.Result<FloatHistoryResponse[]> floatHistoryResult = await this.AgencyBankingClient.GetLastFloatEntries(
+                    Result<FloatHistoryResponse[]> floatHistoryResult = await this.AgencyBankingClient.GetLastFloatEntries(
                         createAgentRequest.AgentId,
                         1,
                         CancellationToken.None);

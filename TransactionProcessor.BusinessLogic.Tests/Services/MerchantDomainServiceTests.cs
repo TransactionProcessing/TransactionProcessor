@@ -53,7 +53,7 @@ public class MerchantDomainServiceTests {
         this.SecurityServiceClient = new();
         this.SecurityServiceClient
             .GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+            .ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
         this.EventStoreContext = new();
         Func<IAggregateService> aggregateServiceResolver = () => this.AggregateService.Instance();
         this.DomainService = new MerchantDomainService(aggregateServiceResolver,
@@ -279,10 +279,10 @@ public class MerchantDomainServiceTests {
 
         this.SecurityServiceClient
             .CreateUser(Arg<String>.Any(), Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(SimpleResults.Result.Success());
+            .ReturnsAsync(Result.Success());
         this.SecurityServiceClient
             .GetUsers(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(SimpleResults.Result.Success(new List<UserResponse>() {
+            .ReturnsAsync(Result.Success(new List<UserResponse>() {
                 new UserResponse {
                     UserId = "FA077CE3-B915-4048-88E3-9B500699317F"
                 }
@@ -305,7 +305,7 @@ public class MerchantDomainServiceTests {
 
         this.SecurityServiceClient
             .CreateUser(Arg<String>.Any(), Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(SimpleResults.Result.Success());
+            .ReturnsAsync(Result.Success());
 
         var result = await this.DomainService.CreateMerchantUser(TestData.Commands.CreateMerchantUserCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
@@ -324,7 +324,7 @@ public class MerchantDomainServiceTests {
 
         this.SecurityServiceClient
             .CreateUser(Arg<String>.Any(), Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(SimpleResults.Result.Success());
+            .ReturnsAsync(Result.Success());
 
         var result = await this.DomainService.CreateMerchantUser(TestData.Commands.CreateMerchantUserCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
@@ -343,7 +343,7 @@ public class MerchantDomainServiceTests {
 
         this.SecurityServiceClient
             .CreateUser(Arg<String>.Any(), Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(SimpleResults.Result.Failure("Test failure"));
+            .ReturnsAsync(Result.Failure("Test failure"));
 
         var result = await this.DomainService.CreateMerchantUser(TestData.Commands.CreateMerchantUserCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
@@ -363,10 +363,10 @@ public class MerchantDomainServiceTests {
 
         this.SecurityServiceClient
             .CreateUser(Arg<String>.Any(), Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(SimpleResults.Result.Success());
+            .ReturnsAsync(Result.Success());
         this.SecurityServiceClient
             .GetUsers(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(SimpleResults.Result.Failure("Test failure"));
+            .ReturnsAsync(Result.Failure("Test failure"));
 
         var result = await this.DomainService.CreateMerchantUser(TestData.Commands.CreateMerchantUserCommand, TestContext.Current.CancellationToken);
         result.IsFailed.ShouldBeTrue();
@@ -386,10 +386,10 @@ public class MerchantDomainServiceTests {
 
         this.SecurityServiceClient
             .CreateUser(Arg<String>.Any(), Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(SimpleResults.Result.Success());
+            .ReturnsAsync(Result.Success());
         this.SecurityServiceClient
             .GetUsers(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(SimpleResults.Result.Success(new List<UserResponse> {
+            .ReturnsAsync(Result.Success(new List<UserResponse> {
                 null
             }));
 
@@ -863,7 +863,7 @@ public class MerchantDomainServiceTests {
 
         this.SecurityServiceClient
             .GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+            .ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
         this.EventStoreContext.GetPartitionStateFromProjection(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success<String>(StringSerialiser.Serialise(TestData.MerchantBalanceProjectionState)));
 
@@ -889,7 +889,7 @@ public class MerchantDomainServiceTests {
 
         this.SecurityServiceClient
             .GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+            .ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
         this.EventStoreContext.GetPartitionStateFromProjection(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success<String>(StringSerialiser.Serialise(TestData.MerchantBalanceProjectionState)));
 
@@ -1436,9 +1436,9 @@ public class MerchantDomainServiceTests {
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
         this.SecurityServiceClient.CreateUser(Arg<String>.Any(), Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(SimpleResults.Result.Success());
+            .ReturnsAsync(Result.Success());
         this.SecurityServiceClient.GetUsers(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(SimpleResults.Result.Success(new List<UserResponse> { new UserResponse { UserId = "FA077CE3-B915-4048-88E3-9B500699317F" } }));
+            .ReturnsAsync(Result.Success(new List<UserResponse> { new UserResponse { UserId = "FA077CE3-B915-4048-88E3-9B500699317F" } }));
         this.AggregateService.Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Failure("Test failure"));
 

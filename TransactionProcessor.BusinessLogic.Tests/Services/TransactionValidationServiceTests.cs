@@ -40,7 +40,7 @@ public class TransactionValidationServiceTests {
         this.EventStoreContext = new IEventStoreContextImposter();
         this.AggregateService = new IAggregateServiceImposter();
         IAggregateService AggregateServiceResolver() => this.AggregateService.Instance();
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
         this.TransactionValidationService = new TransactionValidationService(this.EventStoreContext.Instance(), AggregateServiceResolver);
     }
@@ -258,7 +258,7 @@ public class TransactionValidationServiceTests {
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_DeviceNotRegisteredToMerchant_ResponseIsInvalidDeviceIdentifier() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
@@ -282,7 +282,7 @@ public class TransactionValidationServiceTests {
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_EstateFoundButHasNoOperators_ResponseIsInvalidEstateId() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
@@ -303,7 +303,7 @@ public class TransactionValidationServiceTests {
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_EstateFoundButOperatorIsDeleted_ResponseIsOperatorNotEnabledForEstate() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperatorDeleted()));
@@ -324,7 +324,7 @@ public class TransactionValidationServiceTests {
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_EstateFoundButHasNullOperators_ResponseIsInvalidEstateId() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
@@ -346,7 +346,7 @@ public class TransactionValidationServiceTests {
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_EstateFoundOperatorsNotConfiguredForEstate_ResponseIsOperatorNotValidForEstate() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
@@ -368,7 +368,7 @@ public class TransactionValidationServiceTests {
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_EstateNotFound_ResponseIsInvalidEstateId() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.NotFound("Estate Not Found"));
@@ -390,7 +390,7 @@ public class TransactionValidationServiceTests {
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_GetEstateFailed_ResponseIsInvalidEstateId() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Failure("Failed"));
@@ -412,7 +412,7 @@ public class TransactionValidationServiceTests {
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_InvalidContractId_ResponseIsInvalidContractIdValue() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
@@ -439,7 +439,7 @@ public class TransactionValidationServiceTests {
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_InvalidProductId_ResponseIsInvalidProductIdValue() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
@@ -467,7 +467,7 @@ public class TransactionValidationServiceTests {
     [InlineData(0)]
     [InlineData(-1)]
     public async Task TransactionValidationService_ValidateSaleTransaction_InvalidTransactionAmount_ResponseIsInvalidSaleTransactionAmount(Decimal transactionAmount) {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
@@ -490,7 +490,7 @@ public class TransactionValidationServiceTests {
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_MerchantDeviceListEmpty_ResponseIsNoValidDevices() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
@@ -514,7 +514,7 @@ public class TransactionValidationServiceTests {
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_MerchantDoesNotHaveSuppliedContract_ResponseIsContractNotValidForMerchant() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
@@ -540,7 +540,7 @@ public class TransactionValidationServiceTests {
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_MerchantHasNoContracts_ResponseIsMerchantDoesNotHaveEnoughCredit() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
@@ -568,7 +568,7 @@ public class TransactionValidationServiceTests {
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_MerchantNotEnoughCredit_ResponseIsMerchantDoesNotHaveEnoughCredit() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
@@ -593,7 +593,7 @@ public class TransactionValidationServiceTests {
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_MerchantNotFound_ResponseIsInvalidMerchantId() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
@@ -616,7 +616,7 @@ public class TransactionValidationServiceTests {
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_FailedGettingMerchant_ResponseIsInvalidMerchantId() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
@@ -640,7 +640,7 @@ public class TransactionValidationServiceTests {
 
     [Fact(Skip = "Need to review if test is needed now")]
     public async Task TransactionValidationService_ValidateSaleTransaction_MerchantNotFoundOnGetContract_ResponseIsInvalidMerchantId() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
@@ -669,7 +669,7 @@ public class TransactionValidationServiceTests {
 
     [Fact(Skip = "not sure if this needed now")]
     public async Task TransactionValidationService_ValidateSaleTransaction_FailedGettingMerchantOnGetContract_ResponseIsInvalidMerchantId() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
@@ -697,7 +697,7 @@ public class TransactionValidationServiceTests {
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_MerchantOperatorListEmpty_ResponseIsNoMerchantOperators() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
@@ -722,7 +722,7 @@ public class TransactionValidationServiceTests {
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_MerchantOperatorIsDeleted_ResponseIsOperatorNotEnabledForMerchant() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
@@ -746,7 +746,7 @@ public class TransactionValidationServiceTests {
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_OperatorNotConfiguredFroMerchant_ResponseIsOperatorNotValidForMerchant() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator2()));
@@ -768,7 +768,7 @@ public class TransactionValidationServiceTests {
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_ProductIdNotConfigured_ResponseIsProductNotValidForMerchant() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
@@ -794,7 +794,7 @@ public class TransactionValidationServiceTests {
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_SuccessfulSale() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
@@ -846,7 +846,7 @@ public class TransactionValidationServiceTests {
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_FailedGettingMerchantBalance_ResponseIsInvalidMerchantId() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));

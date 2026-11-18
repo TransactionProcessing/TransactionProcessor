@@ -37,7 +37,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.SecurityServiceClient = new ISecurityServiceClientImposter();
             this.SecurityServiceClient
                 .GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(SimpleResults.Result.Success(TestData.GetTokenResponse()));
+                .ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
             IAggregateService AggregateServiceResolver() => this.AggregateService.Instance();
             this.DomainService = new EstateDomainService(AggregateServiceResolver, this.SecurityServiceClient.Instance());
         }
@@ -88,10 +88,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             this.SecurityServiceClient
                 .CreateUser(Arg<String>.Any(),Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(SimpleResults.Result.Success());
+                .ReturnsAsync(Result.Success());
             this.SecurityServiceClient
                 .GetUsers(Arg<String>.Any(),Arg<String>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(SimpleResults.Result.Success(new List<UserResponse>() {
+                .ReturnsAsync(Result.Success(new List<UserResponse>() {
                     new UserResponse {
                         UserId = "FA077CE3-B915-4048-88E3-9B500699317F"
                     }
@@ -116,11 +116,11 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
                 this.SecurityServiceClient
                     .CreateUser(Arg<String>.Any(), Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
-                    .ReturnsAsync(SimpleResults.Result.Success())
+                    .ReturnsAsync(Result.Success())
                     .Callback((token, request, _) => { capturedRequest = request; return Task.CompletedTask; });
                 this.SecurityServiceClient
                     .GetUsers(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-                    .ReturnsAsync(SimpleResults.Result.Success(new List<UserResponse>() {
+                    .ReturnsAsync(Result.Success(new List<UserResponse>() {
                         new UserResponse {
                             UserId = "FA077CE3-B915-4048-88E3-9B500699317F"
                         }
@@ -148,10 +148,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             this.SecurityServiceClient
                 .CreateUser(Arg<String>.Any(), Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(SimpleResults.Result.Failure("Test failure"));
+                .ReturnsAsync(Result.Failure("Test failure"));
             this.SecurityServiceClient
                 .GetUsers(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(SimpleResults.Result.Success(new List<UserResponse>() {
+                .ReturnsAsync(Result.Success(new List<UserResponse>() {
                     new UserResponse {
                         UserId = "FA077CE3-B915-4048-88E3-9B500699317F"
                     }
@@ -171,10 +171,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             this.SecurityServiceClient
                 .CreateUser(Arg<String>.Any(), Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(SimpleResults.Result.Success());
+                .ReturnsAsync(Result.Success());
             this.SecurityServiceClient
                 .GetUsers(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(SimpleResults.Result.Failure("Test failure"));
+                .ReturnsAsync(Result.Failure("Test failure"));
 
             Result result = await this.DomainService.CreateEstateUser(TestData.Commands.CreateEstateUserCommand, TestContext.Current.CancellationToken);
             result.IsFailed.ShouldBeTrue();
@@ -190,10 +190,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             this.SecurityServiceClient
                 .CreateUser(Arg<String>.Any(), Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(SimpleResults.Result.Success());
+                .ReturnsAsync(Result.Success());
             this.SecurityServiceClient
                 .GetUsers(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(SimpleResults.Result.Success(new List<UserResponse>() {
+                .ReturnsAsync(Result.Success(new List<UserResponse>() {
                     null
                 }));
 
@@ -209,10 +209,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             this.SecurityServiceClient
                 .CreateUser(Arg<String>.Any(), Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(SimpleResults.Result.Success());
+                .ReturnsAsync(Result.Success());
             this.SecurityServiceClient
                 .GetUsers(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(SimpleResults.Result.Success(new List<UserResponse>() {
+                .ReturnsAsync(Result.Success(new List<UserResponse>() {
                     new UserResponse {
                         UserId = "FA077CE3-B915-4048-88E3-9B500699317F"
                     }
@@ -232,10 +232,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             this.SecurityServiceClient
                 .CreateUser(Arg<String>.Any(), Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(SimpleResults.Result.Success());
+                .ReturnsAsync(Result.Success());
             this.SecurityServiceClient
                 .GetUsers(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(SimpleResults.Result.Success(new List<UserResponse>() {
+                .ReturnsAsync(Result.Success(new List<UserResponse>() {
                     new UserResponse {
                         UserId = "FA077CE3-B915-4048-88E3-9B500699317F"
                     }
@@ -255,10 +255,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             this.SecurityServiceClient
                 .CreateUser(Arg<String>.Any(), Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(SimpleResults.Result.Success());
+                .ReturnsAsync(Result.Success());
             this.SecurityServiceClient
                 .GetUsers(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(SimpleResults.Result.Success(new List<UserResponse>() {
+                .ReturnsAsync(Result.Success(new List<UserResponse>() {
                     new UserResponse {
                         UserId = "FA077CE3-B915-4048-88E3-9B500699317F"
                     }
