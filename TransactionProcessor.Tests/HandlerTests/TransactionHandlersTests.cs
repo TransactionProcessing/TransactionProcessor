@@ -1,13 +1,21 @@
 using System;
 using System.Collections.Generic;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 using Imposter.Abstractions;
 using TransactionProcessing.Shared.General;
 using Shouldly;
 using TransactionProcessing.UnionResults;
+using TransactionProcessing.UnionResults.AspNetCore;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.Handlers;
 using TransactionProcessor.Models;
@@ -251,6 +259,40 @@ namespace TransactionProcessor.Tests.HandlerTests
 
             result.ShouldNotBeNull();
             mediator.Send<Result<ProcessReconciliationTransactionResponse>>(Arg<IRequest<Result<ProcessReconciliationTransactionResponse>>>.Any(), Arg<CancellationToken>.Any()).Called(Count.Once());
+        }
+
+        [Fact]
+        public async Task PerformReconciliationTransaction_WhenTotalsAreInvalid_ReturnsBadRequest()
+        {
+            CancellationToken cancellationToken = TestContext.Current.CancellationToken;
+            IMediatorImposter mediator = new();
+            mediator.Send<Result<ProcessReconciliationTransactionResponse>>(
+                Arg<IRequest<Result<ProcessReconciliationTransactionResponse>>>.Any(), Arg<CancellationToken>.Any())
+                .ReturnsAsync(Result.Invalid("Transaction Count is 0 but Value is 25"));
+
+            WebApplicationBuilder builder = WebApplication.CreateBuilder();
+            builder.WebHost.UseTestServer();
+            builder.Services.AddSingleton<IMediator>(mediator.Instance());
+            await using WebApplication app = builder.Build();
+            app.MapGroup("/api/transactions").AddUnionResultFilter()
+                .MapPost("/reconciliation", TransactionHandlers.PerformReconciliationTransaction);
+            await app.StartAsync(cancellationToken);
+            using HttpClient client = app.GetTestClient();
+
+            ReconciliationRequest request = new()
+            {
+                EstateId = TestData.EstateId,
+                MerchantId = TestData.MerchantId,
+                DeviceIdentifier = "device-1",
+                TransactionType = "Reconciliation",
+                TransactionDateTime = new DateTime(2024, 1, 2, 3, 4, 5, DateTimeKind.Utc),
+                TransactionCount = 0,
+                TransactionValue = 25m
+            };
+            using HttpResponseMessage response = await client.PostAsJsonAsync("/api/transactions/reconciliation", request, cancellationToken);
+
+            response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
+            (await response.Content.ReadAsStringAsync(cancellationToken)).ShouldContain("Transaction Count is 0 but Value is 25");
         }
 
         [Fact]

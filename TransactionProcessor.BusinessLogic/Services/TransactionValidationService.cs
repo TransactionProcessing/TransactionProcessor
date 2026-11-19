@@ -7,14 +7,15 @@ using TransactionProcessor.Models.Merchant;
 namespace TransactionProcessor.BusinessLogic.Services;
 
 using ProjectionEngine.State;
-using TransactionProcessing.Shared.EventStore.EventStore;
-using TransactionProcessing.Shared.Serialisation;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using TransactionProcessing.Shared.EventStore.EventStore;
+using TransactionProcessing.Shared.Serialisation;
+using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.Models;
 
 public record TransactionValidationIdentifiers(Guid EstateId,
@@ -28,6 +29,8 @@ public interface ITransactionValidationService
     Task<Result<TransactionValidationResult>> ValidateLogonTransaction(TransactionValidationIdentifiers transactionValidationIdentifiers,
                                                                        CancellationToken cancellationToken);
     Task<Result<TransactionValidationResult>> ValidateReconciliationTransaction(TransactionValidationIdentifiers transactionValidationIdentifiers,
+                                                                                Int32 transactionCount,
+                                                                                Decimal transactionValue,
                                                                                 CancellationToken cancellationToken);
 
     Task<Result<TransactionValidationResult>> ValidateSaleTransaction(TransactionValidationIdentifiers transactionValidationIdentifiers,
@@ -83,29 +86,41 @@ public class TransactionValidationService : ITransactionValidationService{
         // Validate Device
         Result<TransactionValidationResult> deviceValidationResult = ValidateDeviceForLogon(merchant, transactionValidationIdentifiers.DeviceIdentifier);
         if (!IsValidationSuccessful(deviceValidationResult.GetValueOrThrow())) return deviceValidationResult;
-        
+
         // Validate the merchant device
         return deviceValidationResult;
     }
 
     public async Task<Result<TransactionValidationResult>> ValidateReconciliationTransaction(TransactionValidationIdentifiers transactionValidationIdentifiers,
-                                                                                             CancellationToken cancellationToken)
-    {
+                                                                                             Int32 transactionCount,
+                                                                                             Decimal transactionValue,
+                                                                                             CancellationToken cancellationToken) {
+        Result result = (transactionCount, transactionValue) switch {
+                            (0, > 0) t => Result.Invalid($"Transaction Count is 0 but Value is {t.transactionValue}"),
+                            (> 0, 0) t => Result.Invalid($"Transaction Value is 0 but Count is {t.transactionCount}"),
+                            _ => Result.Success()
+                        };
+        if (result.IsFailed)
+            return ResultHelpers.CreateFailure(result);
+
         // Validate Estate
         Result<TransactionValidationResult<EstateAggregate>> estateValidationResult = await ValidateEstate(transactionValidationIdentifiers.EstateId, cancellationToken);
-        if (!IsValidationSuccessful(estateValidationResult.GetValueOrThrow())) return Result.Success(estateValidationResult.GetValueOrThrow().validationResult);
+        if (!IsValidationSuccessful(estateValidationResult.Data))
+            return Result.Success(estateValidationResult.Data.validationResult);
 
-        EstateAggregate estate = estateValidationResult.GetValueOrThrow().additionalData;
+        EstateAggregate estate = estateValidationResult.Data.additionalData;
 
         // Validate Merchant
         Result<TransactionValidationResult<MerchantAggregate>> merchantValidationResult = await ValidateMerchant(estate.EstateName, transactionValidationIdentifiers.MerchantId, cancellationToken);
-        if (!IsValidationSuccessful(merchantValidationResult.GetValueOrThrow())) return Result.Success(merchantValidationResult.GetValueOrThrow().validationResult);
+        if (!IsValidationSuccessful(merchantValidationResult.Data))
+            return Result.Success(merchantValidationResult.Data.validationResult);
 
-        var merchant = merchantValidationResult.GetValueOrThrow().additionalData.GetMerchant();
+        Models.Merchant.Merchant merchant = merchantValidationResult.Data.additionalData.GetMerchant();
 
         // Validate Device
         Result<TransactionValidationResult> deviceValidationResult = ValidateDevice(merchant, transactionValidationIdentifiers.DeviceIdentifier);
-        if (!IsValidationSuccessful(deviceValidationResult.GetValueOrThrow())) return deviceValidationResult;
+        if (!IsValidationSuccessful(deviceValidationResult.Data))
+            return deviceValidationResult;
 
         // Validate the merchant device
         return Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, SuccessResponseMessage));
