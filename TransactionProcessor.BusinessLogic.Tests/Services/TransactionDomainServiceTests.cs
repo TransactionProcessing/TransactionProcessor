@@ -206,7 +206,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             this.AggregateService.Save(Arg<ReconciliationAggregate>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Success());
             this.TransactionValidationService.ValidateReconciliationTransaction(Arg<TransactionValidationIdentifiers>.Any(),
-                                                                                             Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS")));
+                TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue, Arg<CancellationToken>.Any())
+                .ReturnsAsync(Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS")));
 
             TransactionCommands.ProcessReconciliationCommand command =
                 new(TestData.EstateId,
@@ -222,6 +223,26 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             response.MerchantId.ShouldBe(TestData.MerchantId);
             response.ResponseCode.ShouldBe("0000");
             response.TransactionId.ShouldNotBe(Guid.Empty);
+        }
+
+        [Fact]
+        public async Task TransactionDomainService_ProcessReconciliationTransaction_InvalidTotals_ReturnsValidationFailureWithoutSaving(){
+            ReconciliationAggregate reconciliationAggregate = new();
+            this.AggregateService.GetLatest<ReconciliationAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
+                .ReturnsAsync(Result.Success(reconciliationAggregate));
+            this.TransactionValidationService.ValidateReconciliationTransaction(Arg<TransactionValidationIdentifiers>.Any(),
+                0, 25m, Arg<CancellationToken>.Any())
+                .ReturnsAsync(Result.Invalid("Transaction Count is 0 but Value is 25"));
+            TransactionCommands.ProcessReconciliationCommand command = new(TestData.EstateId,
+                TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionDateTime, 0, 25m, TestData.HostDateTime);
+
+            Result<ProcessReconciliationTransactionResponse> result = await this.TransactionDomainService.ProcessReconciliationTransaction(command, TestContext.Current.CancellationToken);
+
+            result.IsFailed.ShouldBeTrue();
+            result.Errors.ShouldHaveSingleItem().ErrorType.ShouldBe(ErrorType.Validation);
+            result.Message.ShouldBe("Transaction Count is 0 but Value is 25");
+            reconciliationAggregate.HasBeenStarted.ShouldBeFalse();
+            this.AggregateService.Save(Arg<ReconciliationAggregate>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
         }
 
         [Fact]
@@ -245,7 +266,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             result.GetValueOrThrow().ResponseMessage.ShouldBe("SUCCESS");
             result.GetValueOrThrow().TransactionId.ShouldBe(reconciliationAggregate.AggregateId);
             this.AggregateService.Save(Arg<ReconciliationAggregate>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
-            this.TransactionValidationService.ValidateReconciliationTransaction(Arg<TransactionValidationIdentifiers>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
+            this.TransactionValidationService.ValidateReconciliationTransaction(Arg<TransactionValidationIdentifiers>.Any(),
+                Arg<Int32>.Any(), Arg<Decimal>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
         }
 
         [Theory]
@@ -267,7 +289,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             result.IsFailed.ShouldBeTrue();
             result.Message.ShouldContain("already been completed with different request details");
             this.AggregateService.Save(Arg<ReconciliationAggregate>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
-            this.TransactionValidationService.ValidateReconciliationTransaction(Arg<TransactionValidationIdentifiers>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
+            this.TransactionValidationService.ValidateReconciliationTransaction(Arg<TransactionValidationIdentifiers>.Any(),
+                Arg<Int32>.Any(), Arg<Decimal>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
         }
 
         private static ReconciliationAggregate CreateCompletedReconciliationAggregate(Int32 transactionCount, Decimal transactionValue){
@@ -292,7 +315,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             this.AggregateService.Save(Arg<ReconciliationAggregate>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Success());
             this.TransactionValidationService.ValidateReconciliationTransaction(Arg<TransactionValidationIdentifiers>.Any(),
-                                                                                             Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new TransactionValidationResult(responseCode, responseCode.ToString())));
+                TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue, Arg<CancellationToken>.Any())
+                .ReturnsAsync(Result.Success(new TransactionValidationResult(responseCode, responseCode.ToString())));
 
             TransactionCommands.ProcessReconciliationCommand command =
                 new(TestData.EstateId,
@@ -1006,7 +1030,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             this.AggregateService.Save(Arg<ReconciliationAggregate>.Any(), Arg<CancellationToken>.Any())
                 .ReturnsAsync(Result.Failure("Test failure"));
             this.TransactionValidationService.ValidateReconciliationTransaction(Arg<TransactionValidationIdentifiers>.Any(),
-                                                                                             Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS")));
+                TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue, Arg<CancellationToken>.Any())
+                .ReturnsAsync(Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS")));
 
             TransactionCommands.ProcessReconciliationCommand command =
                 new(TestData.EstateId,

@@ -170,7 +170,11 @@ namespace TransactionProcessor.BusinessLogic.Services{
                 }
 
                 TransactionValidationIdentifiers validationIdentifiers = new(command.EstateId, command.MerchantId, command.DeviceIdentifier);
-                Result<TransactionValidationResult> validationResult = await this.TransactionValidationService.ValidateReconciliationTransaction(validationIdentifiers, cancellationToken);
+                Result<TransactionValidationResult> validationResult = await this.TransactionValidationService.ValidateReconciliationTransaction(
+                    validationIdentifiers, command.TransactionCount, command.TransactionValue, cancellationToken);
+                if (validationResult.IsFailed)
+                    return ResultHelpers.CreateFailure(validationResult);
+
                 Result stateResult = this.ProcessReconciliation(reconciliationAggregate, command, validationResult);
                 if (stateResult.IsFailed)
                     return ResultHelpers.CreateFailure(stateResult);

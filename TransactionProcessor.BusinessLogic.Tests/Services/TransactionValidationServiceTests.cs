@@ -148,8 +148,10 @@ public class TransactionValidationServiceTests {
         result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.SuccessNeedToAddDevice);
     }
 
-    [Fact]
-    public async Task ValidateReconciliationTransactionX_ValidationSuccessful_CorrectResponseReturned() {
+    [Theory]
+    [InlineData(0, 0)]
+    [InlineData(2, 25)]
+    public async Task ValidateReconciliationTransactionX_ValidationSuccessful_CorrectResponseReturned(Int32 transactionCount, Decimal transactionValue) {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
@@ -158,10 +160,24 @@ public class TransactionValidationServiceTests {
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
             TestData.DeviceIdentifier);
-        Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateReconciliationTransaction(identifiers, TestContext.Current.CancellationToken);
+        Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateReconciliationTransaction(identifiers, transactionCount, transactionValue, TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeTrue();
         result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.Success);
+    }
+
+    [Theory]
+    [InlineData(0, 25, "Transaction Count is 0 but Value is 25")]
+    [InlineData(2, 0, "Transaction Value is 0 but Count is 2")]
+    public async Task ValidateReconciliationTransactionX_InconsistentTotals_FailsBeforeEstateLookup(Int32 transactionCount, Decimal transactionValue, String expectedMessage) {
+        TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId, TestData.DeviceIdentifier);
+
+        Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateReconciliationTransaction(identifiers, transactionCount, transactionValue, TestContext.Current.CancellationToken);
+
+        result.IsFailed.ShouldBeTrue();
+        result.Errors.ShouldHaveSingleItem().ErrorType.ShouldBe(ErrorType.Validation);
+        result.Message.ShouldBe(expectedMessage);
+        this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
     }
 
     [Fact]
@@ -172,7 +188,7 @@ public class TransactionValidationServiceTests {
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
             TestData.DeviceIdentifier);
-        Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateReconciliationTransaction(identifiers, TestContext.Current.CancellationToken);
+        Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateReconciliationTransaction(identifiers, 2, 25m, TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeTrue();
         result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.InvalidEstateId);
@@ -186,7 +202,7 @@ public class TransactionValidationServiceTests {
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
             TestData.DeviceIdentifier);
-        Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateReconciliationTransaction(identifiers, TestContext.Current.CancellationToken);
+        Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateReconciliationTransaction(identifiers, 2, 25m, TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeTrue();
         result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.UnknownFailure);
@@ -202,7 +218,7 @@ public class TransactionValidationServiceTests {
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
             TestData.DeviceIdentifier);
-        Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateReconciliationTransaction(identifiers, TestContext.Current.CancellationToken);
+        Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateReconciliationTransaction(identifiers, 2, 25m, TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeTrue();
         result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.InvalidMerchantId);
@@ -218,7 +234,7 @@ public class TransactionValidationServiceTests {
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
             TestData.DeviceIdentifier);
-        Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateReconciliationTransaction(identifiers, TestContext.Current.CancellationToken);
+        Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateReconciliationTransaction(identifiers, 2, 25m, TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeTrue();
         result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.UnknownFailure);
@@ -234,7 +250,7 @@ public class TransactionValidationServiceTests {
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
             TestData.DeviceIdentifier1);
-        Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateReconciliationTransaction(identifiers, TestContext.Current.CancellationToken);
+        Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateReconciliationTransaction(identifiers, 2, 25m, TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeTrue();
         result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.InvalidDeviceIdentifier);
@@ -250,7 +266,7 @@ public class TransactionValidationServiceTests {
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
             TestData.DeviceIdentifier1);
-        Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateReconciliationTransaction(identifiers, TestContext.Current.CancellationToken);
+        Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateReconciliationTransaction(identifiers, 2, 25m, TestContext.Current.CancellationToken);
 
         result.IsSuccess.ShouldBeTrue();
         result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.NoValidDevices);
