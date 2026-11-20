@@ -73,13 +73,13 @@ public class MerchantRequestHandler : IRequestHandler<MerchantQueries.GetMerchan
                                                                       CancellationToken cancellationToken) {
 
         Result<String> result = await this.EventStoreContext.GetPartitionStateFromProjection("MerchantBalanceProjection", $"MerchantBalance-{query.MerchantId:N}", cancellationToken);
-        if (result.IsFailed)
-            return Result.NotFound(
+        if (result.IsSuccess() == false)
+            return new Error(ErrorType.NotFound,
                 $"Merchant Balance not found for Merchant {query.MerchantId} on MerchantBalanceProjection");
-        var json = result.GetValueOrThrow().ToLower();
+        var json = result.Data.ToLower();
         MerchantBalanceProjectionState1 projectionState = StringSerialiser.Deserialise<MerchantBalanceProjectionState1>(json, new SerialiserOptions(SerialiserPropertyFormat.CamelCase));
 
-        return Result.Success(projectionState);
+        return Results.Ok(projectionState);
     }
 
     public async Task<Result<List<MerchantBalanceChangedEntry>>> Handle(MerchantQueries.GetMerchantBalanceHistoryQuery query,

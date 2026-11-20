@@ -337,12 +337,12 @@ namespace TransactionProcessor.Repository {
             await using EstateManagementContext context = resolvedContext.Context;
 
             Result<Merchant> merchantResult = await context.LoadMerchant(domainEvent, cancellationToken);
-            if (merchantResult.IsFailed)
+            if (merchantResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(merchantResult);
-            Merchant? merchant = merchantResult.GetValueOrThrow();
+            Merchant? merchant = merchantResult.Data;
 
             if (merchant.LastStatementGenerated > domainEvent.DateGenerated)
-                return Result.Success();
+                return Results.Ok();
 
             merchant.LastStatementGenerated = domainEvent.DateGenerated;
             return await context.SaveChangesAsync(cancellationToken);
@@ -358,9 +358,9 @@ namespace TransactionProcessor.Repository {
             Merchant merchant = await (from m in context.Merchants where m.Reference == reference select m).SingleOrDefaultAsync(cancellationToken);
 
             if (merchant == null)
-                return Result.NotFound($"No merchant found with reference {reference}");
+                return new Error(ErrorType.NotFound, $"No merchant found with reference {reference}");
 
-            return Result.Success(ModelFactory.ConvertFrom(estateId, merchant));
+            return Results.Ok(ModelFactory.ConvertFrom(estateId, merchant));
         }
 
         public async Task<Result> AddMerchant(MerchantDomainEvents.MerchantCreatedEvent domainEvent,
@@ -409,9 +409,9 @@ namespace TransactionProcessor.Repository {
             await using EstateManagementContext context = resolvedContext.Context;
 
             Result<Merchant> merchantResult = await context.LoadMerchant(domainEvent, cancellationToken);
-            if (merchantResult.IsFailed)
+            if (merchantResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(merchantResult);
-            var merchant = merchantResult.GetValueOrThrow();
+            var merchant = merchantResult.Data;
             merchant.Name = domainEvent.MerchantName;
 
             return await context.SaveChangesAsync(cancellationToken);
@@ -485,9 +485,9 @@ namespace TransactionProcessor.Repository {
             await using EstateManagementContext context = resolvedContext.Context;
 
             Result<MerchantDevice> getOriginalDeviceResult = await context.LoadOriginalMerchantDevice(domainEvent, cancellationToken);
-            if (getOriginalDeviceResult.IsFailed)
+            if (getOriginalDeviceResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(getOriginalDeviceResult);
-            MerchantDevice? originalDevice = getOriginalDeviceResult.GetValueOrThrow();
+            MerchantDevice? originalDevice = getOriginalDeviceResult.Data;
 
             originalDevice.IsEnabled = false;
 
@@ -512,7 +512,7 @@ namespace TransactionProcessor.Repository {
 
             if (String.IsNullOrEmpty(operatorName))
             {
-                return Result.Failure("Unable to get operator name and this can't be null");
+                return new Error(ErrorType.Failure, "Unable to get operator name and this can't be null");
             }
 
             MerchantOperator merchantOperator = new MerchantOperator
@@ -553,9 +553,9 @@ namespace TransactionProcessor.Repository {
             await using EstateManagementContext context = resolvedContext.Context;
 
             Result<Merchant> merchantResult = await context.LoadMerchant(domainEvent, cancellationToken);
-            if (merchantResult.IsFailed)
+            if (merchantResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(merchantResult);
-            var merchant = merchantResult.GetValueOrThrow();
+            var merchant = merchantResult.Data;
 
             merchant.SettlementSchedule = domainEvent.SettlementSchedule;
             return await context.SaveChangesAsync(cancellationToken);
@@ -571,7 +571,7 @@ namespace TransactionProcessor.Repository {
                 cancellationToken: cancellationToken);
             if (merchantOperator == null)
             {
-                return Result.NotFound($"No operator {domainEvent.OperatorId} found for merchant {domainEvent.MerchantId}");
+                return new Error(ErrorType.NotFound, $"No operator {domainEvent.OperatorId} found for merchant {domainEvent.MerchantId}");
             }
 
             merchantOperator.IsDeleted = true;
@@ -589,7 +589,7 @@ namespace TransactionProcessor.Repository {
                 cancellationToken: cancellationToken);
             if (merchantContract == null)
             {
-                return Result.NotFound($"No contract {domainEvent.ContractId} found for merchant {domainEvent.MerchantId}");
+                return new Error(ErrorType.NotFound, $"No contract {domainEvent.ContractId} found for merchant {domainEvent.MerchantId}");
             }
 
 
@@ -604,9 +604,9 @@ namespace TransactionProcessor.Repository {
             await using EstateManagementContext context = resolvedContext.Context;
 
             var getMerchantAddressResult = await context.LoadMerchantAddress(domainEvent, cancellationToken);
-            if (getMerchantAddressResult.IsFailed)
+            if (getMerchantAddressResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(getMerchantAddressResult);
-            var merchantAddress = getMerchantAddressResult.GetValueOrThrow();
+            var merchantAddress = getMerchantAddressResult.Data;
 
             merchantAddress.AddressLine1 = domainEvent.AddressLine1;
 
@@ -619,9 +619,9 @@ namespace TransactionProcessor.Repository {
             await using EstateManagementContext context = resolvedContext.Context;
 
             var getMerchantAddressResult = await context.LoadMerchantAddress(domainEvent, cancellationToken);
-            if (getMerchantAddressResult.IsFailed)
+            if (getMerchantAddressResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(getMerchantAddressResult);
-            var merchantAddress = getMerchantAddressResult.GetValueOrThrow();
+            var merchantAddress = getMerchantAddressResult.Data;
 
             merchantAddress.AddressLine2 = domainEvent.AddressLine2;
 
@@ -634,9 +634,9 @@ namespace TransactionProcessor.Repository {
             await using EstateManagementContext context = resolvedContext.Context;
 
             var getMerchantAddressResult = await context.LoadMerchantAddress(domainEvent, cancellationToken);
-            if (getMerchantAddressResult.IsFailed)
+            if (getMerchantAddressResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(getMerchantAddressResult);
-            var merchantAddress = getMerchantAddressResult.GetValueOrThrow();
+            var merchantAddress = getMerchantAddressResult.Data;
 
             merchantAddress.AddressLine3 = domainEvent.AddressLine3;
 
@@ -649,9 +649,9 @@ namespace TransactionProcessor.Repository {
             await using EstateManagementContext context = resolvedContext.Context;
 
             var getMerchantAddressResult = await context.LoadMerchantAddress(domainEvent, cancellationToken);
-            if (getMerchantAddressResult.IsFailed)
+            if (getMerchantAddressResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(getMerchantAddressResult);
-            var merchantAddress = getMerchantAddressResult.GetValueOrThrow();
+            var merchantAddress = getMerchantAddressResult.Data;
 
             merchantAddress.AddressLine4 = domainEvent.AddressLine4;
 
@@ -664,9 +664,9 @@ namespace TransactionProcessor.Repository {
             await using EstateManagementContext context = resolvedContext.Context;
 
             var getMerchantAddressResult = await context.LoadMerchantAddress(domainEvent, cancellationToken);
-            if (getMerchantAddressResult.IsFailed)
+            if (getMerchantAddressResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(getMerchantAddressResult);
-            var merchantAddress = getMerchantAddressResult.GetValueOrThrow();
+            var merchantAddress = getMerchantAddressResult.Data;
 
             merchantAddress.Country = domainEvent.Country;
 
@@ -679,9 +679,9 @@ namespace TransactionProcessor.Repository {
             await using EstateManagementContext context = resolvedContext.Context;
 
             var getMerchantAddressResult = await context.LoadMerchantAddress(domainEvent, cancellationToken);
-            if (getMerchantAddressResult.IsFailed)
+            if (getMerchantAddressResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(getMerchantAddressResult);
-            var merchantAddress = getMerchantAddressResult.GetValueOrThrow();
+            var merchantAddress = getMerchantAddressResult.Data;
 
             merchantAddress.Region = domainEvent.Region;
 
@@ -694,9 +694,9 @@ namespace TransactionProcessor.Repository {
             await using EstateManagementContext context = resolvedContext.Context;
 
             var getMerchantAddressResult = await context.LoadMerchantAddress(domainEvent, cancellationToken);
-            if (getMerchantAddressResult.IsFailed)
+            if (getMerchantAddressResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(getMerchantAddressResult);
-            var merchantAddress = getMerchantAddressResult.GetValueOrThrow();
+            var merchantAddress = getMerchantAddressResult.Data;
 
             merchantAddress.Town = domainEvent.Town;
 
@@ -709,9 +709,9 @@ namespace TransactionProcessor.Repository {
             await using EstateManagementContext context = resolvedContext.Context;
 
             var getMerchantAddressResult = await context.LoadMerchantAddress(domainEvent, cancellationToken);
-            if (getMerchantAddressResult.IsFailed)
+            if (getMerchantAddressResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(getMerchantAddressResult);
-            var merchantAddress = getMerchantAddressResult.GetValueOrThrow();
+            var merchantAddress = getMerchantAddressResult.Data;
 
             merchantAddress.PostalCode = domainEvent.PostalCode;
 
@@ -724,9 +724,9 @@ namespace TransactionProcessor.Repository {
             await using EstateManagementContext context = resolvedContext.Context;
 
             var getMerchantContactResult = await context.LoadMerchantContact(domainEvent, cancellationToken);
-            if (getMerchantContactResult.IsFailed)
+            if (getMerchantContactResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(getMerchantContactResult);
-            var merchantContact = getMerchantContactResult.GetValueOrThrow();
+            var merchantContact = getMerchantContactResult.Data;
 
             merchantContact.Name = domainEvent.ContactName;
 
@@ -739,9 +739,9 @@ namespace TransactionProcessor.Repository {
             await using EstateManagementContext context = resolvedContext.Context;
 
             var getMerchantContactResult = await context.LoadMerchantContact(domainEvent, cancellationToken);
-            if (getMerchantContactResult.IsFailed)
+            if (getMerchantContactResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(getMerchantContactResult);
-            var merchantContact = getMerchantContactResult.GetValueOrThrow();
+            var merchantContact = getMerchantContactResult.Data;
 
             merchantContact.EmailAddress = domainEvent.ContactEmailAddress;
 
@@ -754,9 +754,9 @@ namespace TransactionProcessor.Repository {
             await using EstateManagementContext context = resolvedContext.Context;
 
             var getMerchantContactResult = await context.LoadMerchantContact(domainEvent, cancellationToken);
-            if (getMerchantContactResult.IsFailed)
+            if (getMerchantContactResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(getMerchantContactResult);
-            var merchantContact = getMerchantContactResult.GetValueOrThrow();
+            var merchantContact = getMerchantContactResult.Data;
 
             merchantContact.PhoneNumber = domainEvent.ContactPhoneNumber;
 
@@ -768,8 +768,8 @@ namespace TransactionProcessor.Repository {
             using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
             await using EstateManagementContext context = resolvedContext.Context;
             Result<MerchantOpeningHours> getMerchantOpeningHoursResult = await context.LoadMerchantOpeningHours(domainEvent, cancellationToken);
-            Boolean merchantOpeningHoursNotFound = getMerchantOpeningHoursResult.Errors.Any(error => error.ErrorType == ErrorType.NotFound);
-            if (getMerchantOpeningHoursResult.IsFailed && !merchantOpeningHoursNotFound)
+            Boolean merchantOpeningHoursNotFound = getMerchantOpeningHoursResult.GetErrors().Any(error => error.ErrorType == ErrorType.NotFound);
+            if (getMerchantOpeningHoursResult.IsSuccess() == false && !merchantOpeningHoursNotFound)
                 return ResultHelpers.CreateFailure(getMerchantOpeningHoursResult);
 
             if (merchantOpeningHoursNotFound) {
@@ -782,7 +782,7 @@ namespace TransactionProcessor.Repository {
             }
             else {
                 // Update the existing row
-                setOpeningHours[(DayOfWeek)domainEvent.DayOfWeek](getMerchantOpeningHoursResult.GetValueOrThrow(), domainEvent.Opening, domainEvent.Closing);
+                setOpeningHours[(DayOfWeek)domainEvent.DayOfWeek](getMerchantOpeningHoursResult.Data, domainEvent.Opening, domainEvent.Closing);
             }
 
             return await context.SaveChangesAsync(cancellationToken);
@@ -795,12 +795,12 @@ namespace TransactionProcessor.Repository {
             await using EstateManagementContext context = resolvedContext.Context;
 
             Result<MerchantSchedule> merchantScheduleResult = await context.LoadMerchantSchedule(domainEvent, cancellationToken);
-            if (merchantScheduleResult.IsFailed)
+            if (merchantScheduleResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(merchantScheduleResult);
 
             Result<MerchantScheduleMonth> merchantScheduleMonthResult = await context.LoadMerchantScheduleMonth(domainEvent, cancellationToken);
-            Boolean merchantScheduleMonthNotFound = merchantScheduleMonthResult.Errors.Any(error => error.ErrorType == ErrorType.NotFound);
-            if (merchantScheduleMonthResult.IsFailed && !merchantScheduleMonthNotFound)
+            Boolean merchantScheduleMonthNotFound = merchantScheduleMonthResult.GetErrors().Any(error => error.ErrorType == ErrorType.NotFound);
+            if (merchantScheduleMonthResult.IsSuccess() == false && !merchantScheduleMonthNotFound)
                 return ResultHelpers.CreateFailure(merchantScheduleMonthResult);
 
             String closedDays = String.Join(",", domainEvent.ClosedDays.OrderBy(day => day));
@@ -809,7 +809,7 @@ namespace TransactionProcessor.Repository {
             {
                 MerchantScheduleMonth merchantScheduleMonth = new()
                 {
-                    MerchantScheduleId = merchantScheduleResult.GetValueOrThrow().MerchantScheduleId,
+                    MerchantScheduleId = merchantScheduleResult.Data.MerchantScheduleId,
                     Month = domainEvent.Month,
                     ClosedDays = closedDays
                 };
@@ -818,7 +818,7 @@ namespace TransactionProcessor.Repository {
             }
             else
             {
-                merchantScheduleMonthResult.GetValueOrThrow().ClosedDays = closedDays;
+                merchantScheduleMonthResult.Data.ClosedDays = closedDays;
             }
 
             return await context.SaveChangesAsync(cancellationToken);
@@ -857,9 +857,9 @@ namespace TransactionProcessor.Repository {
             await using EstateManagementContext context = resolvedContext.Context;
 
             Result<Merchant> merchantResult = await context.LoadMerchant(domainEvent, cancellationToken);
-            if (merchantResult.IsFailed)
+            if (merchantResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(merchantResult);
-            var merchant = merchantResult.GetValueOrThrow();
+            var merchant = merchantResult.Data;
 
             merchant.Reference = domainEvent.MerchantReference;
             return await context.SaveChangesAsync(cancellationToken);
@@ -884,7 +884,7 @@ namespace TransactionProcessor.Repository {
 
             if (merchants.Any() == false)
             {
-                return Result.NotFound($"No merchants found for estate {estateId}");
+                return new Error(ErrorType.NotFound, $"No merchants found for estate {estateId}");
             }
 
             List<MerchantModel> models = new List<MerchantModel>();
@@ -901,7 +901,7 @@ namespace TransactionProcessor.Repository {
                 models.Add(ModelFactory.ConvertFrom(estateId, m, a, c, o, d, u, (Schedules: s, Months: merchantScheduleMonths)));
             }
 
-            return Result.Success(models);
+            return Results.Ok(models);
         }
 
         public async Task<Result<MerchantModel>> GetMerchant(Guid estateId,
@@ -922,12 +922,12 @@ namespace TransactionProcessor.Repository {
                                                                         select sm).ToListAsync(cancellationToken);
 
             if (merchant == null) {
-                return Result.NotFound($"No merchant found for estate {estateId} and merchant {merchantId}");
+                return new Error(ErrorType.NotFound, $"No merchant found for estate {estateId} and merchant {merchantId}");
             }
 
             MerchantModel model = ModelFactory.ConvertFrom(estateId, merchant, merchantAddresses, merchantContacts, merchantOperators, merchantDevices, merchantSecurityUsers, (Schedules: merchantSchedules, Months: merchantScheduleMonths));
 
-            return Result.Success(model);
+            return Results.Ok(model);
         }
 
         public async Task<Result<MerchantScheduleModel>> GetMerchantSchedule(Guid estateId,
@@ -946,7 +946,7 @@ namespace TransactionProcessor.Repository {
 
             if (merchantSchedule == null)
             {
-                return Result.NotFound($"No merchant schedule found for Merchant [{merchantId}] in Year [{year}]");
+                return new Error(ErrorType.NotFound, $"No merchant schedule found for Merchant [{merchantId}] in Year [{year}]");
             }
 
             List<MerchantScheduleMonth> merchantScheduleMonths = await (from sm in context.MerchantScheduleMonths
@@ -972,7 +972,7 @@ namespace TransactionProcessor.Repository {
                 }).ToList()
             };
 
-            return Result.Success(schedule);
+            return Results.Ok(schedule);
         }
 
         public async Task<Result<List<ContractModel>>> GetMerchantContracts(Guid estateId,
@@ -1004,7 +1004,7 @@ namespace TransactionProcessor.Repository {
                 this.AddProductIfRequired(contract, contractData.Product);
             }
 
-            return Result.Success(contracts);
+            return Results.Ok(contracts);
         }
 
         public async Task<Result<List<ContractModel>>> GetContracts(Guid estateId,
@@ -1034,7 +1034,7 @@ namespace TransactionProcessor.Repository {
                 this.AddProductIfRequired(contract, contractData.Product);
             }
 
-            return Result.Success(contracts);
+            return Results.Ok(contracts);
         }
 
         public async Task<Result<Models.Estate.Estate>> GetEstate(Guid estateId,
@@ -1047,13 +1047,13 @@ namespace TransactionProcessor.Repository {
 
             if (estate == null)
             {
-                return Result.NotFound($"No estate found in read model with Id [{estateId}]");
+                return new Error(ErrorType.NotFound, $"No estate found in read model with Id [{estateId}]");
             }
 
             List<EstateSecurityUser> estateSecurityUsers = await context.EstateSecurityUsers.Where(esu => esu.EstateId == estate.EstateId).ToListAsync(cancellationToken);
             List<Database.Entities.Operator> operators = await context.Operators.Where(eo => eo.EstateId == estate.EstateId).ToListAsync(cancellationToken);
 
-            return Result.Success(ModelFactory.ConvertFrom(estate, estateSecurityUsers, operators));
+            return Results.Ok(ModelFactory.ConvertFrom(estate, estateSecurityUsers, operators));
         }
 
         private ContractModel GetOrCreateMerchantContract(List<ContractModel> contracts,
@@ -1201,14 +1201,15 @@ namespace TransactionProcessor.Repository {
             await using EstateManagementContext context = resolvedContext.Context;
 
             var getTransactionResult = await context.LoadTransaction(domainEvent, cancellationToken);
-            if (getTransactionResult.IsFailed)
+            if (getTransactionResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(getTransactionResult);
             var getContractResult = await context.LoadContract(domainEvent, cancellationToken);
-            if (getContractResult.IsFailed)
+            if (getContractResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(getContractResult);
 
-            var transaction = getTransactionResult.GetValueOrThrow();
-            var contract = getContractResult.GetValueOrThrow();
+            
+            var transaction = getTransactionResult.Data;
+            var contract = getContractResult.Data;
 
             transaction.ContractId = domainEvent.ContractId;
             transaction.ContractProductId = domainEvent.ProductId;
@@ -1244,9 +1245,9 @@ namespace TransactionProcessor.Repository {
             await using EstateManagementContext context = resolvedContext.Context;
 
             var getTransactionResult = await context.LoadTransaction(domainEvent, cancellationToken);
-            if (getTransactionResult.IsFailed)
+            if (getTransactionResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(getTransactionResult);
-            var transaction = getTransactionResult.GetValueOrThrow();
+            var transaction = getTransactionResult.Data;
 
             transaction.TransactionSource = domainEvent.TransactionSource;
 
@@ -1259,9 +1260,9 @@ namespace TransactionProcessor.Repository {
             await using EstateManagementContext context = resolvedContext.Context;
 
             var getReconcilationResult = await context.LoadReconcilation(domainEvent, cancellationToken);
-            if (getReconcilationResult.IsFailed)
+            if (getReconcilationResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(getReconcilationResult);
-            var reconciliation = getReconcilationResult.GetValueOrThrow();
+            var reconciliation = getReconcilationResult.Data;
 
             reconciliation.IsCompleted = true;
 
@@ -1274,9 +1275,9 @@ namespace TransactionProcessor.Repository {
             await using EstateManagementContext context = resolvedContext.Context;
 
             var getTransactionResult = await context.LoadTransaction(domainEvent, cancellationToken);
-            if (getTransactionResult.IsFailed)
+            if (getTransactionResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(getTransactionResult);
-            var transaction = getTransactionResult.GetValueOrThrow();
+            var transaction = getTransactionResult.Data;
 
             transaction.IsCompleted = true;
 
@@ -1330,9 +1331,9 @@ namespace TransactionProcessor.Repository {
             await using EstateManagementContext context = resolvedContext.Context;
 
             var getTransactionResult = await context.LoadTransaction(domainEvent, cancellationToken);
-            if (getTransactionResult.IsFailed)
+            if (getTransactionResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(getTransactionResult);
-            var transaction = getTransactionResult.GetValueOrThrow();
+            var transaction = getTransactionResult.Data;
 
             FloatActivity floatActivity = new FloatActivity
             {
@@ -1359,7 +1360,7 @@ namespace TransactionProcessor.Repository {
             await context.MigrateAsync(cancellationToken);
 
             Logger.LogWarning($"Read Model database for estate [{domainEvent.EstateId}] migrated to latest version");
-            return Result.Success();
+            return Results.Ok();
         }
 
         public async Task<Result> CreateSettlement(SettlementDomainEvents.SettlementCreatedForDateEvent domainEvent,
@@ -1387,10 +1388,10 @@ namespace TransactionProcessor.Repository {
             await using EstateManagementContext context = resolvedContext.Context;
 
             Result<ContractProductTransactionFee> loadContractProductTransactionFeeResult = await context.LoadContractProductTransactionFee(domainEvent, cancellationToken);
-            if (loadContractProductTransactionFeeResult.IsFailed)
+            if (loadContractProductTransactionFeeResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(loadContractProductTransactionFeeResult);
 
-            ContractProductTransactionFee transactionFee = loadContractProductTransactionFeeResult.GetValueOrThrow();
+            ContractProductTransactionFee transactionFee = loadContractProductTransactionFeeResult.Data;
 
             transactionFee.IsEnabled = false;
 
@@ -1411,7 +1412,7 @@ namespace TransactionProcessor.Repository {
 
             if (merchantFee == null)
             {
-                return Result.NotFound("Merchant Fee not found to update as settled");
+                return new Error(ErrorType.NotFound, "Merchant Fee not found to update as settled");
             }
 
             merchantFee.IsSettled = true;
@@ -1424,9 +1425,9 @@ namespace TransactionProcessor.Repository {
             await using EstateManagementContext context = resolvedContext.Context;
 
             var getSettlementResult = await context.LoadSettlement(domainEvent, cancellationToken);
-            if (getSettlementResult.IsFailed)
+            if (getSettlementResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(getSettlementResult);
-            var settlement = getSettlementResult.GetValueOrThrow();
+            var settlement = getSettlementResult.Data;
 
             settlement.IsCompleted = true;
             return await context.SaveChangesAsync(cancellationToken);
@@ -1438,9 +1439,9 @@ namespace TransactionProcessor.Repository {
             await using EstateManagementContext context = resolvedContext.Context;
 
             var getSettlementResult = await context.LoadSettlement(domainEvent, cancellationToken);
-            if (getSettlementResult.IsFailed)
+            if (getSettlementResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(getSettlementResult);
-            var settlement = getSettlementResult.GetValueOrThrow();
+            var settlement = getSettlementResult.Data;
             settlement.ProcessingStarted = true;
             settlement.ProcessingStartedDateTIme = domainEvent.ProcessingStartedDateTime;
 
@@ -1537,9 +1538,9 @@ namespace TransactionProcessor.Repository {
             await using EstateManagementContext context = resolvedContext.Context;
 
             var getTransactionResult = await context.LoadTransaction(domainEvent, cancellationToken);
-            if (getTransactionResult.IsFailed)
+            if (getTransactionResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(getTransactionResult);
-            var transaction = getTransactionResult.GetValueOrThrow();
+            var transaction = getTransactionResult.Data;
 
             foreach (String additionalRequestField in this.AdditionalRequestFields)
             {
@@ -1613,10 +1614,10 @@ namespace TransactionProcessor.Repository {
             await using EstateManagementContext context = resolvedContext.Context;
 
             var getEstateResult = await context.LoadEstate(domainEvent, cancellationToken);
-            if (getEstateResult.IsFailed)
+            if (getEstateResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(getEstateResult);
 
-            var estate = getEstateResult.GetValueOrThrow();
+            var estate = getEstateResult.Data;
             estate.Reference = domainEvent.EstateReference;
 
             return await context.SaveChangesAsync(cancellationToken);
@@ -1628,9 +1629,9 @@ namespace TransactionProcessor.Repository {
             await using EstateManagementContext context = resolvedContext.Context;
 
             Result<Merchant> merchantResult = await context.LoadMerchant(domainEvent, cancellationToken);
-            if (merchantResult.IsFailed)
+            if (merchantResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(merchantResult);
-            var merchant = merchantResult.GetValueOrThrow();
+            var merchant = merchantResult.Data;
 
             if (domainEvent.CompletedDateTime > merchant.LastSaleDateTime)
             {
@@ -1648,9 +1649,9 @@ namespace TransactionProcessor.Repository {
             await using EstateManagementContext context = resolvedContext.Context;
 
             var getReconcilationResult = await context.LoadReconcilation(domainEvent, cancellationToken);
-            if (getReconcilationResult.IsFailed)
+            if (getReconcilationResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(getReconcilationResult);
-            var reconciliation = getReconcilationResult.GetValueOrThrow();
+            var reconciliation = getReconcilationResult.Data;
 
             reconciliation.TransactionCount = domainEvent.TransactionCount;
             reconciliation.TransactionValue = domainEvent.TransactionValue;
@@ -1664,9 +1665,9 @@ namespace TransactionProcessor.Repository {
             await using EstateManagementContext context = resolvedContext.Context;
 
             var getReconcilationResult = await context.LoadReconcilation(domainEvent, cancellationToken);
-            if (getReconcilationResult.IsFailed)
+            if (getReconcilationResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(getReconcilationResult);
-            var reconciliation = getReconcilationResult.GetValueOrThrow();
+            var reconciliation = getReconcilationResult.Data;
 
             reconciliation.IsAuthorised = true;
             reconciliation.ResponseCode = domainEvent.ResponseCode;
@@ -1681,9 +1682,9 @@ namespace TransactionProcessor.Repository {
             await using EstateManagementContext context = resolvedContext.Context;
 
             var getReconcilationResult = await context.LoadReconcilation(domainEvent, cancellationToken);
-            if (getReconcilationResult.IsFailed)
+            if (getReconcilationResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(getReconcilationResult);
-            var reconciliation = getReconcilationResult.GetValueOrThrow();
+            var reconciliation = getReconcilationResult.Data;
 
             reconciliation.IsAuthorised = false;
             reconciliation.ResponseCode = domainEvent.ResponseCode;
@@ -1698,9 +1699,9 @@ namespace TransactionProcessor.Repository {
             await using EstateManagementContext context = resolvedContext.Context;
 
             var getTransactionResult = await context.LoadTransaction(domainEvent, cancellationToken);
-            if (getTransactionResult.IsFailed)
+            if (getTransactionResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(getTransactionResult);
-            var transaction = getTransactionResult.GetValueOrThrow();
+            var transaction = getTransactionResult.Data;
 
             transaction.IsAuthorised = true;
             transaction.ResponseCode = domainEvent.ResponseCode;
@@ -1716,9 +1717,9 @@ namespace TransactionProcessor.Repository {
             await using EstateManagementContext context = resolvedContext.Context;
 
             var getTransactionResult = await context.LoadTransaction(domainEvent, cancellationToken);
-            if (getTransactionResult.IsFailed)
+            if (getTransactionResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(getTransactionResult);
-            var transaction = getTransactionResult.GetValueOrThrow();
+            var transaction = getTransactionResult.Data;
 
             transaction.IsAuthorised = false;
             transaction.ResponseCode = domainEvent.ResponseCode;
@@ -1733,9 +1734,9 @@ namespace TransactionProcessor.Repository {
             await using EstateManagementContext context = resolvedContext.Context;
 
             var getTransactionResult = await context.LoadTransaction(domainEvent, cancellationToken);
-            if (getTransactionResult.IsFailed)
+            if (getTransactionResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(getTransactionResult);
-            var transaction = getTransactionResult.GetValueOrThrow();
+            var transaction = getTransactionResult.Data;
 
             transaction.IsAuthorised = true;
             transaction.ResponseCode = domainEvent.ResponseCode;
@@ -1751,9 +1752,9 @@ namespace TransactionProcessor.Repository {
             await using EstateManagementContext context = resolvedContext.Context;
 
             var getTransactionResult = await context.LoadTransaction(domainEvent, cancellationToken);
-            if (getTransactionResult.IsFailed)
+            if (getTransactionResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(getTransactionResult);
-            var transaction = getTransactionResult.GetValueOrThrow();
+            var transaction = getTransactionResult.Data;
 
             transaction.IsAuthorised = false;
             transaction.ResponseCode = domainEvent.ResponseCode;
@@ -1783,7 +1784,7 @@ namespace TransactionProcessor.Repository {
                 });
             }
 
-            return Result.Success(models);
+            return Results.Ok(models);
         }
 
         public async Task<Result> UpdateOperator(OperatorDomainEvents.OperatorNameUpdatedEvent domainEvent, CancellationToken cancellationToken)
@@ -1792,9 +1793,9 @@ namespace TransactionProcessor.Repository {
             await using EstateManagementContext context = resolvedContext.Context;
 
             Result<Database.Entities.Operator> operatorResult = await context.LoadOperator(domainEvent, cancellationToken);
-            if (operatorResult.IsFailed)
+            if (operatorResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(operatorResult);
-            Database.Entities.Operator @operator = operatorResult.GetValueOrThrow();
+            Database.Entities.Operator @operator = operatorResult.Data;
             @operator.Name = domainEvent.Name;
 
             return await context.SaveChangesAsync(cancellationToken);
@@ -1806,9 +1807,9 @@ namespace TransactionProcessor.Repository {
             await using EstateManagementContext context = resolvedContext.Context;
 
             Result<Database.Entities.Operator> operatorResult = await context.LoadOperator(domainEvent, cancellationToken);
-            if (operatorResult.IsFailed)
+            if (operatorResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(operatorResult);
-            Database.Entities.Operator @operator = operatorResult.GetValueOrThrow();
+            Database.Entities.Operator @operator = operatorResult.Data;
 
             @operator.RequireCustomMerchantNumber = domainEvent.RequireCustomMerchantNumber;
 
@@ -1821,9 +1822,9 @@ namespace TransactionProcessor.Repository {
             await using EstateManagementContext context = resolvedContext.Context;
 
             Result<Database.Entities.Operator> operatorResult = await context.LoadOperator(domainEvent, cancellationToken);
-            if (operatorResult.IsFailed)
+            if (operatorResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(operatorResult);
-            Database.Entities.Operator @operator = operatorResult.GetValueOrThrow();
+            Database.Entities.Operator @operator = operatorResult.Data;
 
             @operator.RequireCustomTerminalNumber = domainEvent.RequireCustomTerminalNumber;
 
@@ -1914,9 +1915,9 @@ namespace TransactionProcessor.Repository {
             await using EstateManagementContext context = resolvedContext.Context;
 
             var getLoadStatementHeaderResult = await context.LoadStatementHeader(domainEvent, cancellationToken);
-            if (getLoadStatementHeaderResult.IsFailed)
+            if (getLoadStatementHeaderResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(getLoadStatementHeaderResult);
-            var statementHeader = getLoadStatementHeaderResult.GetValueOrThrow();
+            var statementHeader = getLoadStatementHeaderResult.Data;
 
             statementHeader.StatementGeneratedDate = DateOnly.FromDateTime(domainEvent.DateGenerated.DateTime);
             return await context.SaveChangesAsync(cancellationToken);
@@ -2034,10 +2035,10 @@ namespace TransactionProcessor.Repository {
             await using EstateManagementContext context = resolvedContext.Context;
 
             var getFileResult = await context.LoadFile(domainEvent.FileId, cancellationToken);
-            if (getFileResult.IsFailed)
+            if (getFileResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(getFileResult);
 
-            var file = getFileResult.GetValueOrThrow();
+            var file = getFileResult.Data;
             file.IsCompleted = true;
 
             return await context.SaveChangesAsync(cancellationToken);
@@ -2081,7 +2082,7 @@ namespace TransactionProcessor.Repository {
 
             if (fileLine == null)
             {
-                return Result.NotFound($"FileLine number {lineNumber} in File Id {fileId} not found");
+                return new Error(ErrorType.NotFound, $"FileLine number {lineNumber} in File Id {fileId} not found");
             }
 
             fileLine.Status = newStatus;
@@ -2159,7 +2160,7 @@ namespace TransactionProcessor.Repository {
             }).SingleOrDefault();
 
             if (result == null)
-                return Result.NotFound($"Settlement with Id {settlementId} not found");
+                return new Error(ErrorType.NotFound, $"Settlement with Id {settlementId} not found");
 
             SettlementModel model = new SettlementModel
             {
@@ -2183,7 +2184,7 @@ namespace TransactionProcessor.Repository {
                 OperatorIdentifier = f.OperatorIdentifier
             }));
 
-            return Result.Success(model);
+            return Results.Ok(model);
         }
 
         public async Task<Result<List<SettlementModel>>> GetSettlements(Guid estateId,
@@ -2231,7 +2232,7 @@ namespace TransactionProcessor.Repository {
                 IsCompleted = t.IsCompleted
             }).ToList();
 
-            return Result.Success(result);
+            return Results.Ok(result);
         }
 
         public async Task<Result> RecordTransactionTimings(TransactionDomainEvents.TransactionTimingsAddedToTransactionEvent domainEvent,
@@ -2269,15 +2270,15 @@ namespace TransactionProcessor.Repository {
 
             // Find the corresponding transaction
             Result<Transaction> transactionResult = await context.LoadTransaction(domainEvent, cancellationToken);
-            if (transactionResult.IsFailed)
+            if (transactionResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(transactionResult);
 
-            Transaction transaction = transactionResult.GetValueOrThrow();
+            Transaction transaction = transactionResult.Data;
 
             Result<Operator> operatorResult = await context.LoadOperator(transaction.OperatorId, cancellationToken);
-            if (operatorResult.IsFailed)
+            if (operatorResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(operatorResult);
-            Operator @operator = operatorResult.GetValueOrThrow();
+            Operator @operator = operatorResult.Data;
 
             StatementLine line = new StatementLine
             {
@@ -2303,14 +2304,14 @@ namespace TransactionProcessor.Repository {
 
             // Find the corresponding transaction
             var getTransactionResult = await context.LoadTransaction(domainEvent, cancellationToken);
-            if (getTransactionResult.IsFailed)
+            if (getTransactionResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(getTransactionResult);
-            var transaction = getTransactionResult.GetValueOrThrow();
+            var transaction = getTransactionResult.Data;
 
             Result<Operator> operatorResult = await context.LoadOperator(transaction.OperatorId, cancellationToken);
-            if (operatorResult.IsFailed)
+            if (operatorResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(operatorResult);
-            var @operator = operatorResult.GetValueOrThrow();
+            var @operator = operatorResult.Data;
 
             StatementLine line = new StatementLine
             {
@@ -2381,7 +2382,7 @@ public static class AsyncExecutor
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error executing async operation");
-            return Result.Failure(ex.Message);
+            return new Error(ErrorType.Failure, ex.Message);
         }
     }
 
@@ -2394,7 +2395,7 @@ public static class AsyncExecutor
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error executing async operation");
-            return Result.Failure(ex.Message);
+            return new Error(ErrorType.Failure, ex.Message);
         }
     }
 }

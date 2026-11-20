@@ -45,23 +45,23 @@ namespace TransactionProcessor.BusinessLogic.Services
                 Guid estateId = IdGenerationService.GenerateEstateId(command.RequestDto.EstateName);
                 
                 Result<EstateAggregate> estateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<EstateAggregate>(estateId, ct), estateId, cancellationToken, false);
-                if (estateResult.IsFailed)
+                if (estateResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(estateResult);
 
-                EstateAggregate estateAggregate = estateResult.GetValueOrThrow();
+                EstateAggregate estateAggregate = estateResult.Data;
 
                 Result stateResult = estateAggregate.Create(command.RequestDto.EstateName);
-                if (stateResult.IsFailed)
+                if (stateResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(stateResult);
 
                 Result saveResult = await this.AggregateService.Save(estateAggregate, cancellationToken);
-                if (saveResult.IsFailed)
+                if (saveResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(saveResult);
 
-                return Result.Success<Guid>(estateId);
+                return Results.Ok<Guid>(estateId);
             }
             catch (Exception ex) {
-                return Result.Failure(ex.GetExceptionMessages());
+                return ResultHelpers.CreateFailure(ex.GetExceptionMessages());
             }
         }
 
@@ -70,28 +70,28 @@ namespace TransactionProcessor.BusinessLogic.Services
             try
             {
                 Result<OperatorAggregate> operatorResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<OperatorAggregate>(command.RequestDto.OperatorId, ct), command.RequestDto.OperatorId, cancellationToken);
-                if (operatorResult.IsFailed)
+                if (operatorResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(operatorResult);
 
                 Result<EstateAggregate> estateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken);
-                if (estateResult.IsFailed)
+                if (estateResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(estateResult);
 
-                EstateAggregate estateAggregate = estateResult.GetValueOrThrow();
+                EstateAggregate estateAggregate = estateResult.Data;
 
                 Result stateResult =estateAggregate.AddOperator(command.RequestDto.OperatorId);
-                if (stateResult.IsFailed)
+                if (stateResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(stateResult);
 
                 Result saveResult = await this.AggregateService.Save(estateAggregate, cancellationToken);
-                if (saveResult.IsFailed)
+                if (saveResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(saveResult);
 
-                return Result.Success();
+                return Results.Ok();
             }
             catch (Exception ex)
             {
-                return Result.Failure(ex.GetExceptionMessages());
+                return ResultHelpers.CreateFailure(ex.GetExceptionMessages());
             }
         }
 
@@ -102,28 +102,28 @@ namespace TransactionProcessor.BusinessLogic.Services
                 CreateUserRequest createUserRequest = this.BuildEstateUserRequest(command);
 
                 Result<UserResponse> getUserResult = await this.CreateEstateSecurityUser(createUserRequest, cancellationToken);
-                if (getUserResult.IsFailed)
+                if (getUserResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(getUserResult);
 
                 Result<EstateAggregate> estateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken);
-                if (estateResult.IsFailed)
+                if (estateResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(estateResult);
 
-                EstateAggregate estateAggregate = estateResult.GetValueOrThrow();
+                EstateAggregate estateAggregate = estateResult.Data;
 
                 Result stateResult = estateAggregate.AddSecurityUser(Guid.Parse(getUserResult.Data.UserId), command.RequestDto.EmailAddress);
-                if (stateResult.IsFailed)
+                if (stateResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(stateResult);
 
                 Result saveResult = await this.AggregateService.Save(estateAggregate, cancellationToken);
-                if (saveResult.IsFailed)
+                if (saveResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(saveResult);
 
-                return Result.Success();
+                return Results.Ok();
             }
             catch (Exception ex)
             {
-                return Result.Failure(ex.GetExceptionMessages());
+                return ResultHelpers.CreateFailure(ex.GetExceptionMessages());
             }
         }
 
@@ -150,23 +150,23 @@ namespace TransactionProcessor.BusinessLogic.Services
         private async Task<Result<UserResponse>> CreateEstateSecurityUser(CreateUserRequest createUserRequest,
                                                                          CancellationToken cancellationToken) {
             Result<TokenResponse> getTokenResult = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
-            if (getTokenResult.IsFailed)
+            if (getTokenResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(getTokenResult);
-            this.TokenResponse = getTokenResult.GetValueOrThrow();
+            this.TokenResponse = getTokenResult.Data;
 
             var createUserResult = await this.SecurityServiceClient.CreateUser(this.TokenResponse.AccessToken, createUserRequest, cancellationToken);
-            if (createUserResult.IsFailed)
+            if (createUserResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(createUserResult);
 
             var userDetailsResult = await this.SecurityServiceClient.GetUsers(this.TokenResponse.AccessToken, createUserRequest.EmailAddress, cancellationToken);
-            if (userDetailsResult.IsFailed)
+            if (userDetailsResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(userDetailsResult);
 
             UserResponse user = userDetailsResult.Data.SingleOrDefault();
             if (user == null)
-                return Result.Failure($"Unable to get user details for username {createUserRequest.EmailAddress}");
+                return new Error(ErrorType.Failure, $"Unable to get user details for username {createUserRequest.EmailAddress}");
 
-            return Result.Success(user);
+            return Results.Ok(user);
         }
 
         public async Task<Result> RemoveOperatorFromEstate(EstateCommands.RemoveOperatorFromEstateCommand command, CancellationToken cancellationToken)
@@ -174,24 +174,24 @@ namespace TransactionProcessor.BusinessLogic.Services
             try
             {
                 Result<EstateAggregate> estateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken);
-                if (estateResult.IsFailed)
+                if (estateResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(estateResult);
 
-                EstateAggregate estateAggregate = estateResult.GetValueOrThrow();
+                EstateAggregate estateAggregate = estateResult.Data;
 
                 Result stateResult = estateAggregate.RemoveOperator(command.OperatorId);
-                if (stateResult.IsFailed)
+                if (stateResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(stateResult);
 
                 Result saveResult = await this.AggregateService.Save(estateAggregate, cancellationToken);
-                if (saveResult.IsFailed)
+                if (saveResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(saveResult);
 
-                return Result.Success();
+                return Results.Ok();
             }
             catch (Exception ex)
             {
-                return Result.Failure(ex.GetExceptionMessages());
+                return ResultHelpers.CreateFailure(ex.GetExceptionMessages());
             }
         }
     }

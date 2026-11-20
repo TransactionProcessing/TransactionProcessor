@@ -36,12 +36,12 @@ namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers
         public async Task MerchantDomainEventHandler_Handle_CallbackReceivedEnrichedEvent_Deposit_EventIsHandled()
         {
             this.TransactionProcessorReadModelRepository.GetMerchantFromReference(Arg<Guid>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-                                      .ReturnsAsync(Result.Success(TestData.MerchantModelWithAddressesContactsDevicesAndOperatorsAndContracts()));
-            this.Mediator.Send<Result>(Arg<IRequest<Result>>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
+                                      .ReturnsAsync(Results.Ok(TestData.MerchantModelWithAddressesContactsDevicesAndOperatorsAndContracts()));
+            this.Mediator.Send<Result>(Arg<IRequest<Result>>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok());
             CallbackReceivedEnrichedEvent domainEvent = TestData.DomainEvents.CallbackReceivedEnrichedEventDeposit;
 
             var result = await this.DomainEventHandler.Handle(domainEvent, TestContext.Current.CancellationToken);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
 
         }
 
@@ -51,19 +51,19 @@ namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers
             CallbackReceivedEnrichedEvent domainEvent = TestData.DomainEvents.CallbackReceivedEnrichedEventOtherType;
 
             var result = await this.DomainEventHandler.Handle(domainEvent, TestContext.Current.CancellationToken);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
         }
 
         [Fact]
         public async Task MerchantDomainEventHandler_Handle_CallbackReceivedEnrichedEvent_Deposit_GetMerchantFailed_ResultIsFailure()
         {
             this.TransactionProcessorReadModelRepository.GetMerchantFromReference(Arg<Guid>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure("Test failure"));
+                .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
             CallbackReceivedEnrichedEvent domainEvent = TestData.DomainEvents.CallbackReceivedEnrichedEventDeposit;
 
             var result = await this.DomainEventHandler.Handle(domainEvent, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
 
         }
 

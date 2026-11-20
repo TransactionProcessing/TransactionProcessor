@@ -28,7 +28,7 @@ namespace TransactionProcessor.Endpoints
 
             group.MapPut("/", FloatHandlers.RecordFloatCreditPurchase)
                  .WithName("RecordFloatCreditPurchase").WithSummary("Record a float credit purchase")
-                 .WithDescription("Records a credit purchase, amount, cost price, and purchase time against the specified estate float.");
+                 .WithDescription("Records a credit purchase, amount, cost price, and purchase time against the specified estate float.").ProducesUnionResult();
 
             return endpoints;
         }

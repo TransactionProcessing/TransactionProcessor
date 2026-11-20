@@ -32,7 +32,7 @@ public class MerchantBalanceStateDispatcher : IStateDispatcher<MerchantBalanceSt
 
         if (entry == null) {
             Logger.LogInformation($"Entry is null for event {@event.EventType}");
-            return Result.Success();
+            return Results.Ok();
         }
 
         return await this.TransactionProcessorReadRepository.AddMerchantBalanceChangedEntry(entry, cancellationToken);

@@ -15,7 +15,7 @@ public class StatementEventTests : BaseTest {
     public async Task CreateStatement_StatementIsAdded()
     {
         Result result = await this.Repository.CreateStatement(TestData.DomainEvents.StatementCreatedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         EstateManagementContext context = this.GetContext();
         StatementHeader? statement = await context.StatementHeaders.SingleOrDefaultAsync(c => c.StatementId == TestData.DomainEvents.StatementCreatedEvent.MerchantStatementId, TestContext.Current.CancellationToken);
         statement.ShouldNotBeNull();
@@ -26,19 +26,19 @@ public class StatementEventTests : BaseTest {
     public async Task CreateStatement_EventReplayHandled()
     {
         Result result = await this.Repository.CreateStatement(TestData.DomainEvents.StatementCreatedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         result = await this.Repository.CreateStatement(TestData.DomainEvents.StatementCreatedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
     public async Task MarkStatementAsGenerated_StatementIsUpdated()
     {
         Result result = await this.Repository.CreateStatement(TestData.DomainEvents.StatementCreatedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         result = await this.Repository.MarkStatementAsGenerated(TestData.DomainEvents.StatementGeneratedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
         StatementHeader? statement = await context.StatementHeaders.SingleOrDefaultAsync(c => c.StatementId == TestData.DomainEvents.StatementCreatedEvent.MerchantStatementId, TestContext.Current.CancellationToken);

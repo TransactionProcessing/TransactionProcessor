@@ -27,14 +27,14 @@ public static class MerchantStatementForDateAggregateExtensions
                                                 SettledFee settledFee) {
         // Create statement id required
         Result result = aggregate.CreateStatementForDate(merchantStatementId, settledFee.DateTime.Date, statementDate, estateId, merchantId);
-        if (result.IsFailed)
+        if (result.IsSuccess() == false)
             return result;
 
         MerchantStatementForDateDomainEvents.SettledFeeAddedToStatementForDateEvent settledFeeAddedToStatementEvent = new(aggregate.AggregateId, eventId, aggregate.EstateId, aggregate.MerchantId, merchantStatementId, settledFee.SettledFeeId, settledFee.TransactionId, settledFee.DateTime, settledFee.Amount);
 
         aggregate.ApplyAndAppend(settledFeeAddedToStatementEvent);
 
-        return Result.Success();
+        return Results.Ok();
     }
 
     public static Result AddDepositToStatement(this MerchantStatementForDateAggregate aggregate,
@@ -47,14 +47,14 @@ public static class MerchantStatementForDateAggregateExtensions
     {
         // Create statement id required
         Result result = aggregate.CreateStatementForDate(merchantStatementId, deposit.DepositDateTime.Date, statementDate, estateId, merchantId);
-        if (result.IsFailed)
+        if (result.IsSuccess() == false)
             return result;
 
         MerchantStatementForDateDomainEvents.DepositAddedToStatementForDateEvent depositAddedToStatementEvent = new(aggregate.AggregateId, eventId, aggregate.EstateId, aggregate.MerchantId, merchantStatementId, deposit.DepositId, deposit.DepositDateTime, deposit.Amount);
 
         aggregate.ApplyAndAppend(depositAddedToStatementEvent);
 
-        return Result.Success();
+        return Results.Ok();
     }
 
     public static Result AddWithdrawalToStatement(this MerchantStatementForDateAggregate aggregate,
@@ -67,14 +67,14 @@ public static class MerchantStatementForDateAggregateExtensions
     {
         // Create statement id required
         Result result = aggregate.CreateStatementForDate(merchantStatementId, withdrawal.WithdrawalDateTime.Date, statementDate, estateId, merchantId);
-        if (result.IsFailed)
+        if (result.IsSuccess() == false)
             return result;
 
         MerchantStatementForDateDomainEvents.WithdrawalAddedToStatementForDateEvent withdrawalAddedToStatementEvent = new(aggregate.AggregateId, eventId, aggregate.EstateId, aggregate.MerchantId, merchantStatementId, withdrawal.WithdrawalId, withdrawal.WithdrawalDateTime, withdrawal.Amount);
 
         aggregate.ApplyAndAppend(withdrawalAddedToStatementEvent);
 
-        return Result.Success();
+        return Results.Ok();
     }
 
     public static Result AddTransactionToStatement(this MerchantStatementForDateAggregate aggregate,
@@ -87,7 +87,7 @@ public static class MerchantStatementForDateAggregateExtensions
     {
         // Create statement if required
         Result result = aggregate.CreateStatementForDate(merchantStatementId, transaction.DateTime.Date, statementDate, estateId, merchantId);
-        if (result.IsFailed)
+        if (result.IsSuccess() == false)
             return result;
 
         MerchantStatementForDateDomainEvents.TransactionAddedToStatementForDateEvent transactionAddedToStatementEvent = new(aggregate.AggregateId,
@@ -101,7 +101,7 @@ public static class MerchantStatementForDateAggregateExtensions
 
         aggregate.ApplyAndAppend(transactionAddedToStatementEvent);
 
-        return Result.Success();
+        return Results.Ok();
     }
 
     private static Result CreateStatementForDate(this MerchantStatementForDateAggregate aggregate,
@@ -112,20 +112,20 @@ public static class MerchantStatementForDateAggregateExtensions
                                         Guid merchantId)
     {
         if (aggregate.IsCreated)
-            return Result.Success();
+            return Results.Ok();
         
         if (merchantStatementId == Guid.Empty)
-            return Result.Invalid("Merchant Statement Id cannot be an empty Guid");
+            return new Error(ErrorType.Validation, "Merchant Statement Id cannot be an empty Guid");
         if (estateId == Guid.Empty)
-            return Result.Invalid("Estate Id cannot be an empty Guid");
+            return new Error(ErrorType.Validation, "Estate Id cannot be an empty Guid");
         if (merchantId == Guid.Empty)
-            return Result.Invalid("Merchant Id cannot be an empty Guid");
+            return new Error(ErrorType.Validation, "Merchant Id cannot be an empty Guid");
 
         MerchantStatementForDateDomainEvents.StatementCreatedForDateEvent statementCreatedForDateEvent = new(aggregate.AggregateId,
             activityDate, statementDate, merchantStatementId, estateId, merchantId);
 
         aggregate.ApplyAndAppend(statementCreatedForDateEvent);
-        return Result.Success();
+        return Results.Ok();
     }
     
     public static void PlayEvent(this MerchantStatementForDateAggregate aggregate, MerchantStatementForDateDomainEvents.StatementCreatedForDateEvent domainEvent)

@@ -68,24 +68,24 @@ namespace TransactionProcessor.BusinessLogic.Services
         public async Task<Result> AddDeviceToMerchant(MerchantCommands.AddMerchantDeviceCommand command, CancellationToken cancellationToken) {
             try {
                 Result<ValidatedMerchantContext> contextResult = await this.GetValidatedMerchantContext(command.EstateId, command.MerchantId, cancellationToken);
-                if (contextResult.IsFailed)
+                if (contextResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(contextResult);
 
-                MerchantAggregate merchantAggregate = contextResult.GetValueOrThrow().MerchantAggregate;
+                MerchantAggregate merchantAggregate = contextResult.Data.MerchantAggregate;
 
                 Guid deviceId = Guid.NewGuid();
                 Result stateResult = merchantAggregate.AddDevice(deviceId, command.RequestDto.DeviceIdentifier);
-                if (stateResult.IsFailed)
+                if (stateResult.IsSuccess() == false)
                     return stateResult;
 
                 Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
-                if (saveResult.IsFailed)
+                if (saveResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(saveResult);
 
                 return saveResult;
             }
             catch (Exception ex) {
-                return Result.Failure(ex.GetExceptionMessages());
+                return ResultHelpers.CreateFailure(ex.GetExceptionMessages());
             }
         }
 
@@ -94,29 +94,29 @@ namespace TransactionProcessor.BusinessLogic.Services
         {
             try {
                 Result<ValidatedMerchantContext> contextResult = await this.GetValidatedMerchantContext(command.EstateId, command.MerchantId, cancellationToken);
-                if (contextResult.IsFailed)
+                if (contextResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(contextResult);
 
-                EstateAggregate estateAggregate = contextResult.GetValueOrThrow().EstateAggregate;
-                MerchantAggregate merchantAggregate = contextResult.GetValueOrThrow().MerchantAggregate;
+                EstateAggregate estateAggregate = contextResult.Data.EstateAggregate;
+                MerchantAggregate merchantAggregate = contextResult.Data.MerchantAggregate;
 
                 (Result validationResult, String operatorName) = await this.GetOperatorAssignmentDetails(command, estateAggregate, cancellationToken);
-                if (validationResult.IsFailed)
+                if (validationResult.IsSuccess() == false)
                     return validationResult;
 
                 // Assign the operator
                 Result stateResult = merchantAggregate.AssignOperator(command.RequestDto.OperatorId, operatorName, command.RequestDto.MerchantNumber, command.RequestDto.TerminalNumber);
-                if (stateResult.IsFailed)
+                if (stateResult.IsSuccess() == false)
                     return stateResult;
 
                 Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
-                if (saveResult.IsFailed)
+                if (saveResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(saveResult);
 
                 return saveResult;
             }
             catch (Exception ex) {
-                return Result.Failure(ex.GetExceptionMessages());
+                return ResultHelpers.CreateFailure(ex.GetExceptionMessages());
             }
         }
 
@@ -127,21 +127,21 @@ namespace TransactionProcessor.BusinessLogic.Services
             Estate estate = estateAggregate.GetEstate();
             Models.Estate.Operator @operator = estate.Operators?.SingleOrDefault(o => o.OperatorId == command.RequestDto.OperatorId);
             if (@operator == null) {
-                return (Result.Invalid($"Operator Id {command.RequestDto.OperatorId} is not supported on Estate [{estate.Name}]"), String.Empty);
+                return (new Error(ErrorType.Validation, $"Operator Id {command.RequestDto.OperatorId} is not supported on Estate [{estate.Name}]"), String.Empty);
             }
 
             Result<OperatorAggregate> operatorResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<OperatorAggregate>(command.RequestDto.OperatorId, ct), command.RequestDto.OperatorId, cancellationToken);
-            if (operatorResult.IsFailed)
+            if (operatorResult.IsSuccess() == false)
                 return (ResultHelpers.CreateFailure(operatorResult), String.Empty);
 
             Result validationResult = this.ValidateOperatorAssignment(command.RequestDto.OperatorId,
                 command.RequestDto.MerchantNumber,
                 command.RequestDto.TerminalNumber,
-                operatorResult.GetValueOrThrow());
+                operatorResult.Data);
 
-            return validationResult.IsFailed
+            return validationResult.IsSuccess() == false
                 ? (validationResult, String.Empty)
-                : (Result.Success(), @operator.Name);
+                : (Results.Ok(), @operator.Name);
         }
 
         private Result ValidateOperatorAssignment(Guid operatorId,
@@ -150,14 +150,14 @@ namespace TransactionProcessor.BusinessLogic.Services
                                                   OperatorAggregate operatorAggregate)
         {
             if (operatorAggregate.RequireCustomMerchantNumber && String.IsNullOrEmpty(merchantNumber)) {
-                return Result.Invalid($"Operator Id {operatorId} requires that a merchant number is provided");
+                return new Error(ErrorType.Validation, $"Operator Id {operatorId} requires that a merchant number is provided");
             }
 
             if (operatorAggregate.RequireCustomTerminalNumber && String.IsNullOrEmpty(terminalNumber)) {
-                return Result.Invalid($"Operator Id {operatorId} requires that a terminal number is provided");
+                return new Error(ErrorType.Validation, $"Operator Id {operatorId} requires that a terminal number is provided");
             }
 
-            return Result.Success();
+            return Results.Ok();
         }
 
         private SettlementSchedule ConvertSettlementSchedule(DataTransferObjects.Responses.Merchant.SettlementSchedule settlementSchedule) =>
@@ -180,7 +180,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                                                         MerchantAggregate merchantAggregate,
                                                         DateTimeOffset depositDateTime) {
             if (merchantDepositListAggregate.IsCreated) {
-                return Result.Success();
+                return Results.Ok();
             }
 
             return merchantDepositListAggregate.Create(merchantAggregate, depositDateTime);
@@ -190,30 +190,30 @@ namespace TransactionProcessor.BusinessLogic.Services
         {
             try {
                 if (command.RequestDto == null)
-                    return Result.Invalid("Request DTO must not be null");
+                    return new Error(ErrorType.Validation, "Request DTO must not be null");
 
                 if (String.IsNullOrEmpty(command.RequestDto.Name))
-                    return Result.Invalid("Merchant name is a required value");
+                    return new Error(ErrorType.Validation, "Merchant name is a required value");
 
                 // Check if we have been sent a merchant id to use
                 Guid merchantId = IdGenerationService.GenerateMerchantId(command.EstateId, command.RequestDto.Name);
 
                 Result<EstateAggregate> estateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<EstateAggregate>(command.EstateId, ct), command.EstateId, cancellationToken);
-                if (estateResult.IsFailed)
+                if (estateResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(estateResult);
 
-                EstateAggregate estateAggregate = estateResult.GetValueOrThrow();
+                EstateAggregate estateAggregate = estateResult.Data;
                 // Estate Id is a valid estate
                 if (estateAggregate.IsCreated == false)
                 {
-                    return Result.Invalid($"Estate Id {estateAggregate.AggregateId} has not been created");
+                    return new Error(ErrorType.Validation, $"Estate Id {estateAggregate.AggregateId} has not been created");
                 }
 
                 Result<MerchantAggregate> merchantResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantAggregate>(merchantId, ct), merchantId, cancellationToken, false);
-                if (merchantResult.IsFailed)
+                if (merchantResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(merchantResult);
 
-                MerchantAggregate merchantAggregate = merchantResult.GetValueOrThrow();
+                MerchantAggregate merchantAggregate = merchantResult.Data;
                 // Build up the models for the Crete call
                 Address address = Address.Create(Guid.Empty, new AddressLines(command.RequestDto.Address.AddressLine1, command.RequestDto.Address.AddressLine2, command.RequestDto.Address.AddressLine3, command.RequestDto.Address.AddressLine4), command.RequestDto.Address.Town, command.RequestDto.Address.Region, command.RequestDto.Address.PostalCode, command.RequestDto.Address.Country);
                 Contact contact = new Contact(Guid.Empty, command.RequestDto.Contact.EmailAddress, command.RequestDto.Contact.ContactName, command.RequestDto.Contact.PhoneNumber);
@@ -222,18 +222,18 @@ namespace TransactionProcessor.BusinessLogic.Services
 
                 Result stateResult = merchantAggregate.Create(command.EstateId, command.RequestDto.Name, command.RequestDto.CreatedDateTime.GetValueOrDefault(DateTimeOffset.UtcNow),
                     address, contact, settlementSchedule);
-                if (stateResult.IsFailed)
-                    return Result<Guid>.FromFailure(stateResult);
+                if (stateResult.IsSuccess() == false)
+                    return ResultHelpers.CreateFailure(stateResult);
 
 
                 Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
-                if (saveResult.IsFailed)
+                if (saveResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(saveResult);
 
-                return Result.Success(merchantId);
+                return Results.Ok(merchantId);
             }
             catch (Exception ex) {
-                return Result<Guid>.Fail(Error.Failure(String.Join(Environment.NewLine, ex.GetExceptionMessages())));
+                return new Result<Guid>(new Error(ErrorType.Failure, String.Join(Environment.NewLine, ex.GetExceptionMessages())));
             }
         }
 
@@ -243,28 +243,28 @@ namespace TransactionProcessor.BusinessLogic.Services
                 CreateUserRequest createUserRequest = this.BuildMerchantUserRequest(command);
 
                 Result<ValidatedMerchantContext> contextResult = await this.GetValidatedMerchantContext(command.EstateId, command.MerchantId, cancellationToken);
-                if (contextResult.IsFailed)
+                if (contextResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(contextResult);
 
-                MerchantAggregate merchantAggregate = contextResult.GetValueOrThrow().MerchantAggregate;
+                MerchantAggregate merchantAggregate = contextResult.Data.MerchantAggregate;
 
                 Result<UserResponse> getUserResult = await this.CreateMerchantSecurityUser(createUserRequest, cancellationToken);
-                if (getUserResult.IsFailed)
+                if (getUserResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(getUserResult);
 
                 // Add the user to the aggregate 
                 Result stateResult = merchantAggregate.AddSecurityUser(Guid.Parse(getUserResult.Data.UserId), command.RequestDto.EmailAddress);
-                if (stateResult.IsFailed)
+                if (stateResult.IsSuccess() == false)
                     return stateResult;
 
                 Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
-                if (saveResult.IsFailed)
+                if (saveResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(saveResult);
 
                 return saveResult;
             }
             catch (Exception ex) {
-                return Result.Failure(ex.GetExceptionMessages());
+                return ResultHelpers.CreateFailure(ex.GetExceptionMessages());
             }
         }
 
@@ -291,23 +291,23 @@ namespace TransactionProcessor.BusinessLogic.Services
         private async Task<Result<UserResponse>> CreateMerchantSecurityUser(CreateUserRequest createUserRequest,
                                                                             CancellationToken cancellationToken) {
             Result<TokenResponse> getTokenResult = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
-            if (getTokenResult.IsFailed)
+            if (getTokenResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(getTokenResult);
-            this.TokenResponse = getTokenResult.GetValueOrThrow();
+            this.TokenResponse = getTokenResult.Data;
 
             var createUserResult = await this.SecurityServiceClient.CreateUser(this.TokenResponse.AccessToken, createUserRequest, cancellationToken);
-            if (createUserResult.IsFailed)
+            if (createUserResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(createUserResult);
 
             var userDetailsResult = await this.SecurityServiceClient.GetUsers(this.TokenResponse.AccessToken, createUserRequest.EmailAddress, cancellationToken);
-            if (userDetailsResult.IsFailed)
+            if (userDetailsResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(userDetailsResult);
 
             UserResponse user = userDetailsResult.Data.SingleOrDefault();
             if (user == null)
-                return Result.Failure($"Unable to get user details for username {createUserRequest.EmailAddress}");
+                return new Error(ErrorType.Failure, $"Unable to get user details for username {createUserRequest.EmailAddress}");
 
-            return Result.Success(user);
+            return Results.Ok(user);
         }
 
         public async Task<Result> MakeMerchantDeposit(MerchantCommands.MakeMerchantDepositCommand command, CancellationToken cancellationToken)
@@ -315,30 +315,30 @@ namespace TransactionProcessor.BusinessLogic.Services
             try
             {
                 Result<ValidatedMerchantContext> contextResult = await this.GetValidatedMerchantContext(command.EstateId, command.MerchantId, cancellationToken, false);
-                if (contextResult.IsFailed)
+                if (contextResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(contextResult);
 
-                MerchantAggregate merchantAggregate = contextResult.GetValueOrThrow().MerchantAggregate;
+                MerchantAggregate merchantAggregate = contextResult.Data.MerchantAggregate;
 
                 Result<MerchantDepositListAggregate> depositListResult = await this.GetOrCreateMerchantDepositList(command, merchantAggregate, cancellationToken);
-                if (depositListResult.IsFailed)
+                if (depositListResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(depositListResult);
 
                 PositiveMoney amount = PositiveMoney.Create(Money.Create(command.RequestDto.Amount));
                 MerchantDepositSource depositSource = this.ConvertDepositSource(command.DepositSource);
-                Result stateResult = depositListResult.GetValueOrThrow().MakeDeposit(depositSource, command.RequestDto.Reference, command.RequestDto.DepositDateTime, amount, command.RequestDto.HostDateTime);
-                if (stateResult.IsFailed)
+                Result stateResult = depositListResult.Data.MakeDeposit(depositSource, command.RequestDto.Reference, command.RequestDto.DepositDateTime, amount, command.RequestDto.HostDateTime);
+                if (stateResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(stateResult);
 
-                Result saveResult = await this.AggregateService.Save(depositListResult.GetValueOrThrow(), cancellationToken);
-                if (saveResult.IsFailed)
+                Result saveResult = await this.AggregateService.Save(depositListResult.Data, cancellationToken);
+                if (saveResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(saveResult);
 
                 return saveResult;
             }
             catch (Exception ex)
             {
-                return Result.Failure(ex.GetExceptionMessages());
+                return ResultHelpers.CreateFailure(ex.GetExceptionMessages());
             }
         }
 
@@ -349,30 +349,30 @@ namespace TransactionProcessor.BusinessLogic.Services
             try
             {
                 Result<MerchantDepositListAggregate> getDepositListResult = await this.GetMerchantDepositListForWithdrawal(command, cancellationToken);
-                if (getDepositListResult.IsFailed)
+                if (getDepositListResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(getDepositListResult);
 
                 Result validateBalanceResult = await this.ValidateWithdrawalBalance(command, cancellationToken);
-                if (validateBalanceResult.IsFailed)
+                if (validateBalanceResult.IsSuccess() == false)
                     return validateBalanceResult;
 
                 // If we are here we have enough credit to withdraw
                 PositiveMoney amount = PositiveMoney.Create(Money.Create(command.RequestDto.Amount));
-                MerchantDepositListAggregate merchantDepositListAggregate = getDepositListResult.GetValueOrThrow();
+                MerchantDepositListAggregate merchantDepositListAggregate = getDepositListResult.Data;
 
                 Result stateResult = merchantDepositListAggregate.MakeWithdrawal(command.RequestDto.WithdrawalDateTime, amount, command.RequestDto.HostDateTime);
-                if (stateResult.IsFailed)
+                if (stateResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(stateResult);
 
                 Result saveResult = await this.AggregateService.Save(merchantDepositListAggregate, cancellationToken);
-                if (saveResult.IsFailed)
+                if (saveResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(saveResult);
 
                 return saveResult;
             }
             catch (Exception ex)
             {
-                return Result.Failure(ex.GetExceptionMessages());
+                return ResultHelpers.CreateFailure(ex.GetExceptionMessages());
             }
         }
 
@@ -380,27 +380,27 @@ namespace TransactionProcessor.BusinessLogic.Services
         {
             try {
                 Result<ValidatedMerchantContext> contextResult = await this.GetValidatedMerchantContext(command.EstateId, command.MerchantId, cancellationToken);
-                if (contextResult.IsFailed)
+                if (contextResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(contextResult);
 
-                MerchantAggregate merchantAggregate = contextResult.GetValueOrThrow().MerchantAggregate;
+                MerchantAggregate merchantAggregate = contextResult.Data.MerchantAggregate;
 
                 Result<ContractAggregate> contractResult = await this.GetCreatedContract(command.RequestDto.ContractId, cancellationToken);
-                if (contractResult.IsFailed)
+                if (contractResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(contractResult);
 
-                Result stateResult = merchantAggregate.AddContract(contractResult.GetValueOrThrow());
-                if (stateResult.IsFailed)
+                Result stateResult = merchantAggregate.AddContract(contractResult.Data);
+                if (stateResult.IsSuccess() == false)
                     return stateResult;
 
                 Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
-                if (saveResult.IsFailed)
+                if (saveResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(saveResult);
 
                 return saveResult;
             }
             catch (Exception ex) {
-                return Result.Failure(ex.GetExceptionMessages());
+                return ResultHelpers.CreateFailure(ex.GetExceptionMessages());
             }
         }
 
@@ -408,27 +408,27 @@ namespace TransactionProcessor.BusinessLogic.Services
         {
             try {
                 Result<ValidatedMerchantContext> contextResult = await this.GetValidatedMerchantContext(command.EstateId, command.MerchantId, cancellationToken);
-                if (contextResult.IsFailed)
+                if (contextResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(contextResult);
 
-                MerchantAggregate merchantAggregate = contextResult.GetValueOrThrow().MerchantAggregate;
+                MerchantAggregate merchantAggregate = contextResult.Data.MerchantAggregate;
 
                 Result stateResult = merchantAggregate.UpdateMerchant(command.RequestDto.Name);
-                if (stateResult.IsFailed)
+                if (stateResult.IsSuccess() == false)
                     return stateResult;
                 SettlementSchedule settlementSchedule = ConvertSettlementSchedule(command.RequestDto.SettlementSchedule);
                 stateResult = merchantAggregate.SetSettlementSchedule(settlementSchedule);
-                if (stateResult.IsFailed)
+                if (stateResult.IsSuccess() == false)
                     return stateResult;
 
                 Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
-                if (saveResult.IsFailed)
+                if (saveResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(saveResult);
 
                 return saveResult;
             }
             catch (Exception ex) {
-                return Result.Failure(ex.GetExceptionMessages());
+                return ResultHelpers.CreateFailure(ex.GetExceptionMessages());
             }
         }
 
@@ -437,26 +437,26 @@ namespace TransactionProcessor.BusinessLogic.Services
             try
             {
                 Result<ValidatedMerchantContext> contextResult = await this.GetValidatedMerchantContext(command.EstateId, command.MerchantId, cancellationToken);
-                if (contextResult.IsFailed)
+                if (contextResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(contextResult);
 
-                MerchantAggregate merchantAggregate = contextResult.GetValueOrThrow().MerchantAggregate;
+                MerchantAggregate merchantAggregate = contextResult.Data.MerchantAggregate;
 
                 Address address = Address.Create(Guid.Empty, new AddressLines(command.RequestDto.AddressLine1, command.RequestDto.AddressLine2, command.RequestDto.AddressLine3, command.RequestDto.AddressLine4), command.RequestDto.Town, command.RequestDto.Region, command.RequestDto.PostalCode, command.RequestDto.Country);
 
                 Result stateResult = merchantAggregate.AddAddress(address);
-                if (stateResult.IsFailed)
+                if (stateResult.IsSuccess() == false)
                     return stateResult;
 
                 Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
-                if (saveResult.IsFailed)
+                if (saveResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(saveResult);
 
                 return saveResult;
             }
             catch (Exception ex)
             {
-                return Result.Failure(ex.GetExceptionMessages());
+                return ResultHelpers.CreateFailure(ex.GetExceptionMessages());
             }
         }
 
@@ -465,26 +465,26 @@ namespace TransactionProcessor.BusinessLogic.Services
             try
             {
                 Result<ValidatedMerchantContext> contextResult = await this.GetValidatedMerchantContext(command.EstateId, command.MerchantId, cancellationToken);
-                if (contextResult.IsFailed)
+                if (contextResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(contextResult);
 
-                MerchantAggregate merchantAggregate = contextResult.GetValueOrThrow().MerchantAggregate;
+                MerchantAggregate merchantAggregate = contextResult.Data.MerchantAggregate;
 
                 Address address = Address.Create(command.AddressId, new AddressLines(command.RequestDto.AddressLine1, command.RequestDto.AddressLine2, command.RequestDto.AddressLine3, command.RequestDto.AddressLine4), command.RequestDto.Town, command.RequestDto.Region, command.RequestDto.PostalCode, command.RequestDto.Country);
 
                 Result stateResult = merchantAggregate.UpdateAddress(address);
-                if (stateResult.IsFailed)
+                if (stateResult.IsSuccess() == false)
                     return stateResult;
 
                 Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
-                if (saveResult.IsFailed)
+                if (saveResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(saveResult);
 
                 return saveResult;
             }
             catch (Exception ex)
             {
-                return Result.Failure(ex.GetExceptionMessages());
+                return ResultHelpers.CreateFailure(ex.GetExceptionMessages());
             }
         }
 
@@ -493,26 +493,26 @@ namespace TransactionProcessor.BusinessLogic.Services
             try
             {
                 Result<ValidatedMerchantContext> contextResult = await this.GetValidatedMerchantContext(command.EstateId, command.MerchantId, cancellationToken);
-                if (contextResult.IsFailed)
+                if (contextResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(contextResult);
 
-                MerchantAggregate merchantAggregate = contextResult.GetValueOrThrow().MerchantAggregate;
+                MerchantAggregate merchantAggregate = contextResult.Data.MerchantAggregate;
 
                 Result stateResult = merchantAggregate.AddContact(command.RequestDto.ContactName,
                                                                  command.RequestDto.PhoneNumber,
                                                                  command.RequestDto.EmailAddress);
-                if (stateResult.IsFailed)
+                if (stateResult.IsSuccess() == false)
                     return stateResult;
 
                 Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
-                if (saveResult.IsFailed)
+                if (saveResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(saveResult);
 
                 return saveResult;
             }
             catch (Exception ex)
             {
-                return Result.Failure(ex.GetExceptionMessages());
+                return ResultHelpers.CreateFailure(ex.GetExceptionMessages());
             }
         }
 
@@ -520,23 +520,23 @@ namespace TransactionProcessor.BusinessLogic.Services
                                                         CancellationToken cancellationToken) {
             try {
                 Result<ValidatedMerchantContext> contextResult = await this.GetValidatedMerchantContext(command.EstateId, command.MerchantId, cancellationToken);
-                if (contextResult.IsFailed)
+                if (contextResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(contextResult);
 
-                MerchantAggregate merchantAggregate = contextResult.GetValueOrThrow().MerchantAggregate;
+                MerchantAggregate merchantAggregate = contextResult.Data.MerchantAggregate;
 
                 Result stateResult = merchantAggregate.UpdateContact(command.ContactId, command.RequestDto.ContactName, command.RequestDto.EmailAddress, command.RequestDto.PhoneNumber);
-                if (stateResult.IsFailed)
+                if (stateResult.IsSuccess() == false)
                     return stateResult;
 
                 Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
-                if (saveResult.IsFailed)
+                if (saveResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(saveResult);
 
                 return saveResult;
             }
             catch (Exception ex) {
-                return Result.Failure(ex.GetExceptionMessages());
+                return ResultHelpers.CreateFailure(ex.GetExceptionMessages());
             }
         }
 
@@ -544,23 +544,23 @@ namespace TransactionProcessor.BusinessLogic.Services
         {
             try {
                 Result<ValidatedMerchantContext> contextResult = await this.GetValidatedMerchantContext(command.EstateId, command.MerchantId, cancellationToken);
-                if (contextResult.IsFailed)
+                if (contextResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(contextResult);
 
-                MerchantAggregate merchantAggregate = contextResult.GetValueOrThrow().MerchantAggregate;
+                MerchantAggregate merchantAggregate = contextResult.Data.MerchantAggregate;
 
                 Result stateResult = merchantAggregate.RemoveOperator(command.OperatorId);
-                if (stateResult.IsFailed)
+                if (stateResult.IsSuccess() == false)
                     return stateResult;
 
                 Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
-                if (saveResult.IsFailed)
+                if (saveResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(saveResult);
 
                 return saveResult;
             }
             catch (Exception ex) {
-                return Result.Failure(ex.GetExceptionMessages());
+                return ResultHelpers.CreateFailure(ex.GetExceptionMessages());
             }
         }
 
@@ -569,24 +569,24 @@ namespace TransactionProcessor.BusinessLogic.Services
             try
             {
                 Result<ValidatedMerchantContext> contextResult = await this.GetValidatedMerchantContext(command.EstateId, command.MerchantId, cancellationToken);
-                if (contextResult.IsFailed)
+                if (contextResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(contextResult);
 
-                MerchantAggregate merchantAggregate = contextResult.GetValueOrThrow().MerchantAggregate;
+                MerchantAggregate merchantAggregate = contextResult.Data.MerchantAggregate;
 
                 Result stateResult = merchantAggregate.RemoveContract(command.ContractId);
-                if (stateResult.IsFailed)
+                if (stateResult.IsSuccess() == false)
                     return stateResult;
 
                 Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
-                if (saveResult.IsFailed)
+                if (saveResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(saveResult);
 
                 return saveResult;
             }
             catch (Exception ex)
             {
-                return Result.Failure(ex.GetExceptionMessages());
+                return ResultHelpers.CreateFailure(ex.GetExceptionMessages());
             }
         }
 
@@ -595,10 +595,10 @@ namespace TransactionProcessor.BusinessLogic.Services
             try
             {
                 Result<ValidatedMerchantContext> contextResult = await this.GetValidatedMerchantContext(command.EstateId, command.MerchantId, cancellationToken);
-                if (contextResult.IsFailed)
+                if (contextResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(contextResult);
 
-                MerchantAggregate merchantAggregate = contextResult.GetValueOrThrow().MerchantAggregate;
+                MerchantAggregate merchantAggregate = contextResult.Data.MerchantAggregate;
                 var dayMappings = new List<(DayOfWeek Day, TransactionProcessor.DataTransferObjects.Requests.Merchant.OpeningHours Hours)>() {
                     (DayOfWeek.Monday, command.RequestDto.Monday),
                     (DayOfWeek.Tuesday, command.RequestDto.Tuesday),
@@ -612,19 +612,19 @@ namespace TransactionProcessor.BusinessLogic.Services
                 foreach (var mapping in dayMappings)
                 {
                     Result stateResult = ApplyOpeningHoursIfPresent(merchantAggregate, mapping.Day, mapping.Hours);
-                    if (stateResult.IsFailed)
+                    if (stateResult.IsSuccess() == false)
                         return stateResult;
                 }
 
                 Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
-                if (saveResult.IsFailed)
+                if (saveResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(saveResult);
 
                 return saveResult;
             }
             catch (Exception ex)
             {
-                return Result.Failure(ex.GetExceptionMessages());
+                return ResultHelpers.CreateFailure(ex.GetExceptionMessages());
             }
         }
 
@@ -632,27 +632,27 @@ namespace TransactionProcessor.BusinessLogic.Services
                                                          CancellationToken cancellationToken) {
             try {
                 Result<ValidatedMerchantContext> contextResult = await this.GetValidatedMerchantContext(command.EstateId, command.MerchantId, cancellationToken);
-                if (contextResult.IsFailed)
+                if (contextResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(contextResult);
 
                 Guid merchantScheduleId = IdGenerationService.GenerateMerchantScheduleAggregateId(command.EstateId, command.MerchantId, command.RequestDto.Year);
                 Result<MerchantScheduleAggregate> merchantScheduleResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantScheduleAggregate>(merchantScheduleId, ct), merchantScheduleId, cancellationToken, false);
-                if (merchantScheduleResult.IsFailed)
+                if (merchantScheduleResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(merchantScheduleResult);
 
-                MerchantScheduleAggregate merchantScheduleAggregate = merchantScheduleResult.GetValueOrThrow();
+                MerchantScheduleAggregate merchantScheduleAggregate = merchantScheduleResult.Data;
                 Result stateResult = merchantScheduleAggregate.Create(command.EstateId, command.MerchantId, command.RequestDto.Year, ConvertScheduleMonths(command.RequestDto.Months));
-                if (stateResult.IsFailed)
+                if (stateResult.IsSuccess() == false)
                     return stateResult;
 
                 Result saveResult = await this.AggregateService.Save(merchantScheduleAggregate, cancellationToken);
-                if (saveResult.IsFailed)
+                if (saveResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(saveResult);
 
                 return saveResult;
             }
             catch (Exception ex) {
-                return Result.Failure(ex.GetExceptionMessages());
+                return ResultHelpers.CreateFailure(ex.GetExceptionMessages());
             }
         }
 
@@ -660,35 +660,35 @@ namespace TransactionProcessor.BusinessLogic.Services
                                                          CancellationToken cancellationToken) {
             try {
                 Result<ValidatedMerchantContext> contextResult = await this.GetValidatedMerchantContext(command.EstateId, command.MerchantId, cancellationToken);
-                if (contextResult.IsFailed)
+                if (contextResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(contextResult);
 
                 Guid merchantScheduleId = IdGenerationService.GenerateMerchantScheduleAggregateId(command.EstateId, command.MerchantId, command.Year);
                 Result<MerchantScheduleAggregate> merchantScheduleResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantScheduleAggregate>(merchantScheduleId, ct), merchantScheduleId, cancellationToken, false);
-                if (merchantScheduleResult.IsFailed)
+                if (merchantScheduleResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(merchantScheduleResult);
 
-                MerchantScheduleAggregate merchantScheduleAggregate = merchantScheduleResult.GetValueOrThrow();
+                MerchantScheduleAggregate merchantScheduleAggregate = merchantScheduleResult.Data;
 
                 Result stateResult = merchantScheduleAggregate.UpdateSchedule(ConvertScheduleMonths(command.RequestDto.Months));
-                if (stateResult.IsFailed)
+                if (stateResult.IsSuccess() == false)
                     return stateResult;
 
                 Result saveResult = await this.AggregateService.Save(merchantScheduleAggregate, cancellationToken);
-                if (saveResult.IsFailed)
+                if (saveResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(saveResult);
 
                 return saveResult;
             }
             catch (Exception ex) {
-                return Result.Failure(ex.GetExceptionMessages());
+                return ResultHelpers.CreateFailure(ex.GetExceptionMessages());
             }
         }
 
         private Result ApplyOpeningHoursIfPresent(MerchantAggregate merchantAggregate, DayOfWeek day, TransactionProcessor.DataTransferObjects.Requests.Merchant.OpeningHours hours)
         {
             if (hours == null)
-                return Result.Success();
+                return Results.Ok();
 
             return merchantAggregate.SetDayOpeningHours(day, hours.Opening, hours.Closing);
         }
@@ -701,7 +701,7 @@ namespace TransactionProcessor.BusinessLogic.Services
                                                                                          CancellationToken cancellationToken,
                                                                                          Boolean useLatestMerchant = true) {
             Result<EstateAggregate> estateResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.Get<EstateAggregate>(estateId, ct), estateId, cancellationToken);
-            if (estateResult.IsFailed)
+            if (estateResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(estateResult);
 
             Func<CancellationToken, Task<Result<MerchantAggregate>>> getMerchant = useLatestMerchant
@@ -709,14 +709,14 @@ namespace TransactionProcessor.BusinessLogic.Services
                 : ct => this.AggregateService.Get<MerchantAggregate>(merchantId, ct);
 
             Result<MerchantAggregate> merchantResult = await DomainServiceHelper.GetAggregateOrFailure(getMerchant, merchantId, cancellationToken);
-            if (merchantResult.IsFailed)
+            if (merchantResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(merchantResult);
 
-            Result validateResult = this.ValidateEstateAndMerchant(estateResult.GetValueOrThrow(), merchantResult.GetValueOrThrow());
-            if (validateResult.IsFailed)
+            Result validateResult = this.ValidateEstateAndMerchant(estateResult.Data, merchantResult.Data);
+            if (validateResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(validateResult);
 
-            return Result.Success(new ValidatedMerchantContext(estateResult.GetValueOrThrow(), merchantResult.GetValueOrThrow()));
+            return Results.Ok(new ValidatedMerchantContext(estateResult.Data, merchantResult.Data));
         }
 
         private Result ValidateEstateAndMerchant(EstateAggregate estateAggregate,
@@ -724,15 +724,15 @@ namespace TransactionProcessor.BusinessLogic.Services
 
             // Check merchant has been created
             if (merchantAggregate.IsCreated == false) {
-                return Result.Invalid($"Merchant Id {merchantAggregate.AggregateId} has not been created");
+                return new Error(ErrorType.Validation, $"Merchant Id {merchantAggregate.AggregateId} has not been created");
             }
 
             // Estate Id is a valid estate
             if (estateAggregate.IsCreated == false) {
-                return Result.Invalid($"Estate Id {estateAggregate.AggregateId} has not been created");
+                return new Error(ErrorType.Validation, $"Estate Id {estateAggregate.AggregateId} has not been created");
             }
 
-            return Result.Success();
+            return Results.Ok();
         }
 
         private static List<MerchantScheduleMonth> ConvertScheduleMonths(IEnumerable<TransactionProcessor.DataTransferObjects.Requests.MerchantSchedule.MerchantScheduleMonthRequest> months) =>
@@ -746,14 +746,14 @@ namespace TransactionProcessor.BusinessLogic.Services
                                                                           CancellationToken cancellationToken)
         {
             Result<ContractAggregate> contractResult = await this.AggregateService.Get<ContractAggregate>(contractId, cancellationToken);
-            if (contractResult.IsFailed)
+            if (contractResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(contractResult);
 
-            ContractAggregate contractAggregate = contractResult.GetValueOrThrow();
+            ContractAggregate contractAggregate = contractResult.Data;
             if (contractAggregate.IsCreated == false)
-                return Result.Invalid($"Contract Id {contractId} has not been created");
+                return new Error(ErrorType.Validation, $"Contract Id {contractId} has not been created");
 
-            return Result.Success(contractAggregate);
+            return Results.Ok(contractAggregate);
         }
 
         private async Task<Result<MerchantDepositListAggregate>> GetOrCreateMerchantDepositList(MerchantCommands.MakeMerchantDepositCommand command,
@@ -761,58 +761,58 @@ namespace TransactionProcessor.BusinessLogic.Services
                                                                                                 CancellationToken cancellationToken)
         {
             Result<MerchantDepositListAggregate> getDepositListResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantDepositListAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken, false);
-            if (getDepositListResult.IsFailed)
+            if (getDepositListResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(getDepositListResult);
 
-            MerchantDepositListAggregate merchantDepositListAggregate = getDepositListResult.GetValueOrThrow();
+            MerchantDepositListAggregate merchantDepositListAggregate = getDepositListResult.Data;
             Result createResult = this.EnsureMerchantDepositListCreated(merchantDepositListAggregate, merchantAggregate, command.RequestDto.DepositDateTime);
-            if (createResult.IsFailed)
+            if (createResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(createResult);
 
-            return Result.Success(merchantDepositListAggregate);
+            return Results.Ok(merchantDepositListAggregate);
         }
 
         private async Task<Result<MerchantDepositListAggregate>> GetMerchantDepositListForWithdrawal(MerchantCommands.MakeMerchantWithdrawalCommand command,
                                                                                                       CancellationToken cancellationToken)
         {
             Result<ValidatedMerchantContext> contextResult = await this.GetValidatedMerchantContext(command.EstateId, command.MerchantId, cancellationToken, false);
-            if (contextResult.IsFailed)
+            if (contextResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(contextResult);
 
             Result<MerchantDepositListAggregate> getDepositListResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<MerchantDepositListAggregate>(command.MerchantId, ct), command.MerchantId, cancellationToken);
-            if (getDepositListResult.IsFailed)
+            if (getDepositListResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(getDepositListResult);
 
-            MerchantDepositListAggregate merchantDepositListAggregate = getDepositListResult.GetValueOrThrow();
+            MerchantDepositListAggregate merchantDepositListAggregate = getDepositListResult.Data;
             if (merchantDepositListAggregate.IsCreated == false)
             {
-                return Result.Invalid($"Merchant [{command.MerchantId}] has not made any deposits yet");
+                return new Error(ErrorType.Validation, $"Merchant [{command.MerchantId}] has not made any deposits yet");
             }
 
-            return Result.Success(merchantDepositListAggregate);
+            return Results.Ok(merchantDepositListAggregate);
         }
 
         private async Task<Result> ValidateWithdrawalBalance(MerchantCommands.MakeMerchantWithdrawalCommand command,
                                                              CancellationToken cancellationToken)
         {
             Result<String> getBalanceResult = await this.EventStoreContext.GetPartitionStateFromProjection("MerchantBalanceProjection", $"MerchantBalance-{command.MerchantId:N}", cancellationToken);
-            if (getBalanceResult.IsFailed)
+            if (getBalanceResult.IsSuccess() == false)
             {
-                return Result.Invalid($"Failed to get Merchant Balance.");
+                return new Error(ErrorType.Validation, $"Failed to get Merchant Balance.");
             }
 
-            MerchantBalanceProjectionState1 projectionState = StringSerialiser.Deserialise<MerchantBalanceProjectionState1>(getBalanceResult.GetValueOrThrow());
+            MerchantBalanceProjectionState1 projectionState = StringSerialiser.Deserialise<MerchantBalanceProjectionState1>(getBalanceResult.Data);
             if (projectionState?.merchant == null)
             {
-                return Result.Invalid("Merchant Balance data is missing or invalid.");
+                return new Error(ErrorType.Validation, "Merchant Balance data is missing or invalid.");
             }
 
             if (command.RequestDto.Amount > projectionState.merchant.balance)
             {
-                return Result.Invalid($"Not enough credit available for withdrawal of [{command.RequestDto.Amount}]. Balance is {projectionState.merchant.balance}");
+                return new Error(ErrorType.Validation, $"Not enough credit available for withdrawal of [{command.RequestDto.Amount}]. Balance is {projectionState.merchant.balance}");
             }
 
-            return Result.Success();
+            return Results.Ok();
         }
 
         public async Task<Result> SwapMerchantDevice(MerchantCommands.SwapMerchantDeviceCommand command,
@@ -821,24 +821,24 @@ namespace TransactionProcessor.BusinessLogic.Services
             try
             {
                 Result<ValidatedMerchantContext> contextResult = await this.GetValidatedMerchantContext(command.EstateId, command.MerchantId, cancellationToken);
-                if (contextResult.IsFailed)
+                if (contextResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(contextResult);
 
-                MerchantAggregate merchantAggregate = contextResult.GetValueOrThrow().MerchantAggregate;
+                MerchantAggregate merchantAggregate = contextResult.Data.MerchantAggregate;
 
                 Result stateResult = merchantAggregate.SwapDevice(command.DeviceIdentifier, command.RequestDto.NewDeviceIdentifier);
-                if (stateResult.IsFailed)
+                if (stateResult.IsSuccess() == false)
                     return stateResult;
 
                 Result saveResult = await this.AggregateService.Save(merchantAggregate, cancellationToken);
-                if (saveResult.IsFailed)
+                if (saveResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(saveResult);
 
                 return saveResult;
             }
             catch (Exception ex)
             {
-                return Result.Failure(ex.GetExceptionMessages());
+                return ResultHelpers.CreateFailure(ex.GetExceptionMessages());
             }
         }
     }

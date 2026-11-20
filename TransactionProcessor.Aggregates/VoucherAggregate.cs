@@ -11,20 +11,20 @@ public static class VoucherAggregateExtensions{
     public static Result AddBarcode(this VoucherAggregate aggregate, String barcodeAsBase64)
     {
         if (String.IsNullOrEmpty(barcodeAsBase64))
-            return Result.Invalid("barcode must not ne empty");
+            return new Error(ErrorType.Validation, "barcode must not ne empty");
 
         Result result = aggregate.CheckIfVoucherHasBeenGenerated();
-        if (result.IsFailed)
+        if (result.IsSuccess() == false)
             return result;
         result = aggregate.CheckIfVoucherAlreadyIssued();
-        if (result.IsFailed)
+        if (result.IsSuccess() == false)
             return result;
 
         VoucherDomainEvents.BarcodeAddedEvent barcodeAddedEvent = new VoucherDomainEvents.BarcodeAddedEvent(aggregate.AggregateId, aggregate.EstateId, barcodeAsBase64);
 
         aggregate.ApplyAndAppend(barcodeAddedEvent);
 
-        return Result.Success();
+        return Results.Ok();
     }
 
     public static Result Generate(this VoucherAggregate aggregate,
@@ -35,18 +35,18 @@ public static class VoucherAggregateExtensions{
                          Decimal value)
     {
         if (aggregate.IsGenerated)
-            return Result.Success();
+            return Results.Ok();
 
         if (generatedDateTime == DateTimeOffset.MinValue)
-            return Result.Invalid("Generated Date Time must be set");
+            return new Error(ErrorType.Validation, "Generated Date Time must be set");
         if (operatorId == Guid.Empty)
-            return Result.Invalid("Operator Id must not be an empty Guid");
+            return new Error(ErrorType.Validation, "Operator Id must not be an empty Guid");
         if (transactionId == Guid.Empty)
-            return Result.Invalid("Transaction Id must not be an empty Guid");
+            return new Error(ErrorType.Validation, "Transaction Id must not be an empty Guid");
         if (estateId == Guid.Empty)
-            return Result.Invalid("Estate Id must not be an empty Guid");
+            return new Error(ErrorType.Validation, "Estate Id must not be an empty Guid");
         if (value <= 0)
-            return Result.Invalid("Value must be greater than zero");
+            return new Error(ErrorType.Validation, "Value must be greater than zero");
 
         // Do the generate process here...
         String voucherCode = aggregate.GenerateVoucherCode();
@@ -58,7 +58,7 @@ public static class VoucherAggregateExtensions{
 
         aggregate.ApplyAndAppend(voucherGeneratedEvent);
 
-        return Result.Success();
+        return Results.Ok();
     }
 
     public static TransactionProcessor.Models.Voucher GetVoucher(this VoucherAggregate aggregate)
@@ -91,70 +91,70 @@ public static class VoucherAggregateExtensions{
                              DateTimeOffset issuedDateTime)
     {
         if (aggregate.IsIssued)
-            return Result.Success();
+            return Results.Ok();
 
         Result result = aggregate.CheckIfVoucherHasBeenGenerated();
-        if (result.IsFailed)
+        if (result.IsSuccess() == false)
             return result;
 
         if (String.IsNullOrEmpty(recipientEmail) && String.IsNullOrEmpty(recipientMobile)) {
-            return Result.Invalid("Either Recipient Email Address or Recipient Mobile number must be set to issue a voucher");
+            return new Error(ErrorType.Validation, "Either Recipient Email Address or Recipient Mobile number must be set to issue a voucher");
         }
 
         VoucherDomainEvents.VoucherIssuedEvent voucherIssuedEvent = new VoucherDomainEvents.VoucherIssuedEvent(aggregate.AggregateId, aggregate.EstateId, issuedDateTime, recipientEmail, recipientMobile);
 
         aggregate.ApplyAndAppend(voucherIssuedEvent);
 
-        return Result.Success();
+        return Results.Ok();
     }
 
     public static Result Redeem(this VoucherAggregate aggregate, DateTimeOffset redeemedDateTime, DateTimeOffset hostDateTime)
     {
         Result result = aggregate.CheckIfVoucherHasBeenGenerated();
-        if (result.IsFailed)
+        if (result.IsSuccess() == false)
             return result;
         result = aggregate.CheckIfVoucherHasBeenIssued();
-        if (result.IsFailed)
+        if (result.IsSuccess() == false)
             return result;
         result = aggregate.CheckIfVoucherAlreadyRedeemed();
-        if (result.IsFailed)
+        if (result.IsSuccess() == false)
             return result;
 
         VoucherDomainEvents.VoucherFullyRedeemedEvent voucherFullyRedeemedEvent = new(aggregate.AggregateId, aggregate.EstateId, redeemedDateTime, hostDateTime);
 
         aggregate.ApplyAndAppend(voucherFullyRedeemedEvent);
 
-        return Result.Success();
+        return Results.Ok();
     }
 
     private static Result CheckIfVoucherAlreadyIssued(this VoucherAggregate aggregate) {
         if (aggregate.IsIssued) {
-            return Result.Invalid($"Voucher Id [{aggregate.AggregateId}] has already been issued");
+            return new Error(ErrorType.Validation, $"Voucher Id [{aggregate.AggregateId}] has already been issued");
         }
-        return Result.Success();
+        return Results.Ok();
     }
 
     private static Result CheckIfVoucherAlreadyRedeemed(this VoucherAggregate aggregate)
     {
         if (aggregate.IsRedeemed)
         {
-            return Result.Invalid($"Voucher Id [{aggregate.AggregateId}] has already been redeemed");
+            return new Error(ErrorType.Validation, $"Voucher Id [{aggregate.AggregateId}] has already been redeemed");
         }
-        return Result.Success();
+        return Results.Ok();
     }
 
     private static Result CheckIfVoucherHasBeenGenerated(this VoucherAggregate aggregate) {
         if (aggregate.IsGenerated == false) {
-            return Result.Invalid($"Voucher Id [{aggregate.AggregateId}] has not been generated");
+            return new Error(ErrorType.Validation, $"Voucher Id [{aggregate.AggregateId}] has not been generated");
         }
-        return Result.Success();
+        return Results.Ok();
     }
 
     private static Result CheckIfVoucherHasBeenIssued(this VoucherAggregate aggregate) {
         if (aggregate.IsIssued == false) {
-            return Result.Invalid($"Voucher Id [{aggregate.AggregateId}] has not been issued");
+            return new Error(ErrorType.Validation, $"Voucher Id [{aggregate.AggregateId}] has not been issued");
         }
-        return Result.Success();
+        return Results.Ok();
     }
 
     private static String GenerateVoucherCode(this VoucherAggregate aggregate, Int32 length = 10)

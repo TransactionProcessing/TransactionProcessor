@@ -24,7 +24,7 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             SettlementAggregate aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
             Result result  =  aggregate.Create(TestData.EstateId,TestData.MerchantId, TestData.SettlementDate);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
 
             aggregate.EstateId.ShouldBe(TestData.EstateId);
             aggregate.SettlementDate.ShouldBe(TestData.SettlementDate.Date);
@@ -39,7 +39,7 @@ namespace TransactionProcessor.Aggregates.Tests
             aggregate.Create(TestData.EstateId, TestData.MerchantId, TestData.SettlementDate);
 
             Result result = aggregate.Create(TestData.EstateId, TestData.MerchantId, TestData.SettlementDate);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
         }
 
         [Fact]
@@ -94,8 +94,8 @@ namespace TransactionProcessor.Aggregates.Tests
             SettlementAggregate aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
 
             Result result = aggregate.AddFee(TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeMerchantFee());
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -132,8 +132,8 @@ namespace TransactionProcessor.Aggregates.Tests
             SettlementAggregate aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
             aggregate.Create(TestData.EstateId, TestData.MerchantId, TestData.SettlementDate);
             Result result = aggregate.AddFee(TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeServiceProviderFee());
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -142,8 +142,8 @@ namespace TransactionProcessor.Aggregates.Tests
             aggregate.Create(TestData.EstateId, TestData.MerchantId, TestData.SettlementDate);
             
             Result result = aggregate.AddFee(Guid.Empty, TestData.TransactionId, TestData.CalculatedFeeMerchantFee());
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -153,8 +153,8 @@ namespace TransactionProcessor.Aggregates.Tests
             aggregate.Create(TestData.EstateId, TestData.MerchantId, TestData.SettlementDate);
 
             Result result = aggregate.AddFee(TestData.MerchantId, Guid.Empty, TestData.CalculatedFeeMerchantFee());
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -164,8 +164,8 @@ namespace TransactionProcessor.Aggregates.Tests
             aggregate.Create(TestData.EstateId, TestData.MerchantId, TestData.SettlementDate);
 
             Result result = aggregate.AddFee(TestData.MerchantId, TestData.TransactionId, null);
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -178,7 +178,7 @@ namespace TransactionProcessor.Aggregates.Tests
             aggregate.GetNumberOfFeesPendingSettlement().ShouldBe(1);
 
             Result result = aggregate.MarkFeeAsSettled(TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeMerchantFee().FeeId, TestData.SettlementDate);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
 
             aggregate.GetNumberOfFeesPendingSettlement().ShouldBe(0);
             aggregate.GetNumberOfFeesSettled().ShouldBe(1);
@@ -196,7 +196,7 @@ namespace TransactionProcessor.Aggregates.Tests
             aggregate.GetNumberOfFeesPendingSettlement().ShouldBe(2);
 
             Result result = aggregate.MarkFeeAsSettled(TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeMerchantFee().FeeId, TestData.SettlementDate);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
 
             aggregate.GetNumberOfFeesPendingSettlement().ShouldBe(1);
             aggregate.GetNumberOfFeesSettled().ShouldBe(1);
@@ -210,7 +210,7 @@ namespace TransactionProcessor.Aggregates.Tests
             aggregate.Create(TestData.EstateId, TestData.MerchantId, TestData.SettlementDate);
 
             Result result = aggregate.MarkFeeAsSettled(TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeMerchantFee().FeeId, TestData.SettlementDate);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
 
             aggregate.GetNumberOfFeesPendingSettlement().ShouldBe(0);
             aggregate.GetNumberOfFeesSettled().ShouldBe(0);
@@ -226,7 +226,7 @@ namespace TransactionProcessor.Aggregates.Tests
             aggregate.GetNumberOfFeesPendingSettlement().ShouldBe(1);
 
             Result result = aggregate.MarkFeeAsSettled(TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeMerchantFee().FeeId, TestData.SettlementDate);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
 
             aggregate.GetNumberOfFeesPendingSettlement().ShouldBe(0);
             aggregate.GetNumberOfFeesSettled().ShouldBe(1);
@@ -244,7 +244,7 @@ namespace TransactionProcessor.Aggregates.Tests
             aggregate.GetNumberOfFeesPendingSettlement().ShouldBe(1);
 
             Result result = aggregate.ImmediatelyMarkFeeAsSettled(TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeMerchantFee().FeeId);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
 
             aggregate.GetNumberOfFeesPendingSettlement().ShouldBe(0);
             aggregate.GetNumberOfFeesSettled().ShouldBe(1);
@@ -261,7 +261,7 @@ namespace TransactionProcessor.Aggregates.Tests
             aggregate.GetNumberOfFeesPendingSettlement().ShouldBe(1);
 
             Result result = aggregate.ImmediatelyMarkFeeAsSettled(TestData.MerchantId, TestData.TransactionId, TestData.CalculatedFeeMerchantFee().FeeId);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
 
             aggregate.GetNumberOfFeesPendingSettlement().ShouldBe(0);
             aggregate.GetNumberOfFeesSettled().ShouldBe(1);
@@ -274,7 +274,7 @@ namespace TransactionProcessor.Aggregates.Tests
             SettlementAggregate aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
             aggregate.Create(TestData.EstateId, TestData.MerchantId, TestData.SettlementDate);
             Result result = aggregate.StartProcessing(TestData.SettlementProcessingStartedDateTime);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
 
             aggregate.ProcessingStarted.ShouldBeTrue();
             aggregate.ProcessingStartedDateTime.ShouldBe(TestData.SettlementProcessingStartedDateTime);
@@ -287,7 +287,7 @@ namespace TransactionProcessor.Aggregates.Tests
            aggregate.StartProcessing(TestData.SettlementProcessingStartedDateTime);
            Result result = aggregate.StartProcessing(TestData.SettlementProcessingStartedDateTimeSecondCall);
 
-           result.IsSuccess.ShouldBeTrue();
+           result.IsSuccess().ShouldBeTrue();
            
            aggregate.ProcessingStarted.ShouldBeTrue();
            aggregate.ProcessingStartedDateTime.ShouldBe(TestData.SettlementProcessingStartedDateTime);
@@ -299,8 +299,8 @@ namespace TransactionProcessor.Aggregates.Tests
            SettlementAggregate aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
 
             Result result = aggregate.StartProcessing(TestData.SettlementProcessingStartedDateTime);
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
        }
 
        [Fact]
@@ -331,8 +331,8 @@ namespace TransactionProcessor.Aggregates.Tests
            SettlementAggregate aggregate = SettlementAggregate.Create(TestData.SettlementAggregateId);
 
            Result result = aggregate.ManuallyComplete();
-           result.IsFailed.ShouldBeTrue();
-           result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+           result.IsSuccess().ShouldBeFalse();
+           result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
        }
 
        [Fact]

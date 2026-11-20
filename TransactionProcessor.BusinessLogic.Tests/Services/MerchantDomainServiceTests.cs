@@ -53,7 +53,7 @@ public class MerchantDomainServiceTests {
         this.SecurityServiceClient = new();
         this.SecurityServiceClient
             .GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
+            .ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
         this.EventStoreContext = new();
         Func<IAggregateService> aggregateServiceResolver = () => this.AggregateService.Instance();
         this.DomainService = new MerchantDomainService(aggregateServiceResolver,
@@ -67,20 +67,20 @@ public class MerchantDomainServiceTests {
     public async Task MerchantDomainService_CreateMerchant_MerchantIsCreated(
         DataTransferObjects.Responses.Merchant.SettlementSchedule settlementSchedule) {
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyMerchantAggregate()));
         this.AggregateService
             .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         MerchantCommands.CreateMerchantCommand command = TestData.Commands.CreateMerchantCommand;
 
         command.RequestDto.SettlementSchedule = settlementSchedule;
 
         Result<Guid> result = await this.DomainService.CreateMerchant(command, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Theory]
@@ -91,7 +91,7 @@ public class MerchantDomainServiceTests {
 
         Result<Guid> result = await this.DomainService.CreateMerchant(command, TestContext.Current.CancellationToken);
 
-        result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+        result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
     }
 
     [Theory]
@@ -111,101 +111,101 @@ public class MerchantDomainServiceTests {
     [Fact]
     public async Task MerchantDomainService_CreateMerchant_AlreadyCreated_MerchantIsCreated() {
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyMerchantAggregate()));
         this.AggregateService
             .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         Result<Guid> result =
             await this.DomainService.CreateMerchant(TestData.Commands.CreateMerchantCommand, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         result = await this.DomainService.CreateMerchant(TestData.Commands.CreateMerchantCommand, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
     public async Task MerchantDomainService_CreateMerchant_EstateNotFound_ErrorThrown() {
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyMerchantAggregate()));
         this.AggregateService
             .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyEstateAggregate));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyEstateAggregate));
 
         Result<Guid> result =
             await this.DomainService.CreateMerchant(TestData.Commands.CreateMerchantCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_AssignOperatorToMerchant_OperatorAssigned() {
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.AggregateService.GetLatest<OperatorAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedOperatorAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedOperatorAggregate()));
         this.AggregateService
             .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
 
         Result result =
             await this.DomainService.AssignOperatorToMerchant(TestData.Commands.AssignOperatorToMerchantCommand,
                 TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
     public async Task MerchantDomainService_AssignOperatorToMerchant_MerchantNotCreated_ErrorThrown() {
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyMerchantAggregate()));
         this.AggregateService
             .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
 
         Result result = await this.DomainService.AssignOperatorToMerchant(TestData.Commands.AssignOperatorToMerchantCommand,
             TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_AssignOperatorToMerchant_EstateNotCreated_ErrorThrown() {
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.AggregateService
             .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyEstateAggregate));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyEstateAggregate));
 
         var result = await this.DomainService.AssignOperatorToMerchant(TestData.Commands.AssignOperatorToMerchantCommand,
                 TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_AssignOperatorToMerchant_OperatorNotFoundForEstate_ErrorThrown() {
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.AggregateService
             .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         var result = await this.DomainService.AssignOperatorToMerchant(TestData.Commands.AssignOperatorToMerchantCommand,
                 TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     // TODO: Reintroduce when we have an Operator Aggregate
@@ -216,15 +216,15 @@ public class MerchantDomainServiceTests {
     public async Task MerchantDomainService_AssignOperatorToMerchant_OperatorRequiresMerchantNumber_MerchantNumberNotSet_ErrorThrown(
             String merchantNumber) {
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.AggregateService
             .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
         this.AggregateService.GetLatest<OperatorAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedOperatorAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedOperatorAggregate()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
 
         MerchantCommands.AssignOperatorToMerchantCommand command = new(TestData.EstateId, TestData.MerchantId,
             new DataTransferObjects.Requests.Merchant.AssignOperatorRequest() {
@@ -234,7 +234,7 @@ public class MerchantDomainServiceTests {
             });
 
         var result = await this.DomainService.AssignOperatorToMerchant(command, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     // TODO: Reintroduce when we have an Operator Aggregate
@@ -245,15 +245,15 @@ public class MerchantDomainServiceTests {
     public async Task MerchantDomainService_AssignOperatorToMerchant_OperatorRequiresTerminalNumber_TerminalNumberNotSet_ErrorThrown(
             String terminalNumber) {
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.AggregateService
             .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
         this.AggregateService.GetLatest<OperatorAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedOperatorAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedOperatorAggregate()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
 
         MerchantCommands.AssignOperatorToMerchantCommand command = new(TestData.EstateId, TestData.MerchantId,
             new AssignOperatorRequest() {
@@ -263,391 +263,391 @@ public class MerchantDomainServiceTests {
             });
 
         var result = await this.DomainService.AssignOperatorToMerchant(command, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_CreateMerchantUser_MerchantUserIsCreated() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
 
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.AggregateService
             .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         this.SecurityServiceClient
             .CreateUser(Arg<String>.Any(), Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
         this.SecurityServiceClient
             .GetUsers(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(new List<UserResponse>() {
+            .ReturnsAsync(Results.Ok(new List<UserResponse>() {
                 new UserResponse {
                     UserId = "FA077CE3-B915-4048-88E3-9B500699317F"
                 }
             }));
 
         var result = await this.DomainService.CreateMerchantUser(TestData.Commands.CreateMerchantUserCommand, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
     public async Task MerchantDomainService_CreateMerchantUser_EstateNotCreated_ErrorThrown() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyEstateAggregate));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyEstateAggregate));
 
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.AggregateService
             .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         this.SecurityServiceClient
             .CreateUser(Arg<String>.Any(), Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         var result = await this.DomainService.CreateMerchantUser(TestData.Commands.CreateMerchantUserCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_CreateMerchantUser_MerchantNotCreated_ErrorThrown() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(new MerchantAggregate()));
+            .ReturnsAsync(Results.Ok(new MerchantAggregate()));
         this.AggregateService
             .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         this.SecurityServiceClient
             .CreateUser(Arg<String>.Any(), Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         var result = await this.DomainService.CreateMerchantUser(TestData.Commands.CreateMerchantUserCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_CreateMerchantUser_ErrorCreatingUser_ErrorThrown() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.AggregateService
             .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         this.SecurityServiceClient
             .CreateUser(Arg<String>.Any(), Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.CreateMerchantUser(TestData.Commands.CreateMerchantUserCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_CreateMerchantUser_ErrorGettingUsers_ErrorThrown()
     {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.AggregateService
             .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         this.SecurityServiceClient
             .CreateUser(Arg<String>.Any(), Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
         this.SecurityServiceClient
             .GetUsers(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.CreateMerchantUser(TestData.Commands.CreateMerchantUserCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact] 
     public async Task MerchantDomainService_CreateMerchantUser_UserInListIsNull_ErrorThrown()
     {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.AggregateService
             .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         this.SecurityServiceClient
             .CreateUser(Arg<String>.Any(), Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
         this.SecurityServiceClient
             .GetUsers(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(new List<UserResponse> {
+            .ReturnsAsync(Results.Ok(new List<UserResponse> {
                 null
             }));
 
         var result = await this.DomainService.CreateMerchantUser(TestData.Commands.CreateMerchantUserCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_AddDeviceToMerchant_MerchantDeviceIsAdded() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.AggregateService
             .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         var result = await this.DomainService.AddDeviceToMerchant(TestData.Commands.AddMerchantDeviceCommand, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
     public async Task MerchantDomainService_AddDeviceToMerchant_EstateNotCreated_ErrorThrown() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyEstateAggregate));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyEstateAggregate));
 
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.AggregateService
             .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         var result = await this.DomainService.AddDeviceToMerchant(TestData.Commands.AddMerchantDeviceCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_AddDeviceToMerchant_MerchantNotCreated_ErrorThrown() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyMerchantAggregate()));
         this.AggregateService
             .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         var result = await this.DomainService.AddDeviceToMerchant(TestData.Commands.AddMerchantDeviceCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_MakeMerchantDeposit_DepositIsMade()
     {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
 
         this.AggregateService
             .GetLatest<MerchantDepositListAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantDepositListAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantDepositListAggregate()));
         this.AggregateService
             .Save(Arg<MerchantDepositListAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         var result = await this.DomainService.MakeMerchantDeposit(TestData.Commands.MakeMerchantDepositCommand, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
     public async Task MerchantDomainService_MakeMerchantDeposit_DuplicateDeposit_ResultIsFailed()
     {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
 
         this.AggregateService
             .GetLatest<MerchantDepositListAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantDepositListAggregateWithDeposit()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantDepositListAggregateWithDeposit()));
         this.AggregateService
             .Save(Arg<MerchantDepositListAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         var result = await this.DomainService.MakeMerchantDeposit(TestData.Commands.MakeMerchantDepositCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_MakeMerchantDeposit_GetDepositListFailed_ResultIsFailed()
     {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
 
         this.AggregateService
             .GetLatest<MerchantDepositListAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.MakeMerchantDeposit(TestData.Commands.MakeMerchantDepositCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_MakeMerchantDeposit_DepositListSaveFailed_ResultIsFailed()
     {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
 
         this.AggregateService
             .GetLatest<MerchantDepositListAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantDepositListAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantDepositListAggregate()));
         this.AggregateService
             .Save(Arg<MerchantDepositListAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.MakeMerchantDeposit(TestData.Commands.MakeMerchantDepositCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_MakeMerchantDeposit_EstateNotCreated_ErrorThrown() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyEstateAggregate));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyEstateAggregate));
 
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
 
         var result = await this.DomainService.MakeMerchantDeposit(TestData.Commands.MakeMerchantDepositCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_MakeMerchantDeposit_MerchantNotCreated_ErrorThrown() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyMerchantAggregate()));
 
         var result = await this.DomainService.MakeMerchantDeposit(TestData.Commands.MakeMerchantDepositCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_MakeMerchantDeposit_NoDepositsYet_DepositIsMade() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
        
         this.AggregateService
             .GetLatest<MerchantDepositListAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantDepositListAggregate));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyMerchantDepositListAggregate));
         this.AggregateService
             .Save(Arg<MerchantDepositListAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         var result = await this.DomainService.MakeMerchantDeposit(TestData.Commands.MakeMerchantDepositCommand, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
     public async Task MerchantDomainService_SwapMerchantDevice_MerchantDeviceSwapped() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithDevice()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithDevice()));
         this.AggregateService
             .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         var result = await this.DomainService.SwapMerchantDevice(TestData.Commands.SwapMerchantDeviceCommand, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
     public async Task MerchantDomainService_SwapMerchantDevice_MerchantNotCreated_ErrorThrown() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyMerchantAggregate()));
         this.AggregateService
             .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         var result = await this.DomainService.SwapMerchantDevice(TestData.Commands.SwapMerchantDeviceCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_SwapMerchantDevice_EstateNotCreated_ErrorThrown() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyEstateAggregate));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyEstateAggregate));
 
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithDevice()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithDevice()));
         this.AggregateService
             .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         Result result = await this.DomainService.SwapMerchantDevice(TestData.Commands.SwapMerchantDeviceCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_UpdateMerchantOpeningHours_Success()
     {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
 
         this.AggregateService
             .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         var result = await this.DomainService.UpdateMerchantOpeningHours(TestData.Commands.UpdateMerchantOpeningHoursCommand, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
     public async Task MerchantDomainService_UpdateMerchantOpeningHours_MerchantNotCreated_ErrorThrown()
     {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyMerchantAggregate()));
 
         var result = await this.DomainService.UpdateMerchantOpeningHours(TestData.Commands.UpdateMerchantOpeningHoursCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_UpdateMerchantOpeningHours_EstateNotCreated_ErrorThrown()
     {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyEstateAggregate));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyEstateAggregate));
 
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
 
         var result = await this.DomainService.UpdateMerchantOpeningHours(TestData.Commands.UpdateMerchantOpeningHoursCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
@@ -655,21 +655,21 @@ public class MerchantDomainServiceTests {
     {
         MerchantScheduleAggregate? savedSchedule = null;
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
 
         this.AggregateService.GetLatest<MerchantScheduleAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantScheduleAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyMerchantScheduleAggregate()));
 
         this.AggregateService
             .Save(Arg<MerchantScheduleAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         var result = await this.DomainService.CreateMerchantSchedule(TestData.Commands.CreateMerchantScheduleCommand, TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         this.AggregateService.Save(Arg<MerchantScheduleAggregate>.Is(aggregate =>
         {
             savedSchedule = aggregate;
@@ -686,60 +686,60 @@ public class MerchantDomainServiceTests {
     public async Task MerchantDomainService_CreateMerchantSchedule_GetEstateFailed_ResultIsFailed()
     {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.CreateMerchantSchedule(TestData.Commands.CreateMerchantScheduleCommand, TestContext.Current.CancellationToken);
 
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_CreateMerchantSchedule_GetMerchantFailed_ResultIsFailed()
     {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.CreateMerchantSchedule(TestData.Commands.CreateMerchantScheduleCommand, TestContext.Current.CancellationToken);
 
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_CreateMerchantSchedule_GetScheduleFailed_ResultIsFailed()
     {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.AggregateService.GetLatest<MerchantScheduleAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.CreateMerchantSchedule(TestData.Commands.CreateMerchantScheduleCommand, TestContext.Current.CancellationToken);
 
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_CreateMerchantSchedule_SaveFailed_ResultIsFailed()
     {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
 
         this.AggregateService.GetLatest<MerchantScheduleAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantScheduleAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyMerchantScheduleAggregate()));
 
         this.AggregateService
             .Save(Arg<MerchantScheduleAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.CreateMerchantSchedule(TestData.Commands.CreateMerchantScheduleCommand, TestContext.Current.CancellationToken);
 
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
@@ -747,21 +747,21 @@ public class MerchantDomainServiceTests {
     {
         MerchantScheduleAggregate? savedSchedule = null;
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
 
         this.AggregateService.GetLatest<MerchantScheduleAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantScheduleAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantScheduleAggregate()));
 
         this.AggregateService
             .Save(Arg<MerchantScheduleAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         var result = await this.DomainService.UpdateMerchantSchedule(TestData.Commands.UpdateMerchantScheduleCommand, TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         this.AggregateService.Save(Arg<MerchantScheduleAggregate>.Is(aggregate =>
         {
             savedSchedule = aggregate;
@@ -775,314 +775,314 @@ public class MerchantDomainServiceTests {
     public async Task MerchantDomainService_UpdateMerchantSchedule_GetEstateFailed_ResultIsFailed()
     {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.UpdateMerchantSchedule(TestData.Commands.UpdateMerchantScheduleCommand, TestContext.Current.CancellationToken);
 
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_UpdateMerchantSchedule_GetMerchantFailed_ResultIsFailed()
     {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.UpdateMerchantSchedule(TestData.Commands.UpdateMerchantScheduleCommand, TestContext.Current.CancellationToken);
 
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_UpdateMerchantSchedule_GetScheduleFailed_ResultIsFailed()
     {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.AggregateService.GetLatest<MerchantScheduleAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.UpdateMerchantSchedule(TestData.Commands.UpdateMerchantScheduleCommand, TestContext.Current.CancellationToken);
 
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_UpdateMerchantSchedule_ScheduleNotCreated_ResultIsFailed()
     {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.AggregateService.GetLatest<MerchantScheduleAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantScheduleAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyMerchantScheduleAggregate()));
 
         var result = await this.DomainService.UpdateMerchantSchedule(TestData.Commands.UpdateMerchantScheduleCommand, TestContext.Current.CancellationToken);
 
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_UpdateMerchantSchedule_SaveFailed_ResultIsFailed()
     {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
 
         this.AggregateService.GetLatest<MerchantScheduleAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantScheduleAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantScheduleAggregate()));
 
         this.AggregateService
             .Save(Arg<MerchantScheduleAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.UpdateMerchantSchedule(TestData.Commands.UpdateMerchantScheduleCommand, TestContext.Current.CancellationToken);
 
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_MakeMerchantWithdrawal_WithdrawalIsMade() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
        
         this.AggregateService
             .GetLatest<MerchantDepositListAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantDepositListAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantDepositListAggregate()));
         this.AggregateService
             .Save(Arg<MerchantDepositListAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         this.SecurityServiceClient
             .GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
+            .ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
 
-        this.EventStoreContext.GetPartitionStateFromProjection(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success<String>(StringSerialiser.Serialise(TestData.MerchantBalanceProjectionState)));
+        this.EventStoreContext.GetPartitionStateFromProjection(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok<String>(StringSerialiser.Serialise(TestData.MerchantBalanceProjectionState)));
 
         var result = await this.DomainService.MakeMerchantWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
     public async Task MerchantDomainService_MakeMerchantWithdrawal_DuplicateWithdrawal_ResultIsFailed()
     {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
 
         this.AggregateService
             .GetLatest<MerchantDepositListAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantDepositListAggregateWithWithdrawal()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantDepositListAggregateWithWithdrawal()));
         this.AggregateService
             .Save(Arg<MerchantDepositListAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         this.SecurityServiceClient
             .GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
+            .ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
 
-        this.EventStoreContext.GetPartitionStateFromProjection(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success<String>(StringSerialiser.Serialise(TestData.MerchantBalanceProjectionState)));
+        this.EventStoreContext.GetPartitionStateFromProjection(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok<String>(StringSerialiser.Serialise(TestData.MerchantBalanceProjectionState)));
 
         var result = await this.DomainService.MakeMerchantWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_MakeMerchantWithdrawal_GetDepositListFailed_ResultIsFailed()
     {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
 
         this.AggregateService
             .GetLatest<MerchantDepositListAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.MakeMerchantWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_MakeMerchantWithdrawal_EstateNotCreated_ErrorThrown() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyEstateAggregate));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyEstateAggregate));
 
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         
         var result = await this.DomainService.MakeMerchantWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_MakeMerchantWithdrawal_MerchantNotCreated_ErrorThrown() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyMerchantAggregate()));
 
         var result = await this.DomainService.MakeMerchantWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_MakeMerchantWithdrawal_MerchantDepositListNotCreated_ErrorThrown() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
 
         this.AggregateService
             .GetLatest<MerchantDepositListAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantDepositListAggregate));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyMerchantDepositListAggregate));
         
         var result = await this.DomainService.MakeMerchantWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_MakeMerchantWithdrawal_NotEnoughFundsToWithdraw_ErrorThrown() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
 
         this.AggregateService
             .GetLatest<MerchantDepositListAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantDepositListAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantDepositListAggregate()));
         this.AggregateService
             .Save(Arg<MerchantDepositListAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         this.EventStoreContext.GetPartitionStateFromProjection(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success<String>(StringSerialiser.Serialise(TestData.MerchantBalanceProjectionStateNoCredit)));
+            .ReturnsAsync(Results.Ok<String>(StringSerialiser.Serialise(TestData.MerchantBalanceProjectionStateNoCredit)));
 
         var result = await this.DomainService.MakeMerchantWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_MakeMerchantWithdrawal_InvalidBalanceProjection_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
 
         this.AggregateService
             .GetLatest<MerchantDepositListAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantDepositListAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantDepositListAggregate()));
 
         this.EventStoreContext.GetPartitionStateFromProjection(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success<String>("null"));
+            .ReturnsAsync(Results.Ok<String>("null"));
 
         var result = await this.DomainService.MakeMerchantWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_AddContractToMerchant_ContractAdded() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.AggregateService
             .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
         this.AggregateService.Get<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
             .ReturnsAsync(
-                Result.Success(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed,
+                Results.Ok(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed,
                     FeeType.Merchant)));
 
         var result = await this.DomainService.AddContractToMerchant(TestData.Commands.AddMerchantContractCommand, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
     public async Task MerchantDomainService_AddContractToMerchant_ContractNotCreated_ErrorThrown() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.AggregateService
             .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
         this.AggregateService.Get<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyContractAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyContractAggregate()));
 
         var result = await this.DomainService.AddContractToMerchant(TestData.Commands.AddMerchantContractCommand, TestContext.Current.CancellationToken); 
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_AddContractToMerchant_GetContractFailed_ErrorThrown()
     {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.AggregateService
             .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
         this.AggregateService.Get<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.NotFound("Not found"));
+            .ReturnsAsync(new Error(ErrorType.NotFound, "Not found"));
 
         var result = await this.DomainService.AddContractToMerchant(TestData.Commands.AddMerchantContractCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_AddContractToMerchant_MerchantNotCreated_ErrorThrown() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyMerchantAggregate()));
         this.AggregateService
             .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
         this.AggregateService.Get<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed,
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed,
                     FeeType.Merchant)));
 
         var result = await this.DomainService.AddContractToMerchant(TestData.Commands.AddMerchantContractCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_AddContractToMerchant_EstateNotCreated_ErrorThrown() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyEstateAggregate));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyEstateAggregate));
 
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.AggregateService
             .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
         this.AggregateService.Get<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed,
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed,
                     FeeType.Merchant)));
         
         var result = await this.DomainService.AddContractToMerchant(TestData.Commands.AddMerchantContractCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Theory]
@@ -1092,960 +1092,960 @@ public class MerchantDomainServiceTests {
     public async Task MerchantDomainService_UpdateMerchant_MerchantIsUpdated(
         DataTransferObjects.Responses.Merchant.SettlementSchedule settlementSchedule) {
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.AggregateService
             .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         MerchantCommands.UpdateMerchantCommand command = TestData.Commands.UpdateMerchantCommand;
 
         command.RequestDto.SettlementSchedule = settlementSchedule;
 
         var result = await this.DomainService.UpdateMerchant(command, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
     public async Task MerchantDomainService_UpdateMerchant_ValidationError_ResultIsFailed()
     {
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.AggregateService
             .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyEstateAggregate));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyEstateAggregate));
 
         MerchantCommands.UpdateMerchantCommand command = TestData.Commands.UpdateMerchantCommand;
 
         var result = await this.DomainService.UpdateMerchant(command, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_AddMerchantAddress_AddressAdded() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.AggregateService
             .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         var result = await this.DomainService.AddMerchantAddress(TestData.Commands.AddMerchantAddressCommand, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
     public async Task MerchantDomainService_AddMerchantAddress_ValidationFailure_ResultIsFailed()
     {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyEstateAggregate));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyEstateAggregate));
 
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.AggregateService
             .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         var result = await this.DomainService.AddMerchantAddress(TestData.Commands.AddMerchantAddressCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_UpdateMerchantAddress_AddressUpdated() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.AggregateService
             .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         var result = await this.DomainService.UpdateMerchantAddress(TestData.Commands.UpdateMerchantAddressCommand, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
     public async Task MerchantDomainService_UpdateMerchantAddress_ValidationFailed_ResultIsFailed()
     {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyEstateAggregate));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyEstateAggregate));
 
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.AggregateService
             .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         var result = await this.DomainService.UpdateMerchantAddress(TestData.Commands.UpdateMerchantAddressCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_AddMerchantContact_ContactAdded() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.AggregateService
             .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         var result = await this.DomainService.AddMerchantContact(TestData.Commands.AddMerchantContactCommand, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
     public async Task MerchantDomainService_AddMerchantContact_ValidationError_ResultIsFailed()
     {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyEstateAggregate));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyEstateAggregate));
 
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.AggregateService
             .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         var result = await this.DomainService.AddMerchantContact(TestData.Commands.AddMerchantContactCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_UpdateMerchantContact_ContactUpdated() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.AggregateService
             .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         var result = await this.DomainService.UpdateMerchantContact(TestData.Commands.UpdateMerchantContactCommand, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
     public async Task MerchantDomainService_UpdateMerchantContact_ValidationError_ResultIsFailed()
     {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyEstateAggregate));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyEstateAggregate));
 
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.AggregateService
             .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         var result = await this.DomainService.UpdateMerchantContact(TestData.Commands.UpdateMerchantContactCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_RemoveOperatorFromMerchant_OperatorRemoved() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithOperator()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithOperator()));
         this.AggregateService
             .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         var result = await this.DomainService.RemoveOperatorFromMerchant(TestData.Commands.RemoveOperatorFromMerchantCommand, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
     public async Task MerchantDomainService_RemoveOperatorFromMerchant_ValidationFailed_ResultFailed()
     {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyEstateAggregate));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyEstateAggregate));
 
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithOperator()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithOperator()));
         this.AggregateService
             .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         var result = await this.DomainService.RemoveOperatorFromMerchant(TestData.Commands.RemoveOperatorFromMerchantCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_RemoveContractFromMerchant_ContractRemoved() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
         this.AggregateService
             .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         var result = await this.DomainService.RemoveContractFromMerchant(TestData.Commands.RemoveMerchantContractCommand, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
     public async Task MerchantDomainService_RemoveContractFromMerchant_ValidationFailed_ResultFailed()
     {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyEstateAggregate));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyEstateAggregate));
 
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
         this.AggregateService
             .Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         var result = await this.DomainService.RemoveContractFromMerchant(TestData.Commands.RemoveMerchantContractCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_CreateMerchant_GetEstateFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.CreateMerchant(TestData.Commands.CreateMerchantCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_CreateMerchant_GetMerchantFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.CreateMerchant(TestData.Commands.CreateMerchantCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_CreateMerchant_SaveFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyMerchantAggregate()));
         this.AggregateService.Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.CreateMerchant(TestData.Commands.CreateMerchantCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_AssignOperatorToMerchant_GetEstateFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.AssignOperatorToMerchant(TestData.Commands.AssignOperatorToMerchantCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_AssignOperatorToMerchant_GetMerchantFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.AssignOperatorToMerchant(TestData.Commands.AssignOperatorToMerchantCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_AssignOperatorToMerchant_GetOperatorFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.AggregateService.GetLatest<OperatorAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.AssignOperatorToMerchant(TestData.Commands.AssignOperatorToMerchantCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_AssignOperatorToMerchant_StateChangeFailed_ResultIsFailed()
     {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
         this.AggregateService.GetLatest<OperatorAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedOperatorAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedOperatorAggregate()));
         this.AggregateService.Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.AssignOperatorToMerchant(TestData.Commands.AssignOperatorToMerchantCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_AssignOperatorToMerchant_SaveFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.AggregateService.GetLatest<OperatorAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedOperatorAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedOperatorAggregate()));
         this.AggregateService.Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.AssignOperatorToMerchant(TestData.Commands.AssignOperatorToMerchantCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_CreateMerchantUser_GetEstateFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.CreateMerchantUser(TestData.Commands.CreateMerchantUserCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_CreateMerchantUser_GetMerchantFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.CreateMerchantUser(TestData.Commands.CreateMerchantUserCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_CreateMerchantUser_SaveFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.SecurityServiceClient.CreateUser(Arg<String>.Any(), Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
         this.SecurityServiceClient.GetUsers(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(new List<UserResponse> { new UserResponse { UserId = "FA077CE3-B915-4048-88E3-9B500699317F" } }));
+            .ReturnsAsync(Results.Ok(new List<UserResponse> { new UserResponse { UserId = "FA077CE3-B915-4048-88E3-9B500699317F" } }));
         this.AggregateService.Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.CreateMerchantUser(TestData.Commands.CreateMerchantUserCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_AddDeviceToMerchant_GetEstateFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.AddDeviceToMerchant(TestData.Commands.AddMerchantDeviceCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_AddDeviceToMerchant_GetMerchantFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.AddDeviceToMerchant(TestData.Commands.AddMerchantDeviceCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_AddDeviceToMerchant_StateChangeFailed_ResultIsFailed()
     {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
         this.AggregateService.Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.AddDeviceToMerchant(TestData.Commands.AddMerchantDeviceCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_AddDeviceToMerchant_SaveFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.AggregateService.Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.AddDeviceToMerchant(TestData.Commands.AddMerchantDeviceCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_MakeMerchantDeposit_GetEstateFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.MakeMerchantDeposit(TestData.Commands.MakeMerchantDepositCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_MakeMerchantDeposit_GetMerchantFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.MakeMerchantDeposit(TestData.Commands.MakeMerchantDepositCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_SwapMerchantDevice_GetEstateFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.SwapMerchantDevice(TestData.Commands.SwapMerchantDeviceCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_SwapMerchantDevice_GetMerchantFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.SwapMerchantDevice(TestData.Commands.SwapMerchantDeviceCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_SwapMerchantDevice_StateChangedFailed_ResultIsFailed()
     {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithDevice()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithDevice()));
         this.AggregateService.Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var command = TestData.Commands.SwapMerchantDeviceCommand with {
             DeviceIdentifier = String.Empty
         };
 
         var result = await this.DomainService.SwapMerchantDevice(command, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_SwapMerchantDevice_SaveFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithDevice()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithDevice()));
         this.AggregateService.Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.SwapMerchantDevice(TestData.Commands.SwapMerchantDeviceCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_MakeMerchantWithdrawal_GetEstateFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.MakeMerchantWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_MakeMerchantWithdrawal_GetMerchantFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.MakeMerchantWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_MakeMerchantWithdrawal_GetBalanceFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.AggregateService
             .GetLatest<MerchantDepositListAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantDepositListAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantDepositListAggregate()));
         this.EventStoreContext.GetPartitionStateFromProjection(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.MakeMerchantWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_MakeMerchantWithdrawal_SaveFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.AggregateService
             .GetLatest<MerchantDepositListAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantDepositListAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantDepositListAggregate()));
         this.EventStoreContext.GetPartitionStateFromProjection(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success<String>(StringSerialiser.Serialise(TestData.MerchantBalanceProjectionState)));
+            .ReturnsAsync(Results.Ok<String>(StringSerialiser.Serialise(TestData.MerchantBalanceProjectionState)));
         this.AggregateService.Save(Arg<MerchantDepositListAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.MakeMerchantWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_AddContractToMerchant_GetEstateFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.AddContractToMerchant(TestData.Commands.AddMerchantContractCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_AddContractToMerchant_GetMerchantFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.AddContractToMerchant(TestData.Commands.AddMerchantContractCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_AddContractToMerchant_StateChangeFailed_ResultIsFailed()
     {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
         this.AggregateService.Get<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed, FeeType.Merchant)));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed, FeeType.Merchant)));
         this.AggregateService.Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.AddContractToMerchant(TestData.Commands.AddMerchantContractCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_AddContractToMerchant_SaveFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.AggregateService.Get<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed, FeeType.Merchant)));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed, FeeType.Merchant)));
         this.AggregateService.Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.AddContractToMerchant(TestData.Commands.AddMerchantContractCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_UpdateMerchant_GetEstateFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.UpdateMerchant(TestData.Commands.UpdateMerchantCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_UpdateMerchant_GetMerchantFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.UpdateMerchant(TestData.Commands.UpdateMerchantCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_UpdateMerchant_MerchantNotCreated_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyMerchantAggregate()));
 
         var result = await this.DomainService.UpdateMerchant(TestData.Commands.UpdateMerchantCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_UpdateMerchant_SaveFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.AggregateService.Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         MerchantCommands.UpdateMerchantCommand command = TestData.Commands.UpdateMerchantCommand;
         command.RequestDto.SettlementSchedule = DataTransferObjects.Responses.Merchant.SettlementSchedule.Immediate;
 
         var result = await this.DomainService.UpdateMerchant(command, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_AddMerchantAddress_GetEstateFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.AddMerchantAddress(TestData.Commands.AddMerchantAddressCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_AddMerchantAddress_GetMerchantFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.AddMerchantAddress(TestData.Commands.AddMerchantAddressCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_AddMerchantAddress_MerchantNotCreated_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyMerchantAggregate()));
 
         var result = await this.DomainService.AddMerchantAddress(TestData.Commands.AddMerchantAddressCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_AddMerchantAddress_SaveFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.AggregateService.Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.AddMerchantAddress(TestData.Commands.AddMerchantAddressCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_UpdateMerchantAddress_GetEstateFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.UpdateMerchantAddress(TestData.Commands.UpdateMerchantAddressCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_UpdateMerchantAddress_GetMerchantFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.UpdateMerchantAddress(TestData.Commands.UpdateMerchantAddressCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_UpdateMerchantAddress_MerchantNotCreated_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyMerchantAggregate()));
 
         var result = await this.DomainService.UpdateMerchantAddress(TestData.Commands.UpdateMerchantAddressCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_UpdateMerchantAddress_SaveFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.AggregateService.Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.UpdateMerchantAddress(TestData.Commands.UpdateMerchantAddressCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_AddMerchantContact_GetEstateFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.AddMerchantContact(TestData.Commands.AddMerchantContactCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_AddMerchantContact_GetMerchantFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.AddMerchantContact(TestData.Commands.AddMerchantContactCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_AddMerchantContact_MerchantNotCreated_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyMerchantAggregate()));
 
         var result = await this.DomainService.AddMerchantContact(TestData.Commands.AddMerchantContactCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_AddMerchantContact_SaveFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.AggregateService.Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.AddMerchantContact(TestData.Commands.AddMerchantContactCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_UpdateMerchantContact_GetEstateFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.UpdateMerchantContact(TestData.Commands.UpdateMerchantContactCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_UpdateMerchantContact_GetMerchantFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.UpdateMerchantContact(TestData.Commands.UpdateMerchantContactCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_UpdateMerchantContact_MerchantNotCreated_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyMerchantAggregate()));
 
         var result = await this.DomainService.UpdateMerchantContact(TestData.Commands.UpdateMerchantContactCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_UpdateMerchantContact_SaveFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.AggregateService.Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.UpdateMerchantContact(TestData.Commands.UpdateMerchantContactCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_RemoveOperatorFromMerchant_GetEstateFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.RemoveOperatorFromMerchant(TestData.Commands.RemoveOperatorFromMerchantCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_RemoveOperatorFromMerchant_GetMerchantFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.RemoveOperatorFromMerchant(TestData.Commands.RemoveOperatorFromMerchantCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_RemoveOperatorFromMerchant_MerchantNotCreated_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyMerchantAggregate()));
 
         var result = await this.DomainService.RemoveOperatorFromMerchant(TestData.Commands.RemoveOperatorFromMerchantCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_RemoveOperatorFromMerchant_StateChangeFailed_ResultIsFailed()
     {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithOperator()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithOperator()));
         this.AggregateService.Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var command = TestData.Commands.RemoveOperatorFromMerchantCommand with { OperatorId = Guid.NewGuid() };
 
         var result = await this.DomainService.RemoveOperatorFromMerchant(command, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_RemoveOperatorFromMerchant_SaveFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithOperator()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithOperator()));
         this.AggregateService.Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.RemoveOperatorFromMerchant(TestData.Commands.RemoveOperatorFromMerchantCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_RemoveContractFromMerchant_GetEstateFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.RemoveContractFromMerchant(TestData.Commands.RemoveMerchantContractCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_RemoveContractFromMerchant_GetMerchantFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.RemoveContractFromMerchant(TestData.Commands.RemoveMerchantContractCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_RemoveContractFromMerchant_MerchantNotCreated_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyMerchantAggregate()));
 
         var result = await this.DomainService.RemoveContractFromMerchant(TestData.Commands.RemoveMerchantContractCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_RemoveContractFromMerchant_StateChangeFailed_ResultIsFailed()
     {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
         this.AggregateService.Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var command = TestData.Commands.RemoveMerchantContractCommand with { ContractId = Guid.NewGuid() };
 
         var result = await this.DomainService.RemoveContractFromMerchant(command, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_RemoveContractFromMerchant_SaveFailed_ResultIsFailed() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
         this.AggregateService.Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         var result = await this.DomainService.RemoveContractFromMerchant(TestData.Commands.RemoveMerchantContractCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_CreateMerchant_NotSetSettlementSchedule_ResultIsFailed() {
         this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyMerchantAggregate()));
         this.AggregateService.Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
         MerchantCommands.CreateMerchantCommand command = TestData.Commands.CreateMerchantCommand;
         command.RequestDto.SettlementSchedule = DataTransferObjects.Responses.Merchant.SettlementSchedule.NotSet;
 
         var result = await this.DomainService.CreateMerchant(command, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
     public async Task MerchantDomainService_MakeMerchantDeposit_AutomaticDepositSource_DepositIsMade() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
         this.AggregateService
             .GetLatest<MerchantDepositListAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantDepositListAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantDepositListAggregate()));
         this.AggregateService
             .Save(Arg<MerchantDepositListAggregate>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         MerchantCommands.MakeMerchantDepositCommand command = new(TestData.EstateId, TestData.MerchantId,
             TestData.MerchantDepositSourceAutomaticDTO, TestData.MakeMerchantDepositRequest);
 
         var result = await this.DomainService.MakeMerchantDeposit(command, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
@@ -2054,7 +2054,7 @@ public class MerchantDomainServiceTests {
             .ThrowsAsync(new Exception("Test exception"));
 
         var result = await this.DomainService.CreateMerchant(TestData.Commands.CreateMerchantCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
@@ -2063,7 +2063,7 @@ public class MerchantDomainServiceTests {
             .ThrowsAsync(new Exception("Test exception"));
 
         var result = await this.DomainService.AssignOperatorToMerchant(TestData.Commands.AssignOperatorToMerchantCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
@@ -2072,7 +2072,7 @@ public class MerchantDomainServiceTests {
             .ThrowsAsync(new Exception("Test exception"));
 
         var result = await this.DomainService.CreateMerchantUser(TestData.Commands.CreateMerchantUserCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
@@ -2081,7 +2081,7 @@ public class MerchantDomainServiceTests {
             .ThrowsAsync(new Exception("Test exception"));
 
         var result = await this.DomainService.AddDeviceToMerchant(TestData.Commands.AddMerchantDeviceCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
@@ -2090,7 +2090,7 @@ public class MerchantDomainServiceTests {
             .ThrowsAsync(new Exception("Test exception"));
 
         var result = await this.DomainService.MakeMerchantDeposit(TestData.Commands.MakeMerchantDepositCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
@@ -2099,7 +2099,7 @@ public class MerchantDomainServiceTests {
             .ThrowsAsync(new Exception("Test exception"));
 
         var result = await this.DomainService.SwapMerchantDevice(TestData.Commands.SwapMerchantDeviceCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
@@ -2108,7 +2108,7 @@ public class MerchantDomainServiceTests {
             .ThrowsAsync(new Exception("Test exception"));
 
         var result = await this.DomainService.MakeMerchantWithdrawal(TestData.Commands.MakeMerchantWithdrawalCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
@@ -2117,7 +2117,7 @@ public class MerchantDomainServiceTests {
             .ThrowsAsync(new Exception("Test exception"));
 
         var result = await this.DomainService.AddContractToMerchant(TestData.Commands.AddMerchantContractCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
@@ -2126,7 +2126,7 @@ public class MerchantDomainServiceTests {
             .ThrowsAsync(new Exception("Test exception"));
 
         var result = await this.DomainService.UpdateMerchant(TestData.Commands.UpdateMerchantCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
@@ -2135,7 +2135,7 @@ public class MerchantDomainServiceTests {
             .ThrowsAsync(new Exception("Test exception"));
 
         var result = await this.DomainService.AddMerchantAddress(TestData.Commands.AddMerchantAddressCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
@@ -2144,7 +2144,7 @@ public class MerchantDomainServiceTests {
             .ThrowsAsync(new Exception("Test exception"));
 
         var result = await this.DomainService.UpdateMerchantAddress(TestData.Commands.UpdateMerchantAddressCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
@@ -2153,7 +2153,7 @@ public class MerchantDomainServiceTests {
             .ThrowsAsync(new Exception("Test exception"));
 
         var result = await this.DomainService.AddMerchantContact(TestData.Commands.AddMerchantContactCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
@@ -2162,7 +2162,7 @@ public class MerchantDomainServiceTests {
             .ThrowsAsync(new Exception("Test exception"));
 
         var result = await this.DomainService.UpdateMerchantContact(TestData.Commands.UpdateMerchantContactCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
@@ -2171,7 +2171,7 @@ public class MerchantDomainServiceTests {
             .ThrowsAsync(new Exception("Test exception"));
 
         var result = await this.DomainService.RemoveOperatorFromMerchant(TestData.Commands.RemoveOperatorFromMerchantCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
@@ -2180,7 +2180,7 @@ public class MerchantDomainServiceTests {
             .ThrowsAsync(new Exception("Test exception"));
 
         var result = await this.DomainService.RemoveContractFromMerchant(TestData.Commands.RemoveMerchantContractCommand, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 }
 

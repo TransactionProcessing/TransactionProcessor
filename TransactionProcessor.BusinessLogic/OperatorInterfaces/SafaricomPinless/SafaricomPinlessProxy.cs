@@ -50,7 +50,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.SafaricomPinless
         #region Methods
 
         public async Task<Result<OperatorResponse>> ProcessLogonMessage(CancellationToken cancellationToken) {
-            return Result.Success(new OperatorResponse { IsSuccessful = true, ResponseCode = "0000", ResponseMessage = "SUCCESS" });
+            return Results.Ok(new OperatorResponse { IsSuccessful = true, ResponseCode = "0000", ResponseMessage = "SUCCESS" });
         }
 
         /// <summary>
@@ -86,20 +86,20 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.SafaricomPinless
                 if (String.IsNullOrEmpty(transactionAmount))
                 {
                     Logger.LogWarning("Safaricom sale request rejected. TransactionId=[{TransactionId}] - Amount is a required field for this transaction type", transactionId);
-                    return Result.Invalid("Amount is a required field for this transaction type");
+                    return new Error(ErrorType.Validation, "Amount is a required field for this transaction type");
                 }
 
                 if (String.IsNullOrEmpty(customerMsisdn))
                 {
                     Logger.LogWarning("Safaricom sale request rejected. TransactionId=[{TransactionId}] - CustomerAccountNumber is a required field for this transaction type", transactionId);
-                    return Result.Invalid("CustomerAccountNumber is a required field for this transaction type");
+                    return new Error(ErrorType.Validation, "CustomerAccountNumber is a required field for this transaction type");
                 }
 
                 // Multiply amount before sending
                 // Covert the transaction amount to Decimal and remove decimal places
                 if (Decimal.TryParse(transactionAmount, out Decimal amountAsDecimal) == false) {
                     Logger.LogWarning("Safaricom sale request rejected. TransactionId=[{TransactionId}] - Transaction Amount is not a valid decimal value", transactionId);
-                    return Result.Invalid("Transaction Amount is not a valid decimal value");
+                    return new Error(ErrorType.Validation, "Transaction Amount is not a valid decimal value");
                 }
 
                 Decimal operatorTransactionAmount = amountAsDecimal * 100;
@@ -120,7 +120,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.SafaricomPinless
                 // Check the send was successful
                 if (responseMessage.IsSuccessStatusCode == false) {
                     Logger.LogWarning("Safaricom sale failed. TransactionId=[{TransactionId}], StatusCode=[{StatusCode}], ResponseBody=[{ResponseContent}]", transactionId, responseMessage.StatusCode, responseContent);
-                    return Result.Failure($"Error sending request [{requestUrl}] to Safaricom.  Status Code [{responseMessage.StatusCode}]");
+                    return new Error(ErrorType.Failure, $"Error sending request [{requestUrl}] to Safaricom.  Status Code [{responseMessage.StatusCode}]");
                 }
                 
                 Logger.LogInformation("Safaricom sale completed [{ResponseContent}]", responseContent);
@@ -132,7 +132,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.SafaricomPinless
             }
             catch (Exception ex) {
                 Logger.LogError(ex, "Error sending request to Safaricom");
-                return Result.Failure($"Error sending request to Safaricom [{ex.Message}]");
+                return new Error(ErrorType.Failure, $"Error sending request to Safaricom [{ex.Message}]");
             }
         }
 
@@ -188,10 +188,10 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.SafaricomPinless
             SafaricomResponse cl = (SafaricomResponse)xs.Deserialize(new StringReader(doc.OuterXml));
 
             if (cl.TransactionStatus != 200) {
-                return Result.Failure(cl.Message);
+                return new Error(ErrorType.Failure, cl.Message);
             }
 
-            return Result.Success(new OperatorResponse
+            return Results.Ok(new OperatorResponse
                    {
                        AuthorisationCode = "ABCD1234",
                        ResponseCode = cl.TransactionStatus.ToString(),

@@ -91,11 +91,11 @@ public class VoucherDomainEventHandlerTests
     [Fact]
     public async Task VoucherDomainEventHandler_VoucherIssuedEvent_WithEmailAddress_IsHandled()
     {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
-        this.MessagingServiceClient.SendEmail(Arg<String>.Any(), Arg<SendEmailRequest>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
+        this.MessagingServiceClient.SendEmail(Arg<String>.Any(), Arg<SendEmailRequest>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok());
 
         this.AggregateService.Get<VoucherAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                                  .ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientEmail()));
+                                  .ReturnsAsync(Results.Ok(TestData.GetVoucherAggregateWithRecipientEmail()));
 
         this.Context.Transactions.Add(new Database.Entities.Transaction()
         {
@@ -117,11 +117,11 @@ public class VoucherDomainEventHandlerTests
     [Fact]
     public async Task VoucherDomainEventHandler_VoucherIssuedEvent_WithRecipientMobile_IsHandled()
     {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
-        this.MessagingServiceClient.SendSMS(Arg<String>.Any(), Arg<SendSMSRequest>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
+        this.MessagingServiceClient.SendSMS(Arg<String>.Any(), Arg<SendSMSRequest>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok());
 
         this.AggregateService.Get<VoucherAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                                  .ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientMobile()));
+                                  .ReturnsAsync(Results.Ok(TestData.GetVoucherAggregateWithRecipientMobile()));
 
         this.Context.Transactions.Add(new Database.Entities.Transaction()
                                  {

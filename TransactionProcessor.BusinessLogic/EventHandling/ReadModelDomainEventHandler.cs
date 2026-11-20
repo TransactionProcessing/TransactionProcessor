@@ -36,7 +36,7 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
                                    CancellationToken cancellationToken) =>
             this.TryHandleDomainEvent(domainEvent, cancellationToken, out Task<Result> handledTask)
                 ? handledTask
-                : Task.FromResult(Result.Success());
+                : Task.FromResult(Results.Ok());
 
         private bool TryHandleDomainEvent(IDomainEvent domainEvent,
                                           CancellationToken cancellationToken,
@@ -199,7 +199,7 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
                                                              CancellationToken cancellationToken)
         {
             var result = await this.EstateReportingRepository.RecordTransactionAdditionalRequestData(domainEvent, cancellationToken);
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return result;
             return await this.EstateReportingRepository.SetTransactionAmount(domainEvent, cancellationToken);
         }
@@ -208,7 +208,7 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
                                                              CancellationToken cancellationToken)
         {
             Result createResult = await this.EstateReportingRepository.CreateReadModel(domainEvent, cancellationToken);
-            if (createResult.IsFailed)
+            if (createResult.IsSuccess() == false)
                 return createResult;
 
             return await this.EstateReportingRepository.AddEstate(domainEvent, cancellationToken);
@@ -218,7 +218,7 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
                                                              CancellationToken cancellationToken)
         {
             Result createResult = await this.EstateReportingRepository.MarkStatementAsGenerated(domainEvent, cancellationToken);
-            if (createResult.IsFailed)
+            if (createResult.IsSuccess() == false)
                 return createResult;
 
             return await this.EstateReportingRepository.UpdateMerchant(domainEvent, cancellationToken);

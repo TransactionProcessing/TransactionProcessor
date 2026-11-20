@@ -36,7 +36,7 @@ namespace TransactionProcessor.Aggregates
                                                DateTimeOffset createdDateTime)
         {
             if (aggregate.IsCreated) {
-                return Result.Success(); // Idempotent
+                return Results.Ok(); // Idempotent
             }
 
             FloatDomainEvents.FloatCreatedEvent floatCreatedEvent = new(aggregate.AggregateId,
@@ -44,17 +44,17 @@ namespace TransactionProcessor.Aggregates
 
             aggregate.ApplyAndAppend(floatCreatedEvent);
 
-            return Result.Success();
+            return Results.Ok();
         }
 
         public static Result RecordCreditPurchase(this FloatAggregate aggregate, DateTimeOffset creditPurchasedDate, Decimal amount, Decimal costPrice, DateTimeOffset hostDateTime)
         {
             Result result = aggregate.ValidateFloatIsAlreadyCreated();
-            if (result.IsFailed) {
+            if (result.IsSuccess() == false) {
                 return result;
             }
             result = aggregate.ValidateCreditIsNotADuplicate(creditPurchasedDate, amount, costPrice);
-            if (result.IsFailed) {
+            if (result.IsSuccess() == false) {
                 return result;
             }
 
@@ -63,7 +63,7 @@ namespace TransactionProcessor.Aggregates
 
             aggregate.ApplyAndAppend(floatCreditPurchasedEvent);
 
-            return Result.Success();
+            return Results.Ok();
         }
 
         public static Decimal GetUnitCostPrice(this FloatAggregate aggregate)
@@ -73,10 +73,10 @@ namespace TransactionProcessor.Aggregates
 
         public static Result ValidateFloatIsAlreadyCreated(this FloatAggregate aggregate) {
             if (aggregate.IsCreated == false) {
-                return Result.Invalid($"Float Aggregate Id {aggregate.AggregateId} must be created to perform this operation");
+                return new Error(ErrorType.Validation, $"Float Aggregate Id {aggregate.AggregateId} must be created to perform this operation");
             }
 
-            return Result.Success();
+            return Results.Ok();
         }
 
         public static Result ValidateCreditIsNotADuplicate(this FloatAggregate aggregate,
@@ -85,10 +85,10 @@ namespace TransactionProcessor.Aggregates
                                                            Decimal costPrice) {
             Boolean isDuplicate = aggregate.Credits.Any(c => c.costPrice == costPrice && c.amount == amount && c.creditPurchasedDate == creditPurchasedDate);
             if (isDuplicate) {
-                return Result.Invalid($"Float Aggregate Id {aggregate.AggregateId} already has a credit with this information recorded");
+                return new Error(ErrorType.Validation, $"Float Aggregate Id {aggregate.AggregateId} already has a credit with this information recorded");
             }
 
-            return Result.Success();
+            return Results.Ok();
         }
 
         public static Decimal GetTotalCostPrice(this FloatAggregate aggregate, Decimal transactionAmount)

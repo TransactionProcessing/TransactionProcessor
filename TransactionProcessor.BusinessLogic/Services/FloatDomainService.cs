@@ -42,10 +42,10 @@ namespace TransactionProcessor.BusinessLogic.Services
                 cancellationToken,
                 isNotFoundError: true);
 
-            if (getEstateResult.IsFailed) {
+            if (getEstateResult.IsSuccess() == false) {
                 return ResultHelpers.CreateFailure(getEstateResult);
             }
-            return Result.Success();
+            return Results.Ok();
         }
 
         private async Task<Result<EstateAggregate>> GetEstateAggregate(Guid estateId, CancellationToken cancellationToken)
@@ -62,10 +62,10 @@ namespace TransactionProcessor.BusinessLogic.Services
             TransactionProcessor.Models.Estate.Estate estate = estateAggregate.GetEstate();
             Boolean operatorExists = estate.Operators.Any(o => o.OperatorId == operatorId && o.IsDeleted == false);
             if (operatorExists == false) {
-                return Result.Invalid($"Operator with Id {operatorId} is not supported on Estate [{estate.Name}]");
+                return new Error(ErrorType.Validation, $"Operator with Id {operatorId} is not supported on Estate [{estate.Name}]");
             }
 
-            return Result.Success();
+            return Results.Ok();
         }
 
         public async Task<Result<Guid>> CreateFloat(FloatCommands.CreateFloatCommand command,
@@ -73,33 +73,33 @@ namespace TransactionProcessor.BusinessLogic.Services
 
             try {
                 Result<EstateAggregate> getEstateResult = await this.GetEstateAggregate(command.EstateId, cancellationToken);
-                if (getEstateResult.IsFailed) {
+                if (getEstateResult.IsSuccess() == false) {
                     return ResultHelpers.CreateFailure(getEstateResult);
                 }
 
-                Result validateOperatorResult = ValidateOperator(getEstateResult.GetValueOrThrow(), command.OperatorId);
-                if (validateOperatorResult.IsFailed) {
+                Result validateOperatorResult = ValidateOperator(getEstateResult.Data, command.OperatorId);
+                if (validateOperatorResult.IsSuccess() == false) {
                     return ResultHelpers.CreateFailure(validateOperatorResult);
                 }
                 
                 Result<FloatAggregate> getFloatResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<FloatAggregate>(command.OperatorId, ct), command.OperatorId, cancellationToken, false);
-                if (getFloatResult.IsFailed)
+                if (getFloatResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(getFloatResult);
 
-                FloatAggregate floatAggregate = getFloatResult.GetValueOrThrow();
+                FloatAggregate floatAggregate = getFloatResult.Data;
 
                 Result stateResult = floatAggregate.CreateFloat(command.EstateId, command.CreateDateTime);
-                if (stateResult.IsFailed)
+                if (stateResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(stateResult);
 
                 Result saveResult = await this.AggregateService.Save(floatAggregate, cancellationToken);
-                if (saveResult.IsFailed)
+                if (saveResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(saveResult);
-                return Result.Success(command.OperatorId);
+                return Results.Ok(command.OperatorId);
 
             }
             catch (Exception ex) {
-                return Result.Failure(ex.GetExceptionMessages());
+                return ResultHelpers.CreateFailure(ex.GetExceptionMessages());
             }
         }
 
@@ -108,24 +108,24 @@ namespace TransactionProcessor.BusinessLogic.Services
             try
             {
                 Result<FloatAggregate> getFloatResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<FloatAggregate>(command.RecordFloatCreditPurchaseRequest.FloatId, ct), command.RecordFloatCreditPurchaseRequest.FloatId, cancellationToken);
-                if (getFloatResult.IsFailed)
+                if (getFloatResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(getFloatResult);
 
-                FloatAggregate floatAggregate = getFloatResult.GetValueOrThrow();
+                FloatAggregate floatAggregate = getFloatResult.Data;
 
                 Result stateResult = floatAggregate.RecordCreditPurchase(command.RecordFloatCreditPurchaseRequest.PurchaseDateTime, command.RecordFloatCreditPurchaseRequest.CreditAmount, command.RecordFloatCreditPurchaseRequest.CostPrice,
                     command.RecordFloatCreditPurchaseRequest.HostDateTime);
-                if (stateResult.IsFailed)
+                if (stateResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(stateResult);
 
                 Result saveResult = await this.AggregateService.Save(floatAggregate, cancellationToken);
-                if (saveResult.IsFailed)
+                if (saveResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(saveResult);
                 return saveResult;
             }
             catch (Exception ex)
             {
-                return Result.Failure(ex.GetExceptionMessages());
+                return ResultHelpers.CreateFailure(ex.GetExceptionMessages());
             }
         }
 
@@ -137,22 +137,22 @@ namespace TransactionProcessor.BusinessLogic.Services
                 Guid floatActivityAggregateId = IdGenerationService.GenerateFloatActivityAggregateId(command.EstateId, command.FloatId, command.CreditPurchasedDateTime.Date);
 
                 Result<FloatActivityAggregate> getFloatActivityResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<FloatActivityAggregate>(floatActivityAggregateId, ct), floatActivityAggregateId, cancellationToken, false);
-                if (getFloatActivityResult.IsFailed)
+                if (getFloatActivityResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(getFloatActivityResult);
 
-                FloatActivityAggregate floatActivityAggregate = getFloatActivityResult.GetValueOrThrow();
+                FloatActivityAggregate floatActivityAggregate = getFloatActivityResult.Data;
 
                 Result stateResult = floatActivityAggregate.RecordCreditPurchase(command.EstateId, command.CreditPurchasedDateTime, command.Amount, command.CreditId);
-                if (stateResult.IsFailed)
+                if (stateResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(stateResult);
                 Result saveResult = await this.AggregateService.Save(floatActivityAggregate, cancellationToken);
-                if (saveResult.IsFailed)
+                if (saveResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(saveResult);
                 return saveResult;
             }
             catch (Exception ex)
             {
-                return Result.Failure(ex.GetExceptionMessages());
+                return ResultHelpers.CreateFailure(ex.GetExceptionMessages());
             }
         }
 
@@ -161,31 +161,31 @@ namespace TransactionProcessor.BusinessLogic.Services
 
             try {
                 Result<TransactionAggregate> getTransactionResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<TransactionAggregate>(command.TransactionId, ct), command.TransactionId, cancellationToken);
-                if (getTransactionResult.IsFailed)
+                if (getTransactionResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(getTransactionResult);
                 
-                Guid floatId = getTransactionResult.GetValueOrThrow().OperatorId;
+                Guid floatId = getTransactionResult.Data.OperatorId;
 
                 // Generate the id for the activity aggregate
-                Guid floatActivityAggregateId = IdGenerationService.GenerateFloatActivityAggregateId(command.EstateId, floatId, getTransactionResult.GetValueOrThrow().TransactionDateTime.Date);
+                Guid floatActivityAggregateId = IdGenerationService.GenerateFloatActivityAggregateId(command.EstateId, floatId, getTransactionResult.Data.TransactionDateTime.Date);
 
                 Result<FloatActivityAggregate> getFloatActivityResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<FloatActivityAggregate>(floatActivityAggregateId, ct), floatActivityAggregateId, cancellationToken, false);
-                if (getFloatActivityResult.IsFailed)
+                if (getFloatActivityResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(getFloatActivityResult);
 
-                FloatActivityAggregate floatActivityAggregate = getFloatActivityResult.GetValueOrThrow();
+                FloatActivityAggregate floatActivityAggregate = getFloatActivityResult.Data;
 
-                Result stateResult = floatActivityAggregate.RecordTransactionAgainstFloat(command.EstateId, getTransactionResult.GetValueOrThrow().TransactionDateTime, getTransactionResult.GetValueOrThrow().TransactionAmount.GetValueOrDefault(), command.TransactionId);
-                if (stateResult.IsFailed)
+                Result stateResult = floatActivityAggregate.RecordTransactionAgainstFloat(command.EstateId, getTransactionResult.Data.TransactionDateTime, getTransactionResult.Data.TransactionAmount.GetValueOrDefault(), command.TransactionId);
+                if (stateResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(stateResult);
 
                 Result saveResult = await this.AggregateService.Save(floatActivityAggregate, cancellationToken);
-                if (saveResult.IsFailed)
+                if (saveResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(saveResult);
                 return saveResult;
             }
             catch (Exception ex) {
-                return Result.Failure(ex.GetExceptionMessages());
+                return ResultHelpers.CreateFailure(ex.GetExceptionMessages());
             }
         }
     }

@@ -1,6 +1,5 @@
 using MediatR;
 using Microsoft.AspNetCore.Http;
-using TransactionProcessing.UnionResults.AspNetCore;
 using TransactionProcessing.UnionResults;
 using System;
 using System.Collections.Generic;
@@ -17,11 +16,13 @@ using TransactionProcessor.Factories;
 using TransactionProcessor.Models.Contract;
 using TransactionProcessor.ProjectionEngine.Models;
 using TransactionProcessor.ProjectionEngine.State;
+using ContractProductTransactionFeeResponse = TransactionProcessor.DataTransferObjects.Responses.Contract.ContractProductTransactionFee;
+using ContractResponse = TransactionProcessor.DataTransferObjects.Responses.Contract.ContractResponse;
 
 namespace TransactionProcessor.Handlers;
 
 public static class MerchantHandlers {
-    public static async Task<IResultOutcome> GetMerchantBalance(IMediator mediator,
+    public static async Task<Result<MerchantBalanceResponse>> GetMerchantBalance(IMediator mediator,
                                                          HttpContext ctx,
                                                          Guid estateId,
                                                          Guid merchantId,
@@ -29,10 +30,10 @@ public static class MerchantHandlers {
         MerchantQueries.GetMerchantBalanceQuery query = new(estateId, merchantId);
         Result<MerchantBalanceState> result = await mediator.Send(query, cancellationToken);
 
-        return ResponseFactory.FromResult(result, r => new MerchantBalanceResponse { Balance = r.Balance, MerchantId = r.MerchantId, AvailableBalance = r.AvailableBalance, EstateId = r.EstateId });
+        return result.Map(r => new MerchantBalanceResponse { Balance = r.Balance, MerchantId = r.MerchantId, AvailableBalance = r.AvailableBalance, EstateId = r.EstateId });
     }
 
-    public static async Task<IResultOutcome> GetMerchantBalanceLive(IMediator mediator,
+    public static async Task<Result<MerchantBalanceResponse>> GetMerchantBalanceLive(IMediator mediator,
                                                              HttpContext ctx,
                                                              Guid estateId,
                                                              Guid merchantId,
@@ -40,7 +41,7 @@ public static class MerchantHandlers {
         MerchantQueries.GetMerchantLiveBalanceQuery query = new(merchantId);
         Result<MerchantBalanceProjectionState1> result = await mediator.Send(query, cancellationToken);
 
-        return ResponseFactory.FromResult(result, r => new MerchantBalanceResponse { Balance = r.merchant.balance, MerchantId = Guid.Parse(r.merchant.Id), AvailableBalance = r.merchant.balance, EstateId = estateId });
+        return result.Map(r => new MerchantBalanceResponse { Balance = r.merchant.balance, MerchantId = Guid.Parse(r.merchant.Id), AvailableBalance = r.merchant.balance, EstateId = estateId });
     }
 
     /// <summary>Gets the balance change history for a merchant over a date range.</summary>
@@ -48,7 +49,7 @@ public static class MerchantHandlers {
     /// <param name="merchantId">Merchant whose balance history is requested.</param>
     /// <param name="startDate" example="2026-01-01T00:00:00Z">Inclusive start of the history range, supplied as a query parameter.</param>
     /// <param name="endDate" example="2026-01-31T23:59:59Z">Inclusive end of the history range, supplied as a query parameter.</param>
-    public static async Task<IResultOutcome> GetMerchantBalanceHistory(IMediator mediator,
+    public static async Task<Result<List<MerchantBalanceChangedEntryResponse>>> GetMerchantBalanceHistory(IMediator mediator,
                                                                 HttpContext ctx,
                                                                 Guid estateId,
                                                                 Guid merchantId,
@@ -58,7 +59,7 @@ public static class MerchantHandlers {
         MerchantQueries.GetMerchantBalanceHistoryQuery query = new(estateId, merchantId, startDate, endDate);
         Result<List<MerchantBalanceChangedEntry>> result = await mediator.Send(query, cancellationToken);
 
-        return ResponseFactory.FromResult(result, r => {
+        return result.Map(r => {
             List<MerchantBalanceChangedEntryResponse> response = new();
             r.ForEach(h => response.Add(new MerchantBalanceChangedEntryResponse {
                 Balance = h.Balance,
@@ -74,7 +75,7 @@ public static class MerchantHandlers {
         });
     }
 
-    public static async Task<IResultOutcome> CreateMerchant(IMediator mediator,
+    public static async Task<Result<Guid>> CreateMerchant(IMediator mediator,
                                                      HttpContext ctx,
                                                      Guid estateId,
                                                      CreateMerchantRequest createMerchantRequest,
@@ -82,10 +83,10 @@ public static class MerchantHandlers {
         MerchantCommands.CreateMerchantCommand command = new(estateId, createMerchantRequest);
         Result<Guid> result = await mediator.Send(command, cancellationToken);
 
-        return ResponseFactory.FromResult<Guid>(result, (merchantId) => result.GetValueOrThrow());
+        return result;
     }
 
-    public static async Task<IResultOutcome> AssignOperator(IMediator mediator,
+    public static async Task<Result> AssignOperator(IMediator mediator,
                                                      HttpContext ctx,
                                                      Guid estateId,
                                                      Guid merchantId,
@@ -94,10 +95,10 @@ public static class MerchantHandlers {
         MerchantCommands.AssignOperatorToMerchantCommand command = new(estateId, merchantId, assignOperatorRequest);
         Result result = await mediator.Send(command, cancellationToken);
 
-        return ResponseFactory.FromResult(result);
+        return result;
     }
 
-    public static async Task<IResultOutcome> RemoveOperator(IMediator mediator,
+    public static async Task<Result> RemoveOperator(IMediator mediator,
                                                      HttpContext ctx,
                                                      Guid estateId,
                                                      Guid merchantId,
@@ -106,10 +107,10 @@ public static class MerchantHandlers {
         MerchantCommands.RemoveOperatorFromMerchantCommand command = new(estateId, merchantId, operatorId);
         Result result = await mediator.Send(command, cancellationToken);
 
-        return ResponseFactory.FromResult(result);
+        return result;
     }
 
-    public static async Task<IResultOutcome> AddDevice(IMediator mediator,
+    public static async Task<Result> AddDevice(IMediator mediator,
                                                 HttpContext ctx,
                                                 Guid estateId,
                                                 Guid merchantId,
@@ -118,10 +119,10 @@ public static class MerchantHandlers {
         MerchantCommands.AddMerchantDeviceCommand command = new(estateId, merchantId, addMerchantDeviceRequest);
         Result result = await mediator.Send(command, cancellationToken);
 
-        return ResponseFactory.FromResult(result);
+        return result;
     }
 
-    public static async Task<IResultOutcome> SwapMerchantDevice(IMediator mediator,
+    public static async Task<Result> SwapMerchantDevice(IMediator mediator,
                                                          HttpContext ctx,
                                                          Guid estateId,
                                                          Guid merchantId,
@@ -131,10 +132,10 @@ public static class MerchantHandlers {
         MerchantCommands.SwapMerchantDeviceCommand command = new(estateId, merchantId, deviceIdentifier, swapMerchantDeviceRequest);
         Result result = await mediator.Send(command, cancellationToken);
 
-        return ResponseFactory.FromResult(result);
+        return result;
     }
 
-    public static async Task<IResultOutcome> AddContract(IMediator mediator,
+    public static async Task<Result> AddContract(IMediator mediator,
                                                   HttpContext ctx,
                                                   Guid estateId,
                                                   Guid merchantId,
@@ -143,10 +144,10 @@ public static class MerchantHandlers {
         MerchantCommands.AddMerchantContractCommand command = new(estateId, merchantId, addMerchantContractRequest);
         Result result = await mediator.Send(command, cancellationToken);
 
-        return ResponseFactory.FromResult(result);
+        return result;
     }
 
-    public static async Task<IResultOutcome> RemoveContract(IMediator mediator,
+    public static async Task<Result> RemoveContract(IMediator mediator,
                                                      HttpContext ctx,
                                                      Guid estateId,
                                                      Guid merchantId,
@@ -155,10 +156,10 @@ public static class MerchantHandlers {
         MerchantCommands.RemoveMerchantContractCommand command = new(estateId, merchantId, contractId);
         Result result = await mediator.Send(command, cancellationToken);
 
-        return ResponseFactory.FromResult(result);
+        return result;
     }
 
-    public static async Task<IResultOutcome> CreateMerchantUser(IMediator mediator,
+    public static async Task<Result> CreateMerchantUser(IMediator mediator,
                                                          HttpContext ctx,
                                                          Guid estateId,
                                                          Guid merchantId,
@@ -167,10 +168,10 @@ public static class MerchantHandlers {
         MerchantCommands.CreateMerchantUserCommand command = new(estateId, merchantId, createMerchantUserRequest);
         Result result = await mediator.Send(command, cancellationToken);
 
-        return ResponseFactory.FromResult(result);
+        return result;
     }
 
-    public static async Task<IResultOutcome> MakeDeposit(IMediator mediator,
+    public static async Task<Result> MakeDeposit(IMediator mediator,
                                                   HttpContext ctx,
                                                   Guid estateId,
                                                   Guid merchantId,
@@ -179,10 +180,10 @@ public static class MerchantHandlers {
         MerchantCommands.MakeMerchantDepositCommand command = new(estateId, merchantId, DataTransferObjects.Requests.Merchant.MerchantDepositSource.Manual, makeMerchantDepositRequest);
         Result result = await mediator.Send(command, cancellationToken);
 
-        return ResponseFactory.FromResult(result);
+        return result;
     }
 
-    public static async Task<IResultOutcome> MakeWithdrawal(IMediator mediator,
+    public static async Task<Result> MakeWithdrawal(IMediator mediator,
                                                      HttpContext ctx,
                                                      Guid estateId,
                                                      Guid merchantId,
@@ -191,10 +192,10 @@ public static class MerchantHandlers {
         MerchantCommands.MakeMerchantWithdrawalCommand command = new(estateId, merchantId, makeMerchantWithdrawalRequest);
         Result result = await mediator.Send(command, cancellationToken);
 
-        return ResponseFactory.FromResult(result);
+        return result;
     }
 
-    public static async Task<IResultOutcome> GetMerchant(IMediator mediator,
+    public static async Task<Result<MerchantResponse>> GetMerchant(IMediator mediator,
                                                   HttpContext ctx,
                                                   Guid estateId,
                                                   Guid merchantId,
@@ -202,10 +203,10 @@ public static class MerchantHandlers {
         MerchantQueries.GetMerchantQuery query = new(estateId, merchantId);
         Result<Models.Merchant.Merchant> result = await mediator.Send(query, cancellationToken);
 
-        return ResponseFactory.FromResult(result, ModelFactory.ConvertFrom);
+        return result.Map(ModelFactory.ConvertFrom);
     }
 
-    public static async Task<IResultOutcome> GetMerchantContracts(IMediator mediator,
+    public static async Task<Result<List<ContractResponse>>> GetMerchantContracts(IMediator mediator,
                                                            HttpContext ctx,
                                                            Guid estateId,
                                                            Guid merchantId,
@@ -213,20 +214,20 @@ public static class MerchantHandlers {
         MerchantQueries.GetMerchantContractsQuery query = new(estateId, merchantId);
         Result<List<Models.Contract.Contract>> result = await mediator.Send(query, cancellationToken);
 
-        return ResponseFactory.FromResult(result, ModelFactory.ConvertFrom);
+        return result.Map(ModelFactory.ConvertFrom);
     }
 
-    public static async Task<IResultOutcome> GetMerchants(IMediator mediator,
+    public static async Task<Result<List<MerchantResponse>>> GetMerchants(IMediator mediator,
                                                    HttpContext ctx,
                                                    Guid estateId,
                                                    CancellationToken cancellationToken) {
         MerchantQueries.GetMerchantsQuery query = new(estateId);
         Result<List<Models.Merchant.Merchant>> result = await mediator.Send(query, cancellationToken);
 
-        return ResponseFactory.FromResult(result, ModelFactory.ConvertFrom);
+        return result.Map(ModelFactory.ConvertFrom);
     }
 
-    public static async Task<IResultOutcome> GetTransactionFeesForProduct(IMediator mediator,
+    public static async Task<Result<List<ContractProductTransactionFeeResponse>>> GetTransactionFeesForProduct(IMediator mediator,
                                                                    HttpContext ctx,
                                                                    Guid estateId,
                                                                    Guid merchantId,
@@ -236,10 +237,10 @@ public static class MerchantHandlers {
         MerchantQueries.GetTransactionFeesForProductQuery query = new(estateId, merchantId, contractId, productId);
         Result<List<ContractProductTransactionFee>> result = await mediator.Send(query, cancellationToken);
 
-        return ResponseFactory.FromResult(result, ModelFactory.ConvertFrom);
+        return result.Map(ModelFactory.ConvertFrom);
     }
 
-    public static async Task<IResultOutcome> UpdateMerchant(IMediator mediator,
+    public static async Task<Result> UpdateMerchant(IMediator mediator,
                                                      HttpContext ctx,
                                                      Guid estateId,
                                                      Guid merchantId,
@@ -248,10 +249,10 @@ public static class MerchantHandlers {
         MerchantCommands.UpdateMerchantCommand command = new(estateId, merchantId, updateMerchantRequest);
         Result result = await mediator.Send(command, cancellationToken);
 
-        return ResponseFactory.FromResult(result);
+        return result;
     }
 
-    public static async Task<IResultOutcome> UpdateMerchantOpening(IMediator mediator,
+    public static async Task<Result> UpdateMerchantOpening(IMediator mediator,
                                                       HttpContext ctx,
                                                       Guid estateId,
                                                      Guid merchantId,
@@ -261,11 +262,11 @@ public static class MerchantHandlers {
         MerchantCommands.UpdateMerchantOpeningHoursCommand command = new(estateId, merchantId, merchantOpeningRequest);
         Result result = await mediator.Send(command, cancellationToken);
 
-        return ResponseFactory.FromResult(result);
+        return result;
         
     }
 
-    public static async Task<IResultOutcome> CreateMerchantSchedule(IMediator mediator,
+    public static async Task<Result> CreateMerchantSchedule(IMediator mediator,
                                                              HttpContext ctx,
                                                              Guid estateId,
                                                              Guid merchantId,
@@ -274,10 +275,10 @@ public static class MerchantHandlers {
         MerchantCommands.CreateMerchantScheduleCommand command = new(estateId, merchantId, createMerchantScheduleRequest);
         Result result = await mediator.Send(command, cancellationToken);
 
-        return ResponseFactory.FromResult(result);
+        return result;
     }
 
-    public static async Task<IResultOutcome> GetMerchantSchedule(IMediator mediator,
+    public static async Task<Result<MerchantScheduleResponse>> GetMerchantSchedule(IMediator mediator,
                                                           HttpContext ctx,
                                                           Guid estateId,
                                                           Guid merchantId,
@@ -286,10 +287,10 @@ public static class MerchantHandlers {
         MerchantQueries.GetMerchantScheduleQuery query = new(estateId, merchantId, year);
         Result<Models.MerchantSchedule.MerchantSchedule> result = await mediator.Send(query, cancellationToken);
 
-        return ResponseFactory.FromResult(result, ModelFactory.ConvertFrom);
+        return result.Map(ModelFactory.ConvertFrom);
     }
 
-    public static async Task<IResultOutcome> GetMerchantScheduleFromReadModel(IMediator mediator,
+    public static async Task<Result<MerchantScheduleResponse>> GetMerchantScheduleFromReadModel(IMediator mediator,
                                                                        HttpContext ctx,
                                                                        Guid estateId,
                                                                        Guid merchantId,
@@ -298,10 +299,10 @@ public static class MerchantHandlers {
         MerchantQueries.GetMerchantScheduleFromReadModelQuery query = new(estateId, merchantId, year);
         Result<Models.MerchantSchedule.MerchantSchedule> result = await mediator.Send(query, cancellationToken);
 
-        return ResponseFactory.FromResult(result, ModelFactory.ConvertFrom);
+        return result.Map(ModelFactory.ConvertFrom);
     }
 
-    public static async Task<IResultOutcome> UpdateMerchantSchedule(IMediator mediator,
+    public static async Task<Result> UpdateMerchantSchedule(IMediator mediator,
                                                              HttpContext ctx,
                                                              Guid estateId,
                                                              Guid merchantId,
@@ -311,10 +312,10 @@ public static class MerchantHandlers {
         MerchantCommands.UpdateMerchantScheduleCommand command = new(estateId, merchantId, year, updateMerchantScheduleRequest);
         Result result = await mediator.Send(command, cancellationToken);
 
-        return ResponseFactory.FromResult(result);
+        return result;
     }
 
-    public static async Task<IResultOutcome> AddMerchantAddress(IMediator mediator,
+    public static async Task<Result> AddMerchantAddress(IMediator mediator,
                                                           HttpContext ctx,
                                                           Guid estateId,
                                                          Guid merchantId,
@@ -323,10 +324,10 @@ public static class MerchantHandlers {
         MerchantCommands.AddMerchantAddressCommand command = new(estateId, merchantId, addAddressRequest);
         Result result = await mediator.Send(command, cancellationToken);
 
-        return ResponseFactory.FromResult(result);
+        return result;
     }
 
-    public static async Task<IResultOutcome> UpdateMerchantAddress(IMediator mediator,
+    public static async Task<Result> UpdateMerchantAddress(IMediator mediator,
                                                             HttpContext ctx,
                                                             Guid estateId,
                                                             Guid merchantId,
@@ -336,10 +337,10 @@ public static class MerchantHandlers {
         MerchantCommands.UpdateMerchantAddressCommand command = new(estateId, merchantId, addressId, updateAddressRequest);
         Result result = await mediator.Send(command, cancellationToken);
 
-        return ResponseFactory.FromResult(result);
+        return result;
     }
 
-    public static async Task<IResultOutcome> AddMerchantContact(IMediator mediator,
+    public static async Task<Result> AddMerchantContact(IMediator mediator,
                                                          HttpContext ctx,
                                                          Guid estateId,
                                                          Guid merchantId,
@@ -348,10 +349,10 @@ public static class MerchantHandlers {
         MerchantCommands.AddMerchantContactCommand command = new(estateId, merchantId, addContactRequest);
         Result result = await mediator.Send(command, cancellationToken);
 
-        return ResponseFactory.FromResult(result);
+        return result;
     }
 
-    public static async Task<IResultOutcome> UpdateMerchantContact(IMediator mediator,
+    public static async Task<Result> UpdateMerchantContact(IMediator mediator,
                                                             HttpContext ctx,
                                                             Guid estateId,
                                                             Guid merchantId,
@@ -361,10 +362,10 @@ public static class MerchantHandlers {
         MerchantCommands.UpdateMerchantContactCommand command = new(estateId, merchantId, contactId, updateContactRequest);
         Result result = await mediator.Send(command, cancellationToken);
 
-        return ResponseFactory.FromResult(result);
+        return result;
     }
 
-    public static async Task<IResultOutcome> GenerateMerchantStatement(IMediator mediator,
+    public static async Task<Result> GenerateMerchantStatement(IMediator mediator,
                                                                 HttpContext ctx,
                                                                 Guid estateId,
                                                                 Guid merchantId,
@@ -373,6 +374,6 @@ public static class MerchantHandlers {
         MerchantCommands.GenerateMerchantStatementCommand command = new(estateId, merchantId, generateMerchantStatementRequest);
         Result result = await mediator.Send(command, cancellationToken);
 
-        return ResponseFactory.FromResult(result);
+        return result;
     }
 }

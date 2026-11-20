@@ -25,7 +25,7 @@ public class VoucherAggregateTests
         {
             Aggregates.VoucherAggregate aggregate = Aggregates.VoucherAggregate.Create(TestData.VoucherId);
             Result result = aggregate.Generate(TestData.OperatorId, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
             
             Voucher voucher = aggregate.GetVoucher();
 
@@ -44,7 +44,7 @@ public class VoucherAggregateTests
             aggregate.Generate(TestData.OperatorId, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
 
             Result result = aggregate.Generate(TestData.OperatorId, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
         }
 
         [Fact]
@@ -54,7 +54,7 @@ public class VoucherAggregateTests
             aggregate.Generate(TestData.OperatorId, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
             aggregate.Issue(TestData.RecipientEmail, TestData.RecipientMobile, TestData.IssuedDateTime);
             var result = aggregate.Generate(TestData.OperatorId, TestData.EstateId, TestData.TransactionId, TestData.IssuedDateTime, TestData.Value);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
         }
 
         [Fact]
@@ -63,8 +63,8 @@ public class VoucherAggregateTests
             Aggregates.VoucherAggregate aggregate = Aggregates.VoucherAggregate.Create(TestData.VoucherId);
 
             Result result = aggregate.Generate(Guid.Empty, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
     [Fact]
@@ -73,8 +73,8 @@ public class VoucherAggregateTests
         Aggregates.VoucherAggregate aggregate = Aggregates.VoucherAggregate.Create(TestData.VoucherId);
 
         Result result = aggregate.Generate(TestData.OperatorId, TestData.EstateId, Guid.Empty, TestData.GeneratedDateTime, TestData.Value);
-        result.IsFailed.ShouldBeTrue();
-        result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+        result.IsSuccess().ShouldBeFalse();
+        result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
     }
 
     [Fact]
@@ -83,8 +83,8 @@ public class VoucherAggregateTests
         Aggregates.VoucherAggregate aggregate = Aggregates.VoucherAggregate.Create(TestData.VoucherId);
 
         Result result = aggregate.Generate(TestData.OperatorId, TestData.EstateId, TestData.TransactionId, DateTime.MinValue, TestData.Value);
-        result.IsFailed.ShouldBeTrue();
-        result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+        result.IsSuccess().ShouldBeFalse();
+        result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
     }
 
     [Fact]
@@ -93,8 +93,8 @@ public class VoucherAggregateTests
             Aggregates.VoucherAggregate aggregate = Aggregates.VoucherAggregate.Create(TestData.VoucherId);
 
             Result result = aggregate.Generate(TestData.OperatorId, Guid.Empty, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -105,8 +105,8 @@ public class VoucherAggregateTests
             Aggregates.VoucherAggregate aggregate = Aggregates.VoucherAggregate.Create(TestData.VoucherId);
 
             Result result = aggregate.Generate(TestData.OperatorId, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, value);
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -115,7 +115,7 @@ public class VoucherAggregateTests
             Aggregates.VoucherAggregate aggregate = Aggregates.VoucherAggregate.Create(TestData.VoucherId);
             aggregate.Generate(TestData.OperatorId, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
             Result result = aggregate.Issue(TestData.RecipientEmail, TestData.RecipientMobile, TestData.IssuedDateTime);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
             
             Voucher voucher = aggregate.GetVoucher();
             voucher.IsIssued.ShouldBeTrue();
@@ -127,8 +127,8 @@ public class VoucherAggregateTests
             Aggregates.VoucherAggregate aggregate = Aggregates.VoucherAggregate.Create(TestData.VoucherId);
 
             Result result = aggregate.Issue(TestData.RecipientEmail, TestData.RecipientMobile, TestData.IssuedDateTime);
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -139,7 +139,7 @@ public class VoucherAggregateTests
             aggregate.Issue(TestData.RecipientEmail, TestData.RecipientMobile, TestData.IssuedDateTime);
 
             Result result = aggregate.Issue(TestData.RecipientEmail, TestData.RecipientMobile, TestData.IssuedDateTime);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
         }
 
         [Theory]
@@ -152,8 +152,8 @@ public class VoucherAggregateTests
             Aggregates.VoucherAggregate aggregate = Aggregates.VoucherAggregate.Create(TestData.VoucherId);
             aggregate.Generate(TestData.OperatorId, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
             Result result = aggregate.Issue(recipientEmail, recipientMobile, TestData.IssuedDateTime);
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -162,7 +162,7 @@ public class VoucherAggregateTests
             Aggregates.VoucherAggregate aggregate = Aggregates.VoucherAggregate.Create(TestData.VoucherId);
             aggregate.Generate(TestData.OperatorId, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
             Result result = aggregate.AddBarcode(TestData.Barcode);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
 
             Voucher voucher = aggregate.GetVoucher();
             voucher.Barcode.ShouldBe(TestData.Barcode);
@@ -176,8 +176,8 @@ public class VoucherAggregateTests
             aggregate.Generate(TestData.OperatorId, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
 
             Result result = aggregate.AddBarcode(barcode);
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -186,8 +186,8 @@ public class VoucherAggregateTests
             Aggregates.VoucherAggregate aggregate = Aggregates.VoucherAggregate.Create(TestData.VoucherId);
 
             Result result = aggregate.AddBarcode(TestData.Barcode);
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -197,8 +197,8 @@ public class VoucherAggregateTests
             aggregate.Issue(TestData.RecipientEmail, TestData.RecipientMobile, TestData.IssuedDateTime);
 
             Result result = aggregate.AddBarcode(TestData.Barcode);
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -219,8 +219,8 @@ public class VoucherAggregateTests
             Aggregates.VoucherAggregate aggregate = Aggregates.VoucherAggregate.Create(TestData.VoucherId);
 
         Result result = aggregate.Redeem(TestData.RedeemedDateTime, TestData.HostDateTime);
-        result.IsFailed.ShouldBeTrue();
-        result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+        result.IsSuccess().ShouldBeFalse();
+        result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
     }
 
         [Fact]
@@ -230,8 +230,8 @@ public class VoucherAggregateTests
             aggregate.Generate(TestData.OperatorId, TestData.EstateId, TestData.TransactionId, TestData.GeneratedDateTime, TestData.Value);
 
         Result result = aggregate.Redeem(TestData.RedeemedDateTime, TestData.HostDateTime);
-        result.IsFailed.ShouldBeTrue();
-        result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+        result.IsSuccess().ShouldBeFalse();
+        result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
     }
 
         [Fact]
@@ -243,7 +243,7 @@ public class VoucherAggregateTests
             aggregate.Redeem(TestData.RedeemedDateTime, TestData.HostDateTime);
             
             Result result = aggregate.Redeem(TestData.RedeemedDateTime, TestData.HostDateTime);
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
     }

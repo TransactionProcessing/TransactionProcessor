@@ -145,14 +145,14 @@ public class VoucherDomainEventHandler : IDomainEventHandler
     {
         // Get the voucher aggregate
         Result<VoucherAggregate> voucherAggregateResult = await this.AggregateService.Get<VoucherAggregate>(domainEvent.VoucherId, cancellationToken);
-        if (voucherAggregateResult.IsFailed)
+        if (voucherAggregateResult.IsSuccess() == false)
             return ResultHelpers.CreateFailure(voucherAggregateResult);
 
-        Models.Voucher voucherModel = voucherAggregateResult.GetValueOrThrow().GetVoucher();
+        Models.Voucher voucherModel = voucherAggregateResult.Data.GetVoucher();
         Result<TokenResponse> getTokenResult = await Helpers.GetToken(this.TokenResponse, this.SecurityServiceClient, cancellationToken);
-        if (getTokenResult.IsFailed)
+        if (getTokenResult.IsSuccess() == false)
             return ResultHelpers.CreateFailure(getTokenResult);
-        this.TokenResponse = getTokenResult.GetValueOrThrow();
+        this.TokenResponse = getTokenResult.Data;
         if (string.IsNullOrEmpty(voucherModel.RecipientEmail) == false)
         {
             String message = await this.GetEmailVoucherMessage(voucherModel, cancellationToken);
@@ -172,7 +172,7 @@ public class VoucherDomainEventHandler : IDomainEventHandler
                                        };
 
             var result = await this.MessagingServiceClient.SendEmail(this.TokenResponse.AccessToken, request, cancellationToken);
-            return result.IsFailed ? Result.Fail(ResultHelpers.CreateFailure(result)) : Result.Success();
+            return result.IsSuccess() == false ? Results.Fail(ResultHelpers.CreateFailure(result)) : Results.Ok();
         }
 
         if (String.IsNullOrEmpty(voucherModel.RecipientMobile) == false)
@@ -189,10 +189,10 @@ public class VoucherDomainEventHandler : IDomainEventHandler
                                      };
 
             var result = await this.MessagingServiceClient.SendSMS(this.TokenResponse.AccessToken, request, cancellationToken);
-            return result.IsFailed ? Result.Fail(ResultHelpers.CreateFailure(result)) : Result.Success();
+            return result.IsSuccess() == false ? Results.Fail(ResultHelpers.CreateFailure(result)) : Results.Ok();
         }
         // No messages to be sent
-        return Result.Success();
+        return Results.Ok();
     }
 
     /// <summary>

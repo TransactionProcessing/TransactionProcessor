@@ -32,8 +32,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
             IOperatorProxy voucherManagementProxy = new VoucherManagementProxy(mediator.Instance());
 
             var processLogonMessageResult = await voucherManagementProxy.ProcessLogonMessage(TestContext.Current.CancellationToken);
-            processLogonMessageResult.IsSuccess.ShouldBeTrue();
-            OperatorResponse operatorResponse = processLogonMessageResult.GetValueOrThrow();
+            processLogonMessageResult.IsSuccess().ShouldBeTrue();
+            OperatorResponse operatorResponse = processLogonMessageResult.Data;
             operatorResponse.ShouldNotBeNull();
             operatorResponse.IsSuccessful.ShouldBeTrue();
             operatorResponse.ResponseCode.ShouldBe("0000");
@@ -42,7 +42,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         [Fact]
         public async Task VoucherManagementProxy_ProcessSaleMessage_VoucherIssueSuccessful_SaleMessageIsProcessed() {
             IMediatorImposter mediator = new();
-            mediator.Send<Result<TransactionProcessor.Models.IssueVoucherResponse>>(Arg<IRequest<Result<TransactionProcessor.Models.IssueVoucherResponse>>>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.IssueVoucherResponse));
+            mediator.Send<Result<TransactionProcessor.Models.IssueVoucherResponse>>(Arg<IRequest<Result<TransactionProcessor.Models.IssueVoucherResponse>>>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.IssueVoucherResponse));
             IOperatorProxy voucherManagementProxy = new VoucherManagementProxy(mediator.Instance());
 
             var result = await voucherManagementProxy.ProcessSaleMessage(TestData.TransactionId,
@@ -52,8 +52,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                 TestData.TransactionReference,
                                                                                                 TestData.AdditionalTransactionMetaDataForVoucher(),
                                                                                                 TestContext.Current.CancellationToken);
-            result.IsSuccess.ShouldBeTrue();
-            var operatorResponse = result.GetValueOrThrow();
+            result.IsSuccess().ShouldBeTrue();
+            var operatorResponse = result.Data;
             operatorResponse.ShouldNotBeNull();
             operatorResponse.IsSuccessful.ShouldBeTrue();
             operatorResponse.ResponseCode.ShouldBe("0000");
@@ -66,7 +66,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
         public async Task VoucherManagementProxy_ProcessSaleMessage_VoucherIssueFailed_FailedResultReturned()
         {
             IMediatorImposter mediator = new();
-            mediator.Send<Result<TransactionProcessor.Models.IssueVoucherResponse>>(Arg<IRequest<Result<TransactionProcessor.Models.IssueVoucherResponse>>>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure("Some grim error"));
+            mediator.Send<Result<TransactionProcessor.Models.IssueVoucherResponse>>(Arg<IRequest<Result<TransactionProcessor.Models.IssueVoucherResponse>>>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(new Error(ErrorType.Failure, "Some grim error"));
             IOperatorProxy voucherManagementProxy = new VoucherManagementProxy(mediator.Instance());
 
             var result = await voucherManagementProxy.ProcessSaleMessage(TestData.TransactionId,
@@ -77,7 +77,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                 TestData.AdditionalTransactionMetaDataForVoucher(),
                 TestContext.Current.CancellationToken);
             
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
@@ -96,10 +96,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                          TestData.AdditionalTransactionMetaDataForVoucher(),
                                                                                          TestContext.Current.CancellationToken);
 
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Failure);
-            result.Message.ShouldContain("Error issuing voucher");
-            result.Message.ShouldContain("Execution Timeout Expired");
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Failure);
+            result.GetErrorMessage().ShouldContain("Error issuing voucher");
+            result.GetErrorMessage().ShouldContain("Execution Timeout Expired");
         }
 
         [Theory]
@@ -124,8 +124,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                         TestContext.Current.CancellationToken);
 
 
-                                        result.IsFailed.ShouldBeTrue();
-                                        result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+                                        result.IsSuccess().ShouldBeFalse();
+                                        result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Theory]
@@ -154,8 +154,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                         TestData.TransactionReference,
                                                                                         additionalMetatdata,
                                                                                         TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
     }
 }

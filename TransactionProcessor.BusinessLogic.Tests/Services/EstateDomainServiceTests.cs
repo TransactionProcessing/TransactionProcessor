@@ -37,7 +37,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             this.SecurityServiceClient = new ISecurityServiceClientImposter();
             this.SecurityServiceClient
                 .GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
+                .ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
             IAggregateService AggregateServiceResolver() => this.AggregateService.Instance();
             this.DomainService = new EstateDomainService(AggregateServiceResolver, this.SecurityServiceClient.Instance());
         }
@@ -46,59 +46,59 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         public async Task EstateDomainService_CreateEstate_EstateIsCreated() {
             
             this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(TransactionProcessing.UnionResults.Result.Success(new EstateAggregate()));
+                .ReturnsAsync(TransactionProcessing.UnionResults.Results.Ok(new EstateAggregate()));
             this.AggregateService
                 .Save(Arg<EstateAggregate>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(TransactionProcessing.UnionResults.Result.Success());
+                .ReturnsAsync(TransactionProcessing.UnionResults.Results.Ok());
             
             Result<Guid> result = await this.DomainService.CreateEstate(TestData.Commands.CreateEstateCommand, TestContext.Current.CancellationToken);
-            result.IsSuccess.ShouldBeTrue();
-            result.GetValueOrThrow().ShouldNotBe(Guid.Empty);
+            result.IsSuccess().ShouldBeTrue();
+            result.Data.ShouldNotBe(Guid.Empty);
         }
         
         [Fact]
         public async Task EstateDomainService_AddOperatorEstate_OperatorIsAdded()
         {
             this.AggregateService.Get<OperatorAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(TransactionProcessing.UnionResults.Result.Success(TestData.Aggregates.CreatedOperatorAggregate()));
+                .ReturnsAsync(TransactionProcessing.UnionResults.Results.Ok(TestData.Aggregates.CreatedOperatorAggregate()));
 
             this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(TransactionProcessing.UnionResults.Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
-            this.AggregateService.Save(Arg<EstateAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(TransactionProcessing.UnionResults.Result.Success());
+                .ReturnsAsync(TransactionProcessing.UnionResults.Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
+            this.AggregateService.Save(Arg<EstateAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(TransactionProcessing.UnionResults.Results.Ok());
 
             Result result = await this.DomainService.AddOperatorToEstate(TestData.Commands.AddOperatorToEstateCommand, TestContext.Current.CancellationToken);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
         }
         
         [Fact]
         public async Task EstateDomainService_RemoveOperatorFromEstate_OperatorIsRemoved()
         {
-            this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
-            this.AggregateService.Save(Arg<EstateAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
+            this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
+            this.AggregateService.Save(Arg<EstateAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok());
             Result result = await this.DomainService.RemoveOperatorFromEstate(TestData.Commands.RemoveOperatorFromEstateCommand, TestContext.Current.CancellationToken);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
         }
 
         [Fact]
         public async Task EstateDomainService_CreateEstateUser_EstateUserIsCreated() {
             this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+                .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
             this.AggregateService.Save(Arg<EstateAggregate>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(TransactionProcessing.UnionResults.Result.Success());
+                .ReturnsAsync(TransactionProcessing.UnionResults.Results.Ok());
 
             this.SecurityServiceClient
                 .CreateUser(Arg<String>.Any(),Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success());
+                .ReturnsAsync(Results.Ok());
             this.SecurityServiceClient
                 .GetUsers(Arg<String>.Any(),Arg<String>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(new List<UserResponse>() {
+                .ReturnsAsync(Results.Ok(new List<UserResponse>() {
                     new UserResponse {
                         UserId = "FA077CE3-B915-4048-88E3-9B500699317F"
                     }
                 }));
 
             Result result = await this.DomainService.CreateEstateUser(TestData.Commands.CreateEstateUserCommand, TestContext.Current.CancellationToken);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
         }
 
         [Fact]
@@ -110,17 +110,17 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 Environment.SetEnvironmentVariable("EstateRoleName", "CustomEstateRole");
 
                 this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                    .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+                    .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
                 this.AggregateService.Save(Arg<EstateAggregate>.Any(), Arg<CancellationToken>.Any())
-                    .ReturnsAsync(TransactionProcessing.UnionResults.Result.Success());
+                    .ReturnsAsync(TransactionProcessing.UnionResults.Results.Ok());
 
                 this.SecurityServiceClient
                     .CreateUser(Arg<String>.Any(), Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
-                    .ReturnsAsync(Result.Success())
+                    .ReturnsAsync(Results.Ok())
                     .Callback((token, request, _) => { capturedRequest = request; return Task.CompletedTask; });
                 this.SecurityServiceClient
                     .GetUsers(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-                    .ReturnsAsync(Result.Success(new List<UserResponse>() {
+                    .ReturnsAsync(Results.Ok(new List<UserResponse>() {
                         new UserResponse {
                             UserId = "FA077CE3-B915-4048-88E3-9B500699317F"
                         }
@@ -128,7 +128,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
                 Result result = await this.DomainService.CreateEstateUser(TestData.Commands.CreateEstateUserCommand, TestContext.Current.CancellationToken);
 
-                result.IsSuccess.ShouldBeTrue();
+                result.IsSuccess().ShouldBeTrue();
                 capturedRequest.ShouldNotBeNull();
                 capturedRequest.Roles.ShouldContain("CustomEstateRole");
                 capturedRequest.Claims["estateId"].ShouldBe(TestData.EstateId.ToString());
@@ -142,258 +142,258 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         public async Task EstateDomainService_CreateEstateUser_UserCreateFailed_ResultIsFailed()
         {
             this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+                .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
             this.AggregateService.Save(Arg<EstateAggregate>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(TransactionProcessing.UnionResults.Result.Success());
+                .ReturnsAsync(TransactionProcessing.UnionResults.Results.Ok());
 
             this.SecurityServiceClient
                 .CreateUser(Arg<String>.Any(), Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure("Test failure"));
+                .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
             this.SecurityServiceClient
                 .GetUsers(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(new List<UserResponse>() {
+                .ReturnsAsync(Results.Ok(new List<UserResponse>() {
                     new UserResponse {
                         UserId = "FA077CE3-B915-4048-88E3-9B500699317F"
                     }
                 }));
 
             Result result = await this.DomainService.CreateEstateUser(TestData.Commands.CreateEstateUserCommand, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task EstateDomainService_CreateEstateUser_GetUsersFailed_ResultIsFailed()
         {
             this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+                .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
             this.AggregateService.Save(Arg<EstateAggregate>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(TransactionProcessing.UnionResults.Result.Success());
+                .ReturnsAsync(TransactionProcessing.UnionResults.Results.Ok());
 
             this.SecurityServiceClient
                 .CreateUser(Arg<String>.Any(), Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success());
+                .ReturnsAsync(Results.Ok());
             this.SecurityServiceClient
                 .GetUsers(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure("Test failure"));
+                .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
             Result result = await this.DomainService.CreateEstateUser(TestData.Commands.CreateEstateUserCommand, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task EstateDomainService_CreateEstateUser_NullUserReturned_ResultIsFailed()
         {
             this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+                .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
             this.AggregateService.Save(Arg<EstateAggregate>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(TransactionProcessing.UnionResults.Result.Success());
+                .ReturnsAsync(TransactionProcessing.UnionResults.Results.Ok());
 
             this.SecurityServiceClient
                 .CreateUser(Arg<String>.Any(), Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success());
+                .ReturnsAsync(Results.Ok());
             this.SecurityServiceClient
                 .GetUsers(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(new List<UserResponse>() {
+                .ReturnsAsync(Results.Ok(new List<UserResponse>() {
                     null
                 }));
 
             Result result = await this.DomainService.CreateEstateUser(TestData.Commands.CreateEstateUserCommand, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task EstateDomainService_CreateEstateUser_GetEstateFailed_ResultIsFailed()
         {
             this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure("Test failure"));
+                .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
             this.SecurityServiceClient
                 .CreateUser(Arg<String>.Any(), Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success());
+                .ReturnsAsync(Results.Ok());
             this.SecurityServiceClient
                 .GetUsers(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(new List<UserResponse>() {
+                .ReturnsAsync(Results.Ok(new List<UserResponse>() {
                     new UserResponse {
                         UserId = "FA077CE3-B915-4048-88E3-9B500699317F"
                     }
                 }));
 
             Result result = await this.DomainService.CreateEstateUser(TestData.Commands.CreateEstateUserCommand, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task EstateDomainService_CreateEstateUser_EstateNotCreated_ResultIsFailed()
         {
             this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyEstateAggregate));
+                .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyEstateAggregate));
             this.AggregateService.Save(Arg<EstateAggregate>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(TransactionProcessing.UnionResults.Result.Success());
+                .ReturnsAsync(TransactionProcessing.UnionResults.Results.Ok());
 
             this.SecurityServiceClient
                 .CreateUser(Arg<String>.Any(), Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success());
+                .ReturnsAsync(Results.Ok());
             this.SecurityServiceClient
                 .GetUsers(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(new List<UserResponse>() {
+                .ReturnsAsync(Results.Ok(new List<UserResponse>() {
                     new UserResponse {
                         UserId = "FA077CE3-B915-4048-88E3-9B500699317F"
                     }
                 }));
 
             Result result = await this.DomainService.CreateEstateUser(TestData.Commands.CreateEstateUserCommand, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task EstateDomainService_CreateEstateUser_SaveFailed_ResultIsFailed()
         {
             this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+                .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
             this.AggregateService.Save(Arg<EstateAggregate>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure("Test failure"));
+                .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
             this.SecurityServiceClient
                 .CreateUser(Arg<String>.Any(), Arg<CreateUserRequest>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success());
+                .ReturnsAsync(Results.Ok());
             this.SecurityServiceClient
                 .GetUsers(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(new List<UserResponse>() {
+                .ReturnsAsync(Results.Ok(new List<UserResponse>() {
                     new UserResponse {
                         UserId = "FA077CE3-B915-4048-88E3-9B500699317F"
                     }
                 }));
 
             Result result = await this.DomainService.CreateEstateUser(TestData.Commands.CreateEstateUserCommand, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task EstateDomainService_CreateEstate_GetEstateFailed_ResultIsFailed()
         {
             this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure("Test failure"));
+                .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
             Result<Guid> result = await this.DomainService.CreateEstate(TestData.Commands.CreateEstateCommand, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task EstateDomainService_CreateEstate_EstateNameEmpty_ResultIsFailed()
         {
             this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(TransactionProcessing.UnionResults.Result.Success(new EstateAggregate()));
+                .ReturnsAsync(TransactionProcessing.UnionResults.Results.Ok(new EstateAggregate()));
 
             EstateCommands.CreateEstateCommand emptyNameCommand = new EstateCommands.CreateEstateCommand(
                 new CreateEstateRequest { EstateName = String.Empty });
 
             Result<Guid> result = await this.DomainService.CreateEstate(emptyNameCommand, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task EstateDomainService_CreateEstate_SaveFailed_ResultIsFailed()
         {
             this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(TransactionProcessing.UnionResults.Result.Success(new EstateAggregate()));
+                .ReturnsAsync(TransactionProcessing.UnionResults.Results.Ok(new EstateAggregate()));
             this.AggregateService
                 .Save(Arg<EstateAggregate>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure("Test failure"));
+                .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
             Result<Guid> result = await this.DomainService.CreateEstate(TestData.Commands.CreateEstateCommand, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task EstateDomainService_AddOperatorToEstate_GetOperatorFailed_ResultIsFailed()
         {
             this.AggregateService.Get<OperatorAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure("Test failure"));
+                .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
             this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(TransactionProcessing.UnionResults.Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+                .ReturnsAsync(TransactionProcessing.UnionResults.Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
             Result result = await this.DomainService.AddOperatorToEstate(TestData.Commands.AddOperatorToEstateCommand, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task EstateDomainService_AddOperatorToEstate_GetEstateFailed_ResultIsFailed()
         {
             this.AggregateService.Get<OperatorAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(TransactionProcessing.UnionResults.Result.Success(TestData.Aggregates.CreatedOperatorAggregate()));
+                .ReturnsAsync(TransactionProcessing.UnionResults.Results.Ok(TestData.Aggregates.CreatedOperatorAggregate()));
             this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure("Test failure"));
+                .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
             Result result = await this.DomainService.AddOperatorToEstate(TestData.Commands.AddOperatorToEstateCommand, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task EstateDomainService_AddOperatorToEstate_EstateNotCreated_ResultIsFailed()
         {
             this.AggregateService.Get<OperatorAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(TransactionProcessing.UnionResults.Result.Success(TestData.Aggregates.CreatedOperatorAggregate()));
+                .ReturnsAsync(TransactionProcessing.UnionResults.Results.Ok(TestData.Aggregates.CreatedOperatorAggregate()));
             this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(TransactionProcessing.UnionResults.Result.Success(TestData.Aggregates.EmptyEstateAggregate));
+                .ReturnsAsync(TransactionProcessing.UnionResults.Results.Ok(TestData.Aggregates.EmptyEstateAggregate));
 
             Result result = await this.DomainService.AddOperatorToEstate(TestData.Commands.AddOperatorToEstateCommand, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task EstateDomainService_AddOperatorToEstate_SaveFailed_ResultIsFailed()
         {
             this.AggregateService.Get<OperatorAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(TransactionProcessing.UnionResults.Result.Success(TestData.Aggregates.CreatedOperatorAggregate()));
+                .ReturnsAsync(TransactionProcessing.UnionResults.Results.Ok(TestData.Aggregates.CreatedOperatorAggregate()));
             this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(TransactionProcessing.UnionResults.Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+                .ReturnsAsync(TransactionProcessing.UnionResults.Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
             this.AggregateService.Save(Arg<EstateAggregate>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure("Test failure"));
+                .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
             Result result = await this.DomainService.AddOperatorToEstate(TestData.Commands.AddOperatorToEstateCommand, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task EstateDomainService_RemoveOperatorFromEstate_GetEstateFailed_ResultIsFailed()
         {
             this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure("Test failure"));
+                .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
             Result result = await this.DomainService.RemoveOperatorFromEstate(TestData.Commands.RemoveOperatorFromEstateCommand, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task EstateDomainService_RemoveOperatorFromEstate_EstateNotCreated_ResultIsFailed()
         {
             this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyEstateAggregate));
+                .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyEstateAggregate));
 
             Result result = await this.DomainService.RemoveOperatorFromEstate(TestData.Commands.RemoveOperatorFromEstateCommand, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task EstateDomainService_RemoveOperatorFromEstate_OperatorNotAdded_ResultIsFailed()
         {
             this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+                .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
             Result result = await this.DomainService.RemoveOperatorFromEstate(TestData.Commands.RemoveOperatorFromEstateCommand, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task EstateDomainService_RemoveOperatorFromEstate_SaveFailed_ResultIsFailed()
         {
             this.AggregateService.GetLatest<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+                .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
             this.AggregateService.Save(Arg<EstateAggregate>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure("Test failure"));
+                .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
             Result result = await this.DomainService.RemoveOperatorFromEstate(TestData.Commands.RemoveOperatorFromEstateCommand, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
@@ -403,7 +403,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ThrowsAsync(new Exception());
 
             Result<Guid> result = await this.DomainService.CreateEstate(TestData.Commands.CreateEstateCommand, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
@@ -413,7 +413,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ThrowsAsync(new Exception());
 
             Result result = await this.DomainService.AddOperatorToEstate(TestData.Commands.AddOperatorToEstateCommand, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
@@ -424,7 +424,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ThrowsAsync(new Exception());
 
             Result result = await this.DomainService.CreateEstateUser(TestData.Commands.CreateEstateUserCommand, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
@@ -434,7 +434,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
                 .ThrowsAsync(new Exception());
 
             Result result = await this.DomainService.RemoveOperatorFromEstate(TestData.Commands.RemoveOperatorFromEstateCommand, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
     }
 }

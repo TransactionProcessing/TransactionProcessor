@@ -53,7 +53,7 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             Result<EstateResponse> result =  await this.Get<EstateResponse>(requestUri, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
             return result;
@@ -74,10 +74,10 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             Result<Guid> result = await this.Post<CreateEstateRequest, Guid>(requestUri, createEstateRequest, accessToken, cancellationToken);
             
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success<Guid>(result.GetValueOrThrow());
+            return Results.Ok<Guid>(result.Data);
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -95,7 +95,7 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             Result<List<EstateResponse>> result = await this.Get<List<EstateResponse>>(requestUri, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
             return result;
@@ -117,10 +117,10 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             Result<Guid> result = await this.Post<CreateFloatRequest, Guid>(requestUri, createFloatForContractProductRequest, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success(result.GetValueOrThrow());
+            return Results.Ok(result.Data);
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -141,10 +141,10 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         {
             var result = await this.Patch<MerchantOpeningRequest>(requestUri, merchantOpeningRequest, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success();
+            return Results.Ok();
         }
         catch (Exception ex)
         {
@@ -167,7 +167,7 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             Result<MerchantBalanceResponse> result = await this.Get<MerchantBalanceResponse>(requestUri, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
             return result;
@@ -191,7 +191,7 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             Result<List<MerchantBalanceChangedEntryResponse>> result = await this.Get<List<MerchantBalanceChangedEntryResponse>>(requestUri, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
             return result;
@@ -213,7 +213,7 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             var result = await this.Get<SettlementResponse>(requestUri, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
             return result;
@@ -235,7 +235,7 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             var result = await this.Get<GetVoucherResponse>(requestUri, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
             return result;
@@ -257,7 +257,7 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             var result = await this.Get<GetVoucherResponse>(requestUri, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
             return result;
@@ -277,10 +277,10 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             var result = await this.Post<LogonTransactionRequest, LogonTransactionResponse>(requestUri, transactionRequest, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success(result.GetValueOrThrow());
+            return Results.Ok(result.Data);
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -299,10 +299,10 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         {
             var result = await this.Post<SaleTransactionRequest, SaleTransactionResponse>(requestUri, transactionRequest, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success(result.GetValueOrThrow());
+            return Results.Ok(result.Data);
         }
         catch (Exception ex)
         {
@@ -322,10 +322,10 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         {
             var result = await this.Post<ReconciliationRequest, ReconciliationResponse>(requestUri, transactionRequest, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success(result.GetValueOrThrow());
+            return Results.Ok(result.Data);
         }
         catch (Exception ex)
         {
@@ -346,10 +346,10 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             Result<Guid> result = await this.Post<Guid>(requestUri, new StringContent(""), accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success(result.GetValueOrThrow());
+            return Results.Ok(result.Data);
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -374,10 +374,10 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             var result = await this.Put<RecordFloatCreditPurchaseRequest>(requestUri, recordFloatCreditPurchaseRequest, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success();
+            return Results.Ok();
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -396,11 +396,11 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
 
             Result<RedeemVoucherResponse> result = await this.Put<RedeemVoucherRequest, RedeemVoucherResponse>(requestUri, redeemVoucherRequest, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
 
-            return Result.Success(result.GetValueOrThrow());
+            return Results.Ok(result.Data);
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -419,10 +419,10 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             var result = await this.Post(requestUri, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success();
+            return Results.Ok();
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -442,7 +442,7 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             Result result = await this.Patch(requestUri, addMerchantContractRequest, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
             return result; }
@@ -465,7 +465,7 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
             
             Result result = await this.Patch(requestUri, addMerchantDeviceRequest, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
             return result;
@@ -488,7 +488,7 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             Result result = await this.Patch(requestUri, newAddressRequest, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
             return result;
@@ -511,7 +511,7 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             Result result = await this.Patch(requestUri, newContactRequest, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
             return result;
@@ -534,7 +534,7 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             Result result = await this.Patch(requestUri, addProductToContractRequest, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
             return result;
@@ -558,7 +558,7 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             Result result = await this.Patch(requestUri, addTransactionFeeForProductToContractRequest, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
             return result;
@@ -581,7 +581,7 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             Result result = await this.Patch(requestUri, assignOperatorRequest, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
             return result;
@@ -604,7 +604,7 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             Result result = await this.Delete(requestUri, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
             return result;
@@ -626,7 +626,7 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             Result result = await this.Delete(requestUri, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
             return result;
@@ -649,7 +649,7 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             Result result = await this.Delete(requestUri, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
             return result;
@@ -671,10 +671,10 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             Result<Guid> result = await this.Post<CreateContractRequest, Guid>(requestUri, createContractRequest, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success(result.GetValueOrThrow());
+            return Results.Ok(result.Data);
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -693,10 +693,10 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             Result<Guid> result = await this.Post<CreateOperatorRequest, Guid>(requestUri, createOperatorRequest, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success(result.GetValueOrThrow());
+            return Results.Ok(result.Data);
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -715,7 +715,7 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             Result result = await this.Patch(requestUri, createEstateUserRequest, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
             return result;
@@ -737,10 +737,10 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             Result<Guid> result = await this.Post<CreateMerchantRequest, Guid>(requestUri, createMerchantRequest, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success(result.GetValueOrThrow());
+            return Results.Ok(result.Data);
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -760,10 +760,10 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             var result = await this.Post<CreateMerchantScheduleRequest>(requestUri, createMerchantScheduleRequest, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success();
+            return Results.Ok();
         }
         catch (Exception ex) {
             Exception exception = new($"Error creating schedule for merchant {merchantId} for estate {estateId}.", ex);
@@ -783,10 +783,10 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try
         {
             var result = await this.Patch(requestUri, updateMerchantScheduleRequest, accessToken, cancellationToken);
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success();
+            return Results.Ok();
         }
         catch (Exception ex)
         {
@@ -806,7 +806,7 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             Result<MerchantScheduleResponse> result = await this.Get<MerchantScheduleResponse>(requestUri, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
             return result;
@@ -828,7 +828,7 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             Result<MerchantScheduleResponse> result = await this.Get<MerchantScheduleResponse>(requestUri, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
             return result;
@@ -850,7 +850,7 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             Result result = await this.Patch(requestUri, createMerchantUserRequest, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
             return result;
@@ -872,7 +872,7 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             Result result = await this.Patch(requestUri, assignOperatorRequest, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
             return result;
@@ -896,7 +896,7 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             Result result = await this.Delete(requestUri, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
             return result;
@@ -918,7 +918,7 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             var result = await this.Get<ContractResponse>(requestUri, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
             return result;
@@ -939,7 +939,7 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             var result = await this.Get<List<ContractResponse>>(requestUri, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
             return result;
@@ -961,7 +961,7 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             var result = await this.Get<MerchantResponse>(requestUri, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
             return result;
@@ -983,7 +983,7 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             var result = await this.Get<List<ContractResponse>>(requestUri, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
             return result;
@@ -1004,7 +1004,7 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             var result = await this.Get<List<MerchantResponse>>(requestUri, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
             return result;
@@ -1027,7 +1027,7 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             var result = await this.Get<DataTransferObjects.Responses.Settlement.SettlementResponse>(requestUri, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
             return result;
@@ -1051,7 +1051,7 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             var result = await this.Get<List<DataTransferObjects.Responses.Settlement.SettlementResponse>>(requestUri, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
             return result;
@@ -1075,7 +1075,7 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             var result = await this.Get<List<ContractProductTransactionFee>>(requestUri, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
             return result;
@@ -1098,10 +1098,10 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             var result = await this.Post<MakeMerchantDepositRequest>(requestUri, makeMerchantDepositRequest, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success();
+            return Results.Ok();
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -1121,10 +1121,10 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             var result = await this.Post<MakeMerchantWithdrawalRequest>(requestUri, makeMerchantWithdrawalRequest, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success();
+            return Results.Ok();
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -1144,7 +1144,7 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             Result result = await this.Patch(requestUri, setSettlementScheduleRequest, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
             return result;
@@ -1168,7 +1168,7 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             Result result = await this.Patch<SwapMerchantDeviceRequest>(requestUri, swapMerchantDeviceRequest, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
             return result;
@@ -1191,7 +1191,7 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             Result result = await this.Patch(requestUri, updateMerchantRequest, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
             return result;
@@ -1215,7 +1215,7 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             Result result = await this.Patch(requestUri, updatedAddressRequest, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
             return result;
@@ -1239,7 +1239,7 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             Result result = await this.Patch(requestUri, updatedContactRequest, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
             return result;
@@ -1262,10 +1262,10 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             var result = await this.Post<UpdateOperatorRequest>(requestUri, updateOperatorRequest, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success();
+            return Results.Ok();
         }
         catch (Exception ex) {
             // An exception has occurred, add some additional information to the message
@@ -1284,7 +1284,7 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             var result = await this.Get<OperatorResponse>(requestUri, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
             return result;
@@ -1305,7 +1305,7 @@ public class TransactionProcessorClient : TransactionProcessing.ClientProxyBase.
         try {
             var result = await this.Get<List<OperatorResponse>>(requestUri, accessToken, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
             return result;

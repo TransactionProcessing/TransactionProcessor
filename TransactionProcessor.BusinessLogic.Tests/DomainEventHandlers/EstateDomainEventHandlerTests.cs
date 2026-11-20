@@ -35,7 +35,7 @@ public class EstateDomainEventHandlerTests
     {
         EstateDomainEvents.EstateCreatedEvent estateCreatedEvent = TestData.DomainEvents.EstateCreatedEvent;
         this.EstateReportingRepository.CreateReadModel(Arg<EstateDomainEvents.EstateCreatedEvent>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         Should.NotThrow(async () => { await this.DomainEventHandler.Handle(estateCreatedEvent, TestContext.Current.CancellationToken); });
     }
@@ -45,10 +45,10 @@ public class EstateDomainEventHandlerTests
     {
         EstateDomainEvents.EstateCreatedEvent estateCreatedEvent = TestData.DomainEvents.EstateCreatedEvent;
         this.EstateReportingRepository.CreateReadModel(Arg<EstateDomainEvents.EstateCreatedEvent>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         Result result = await this.DomainEventHandler.Handle(estateCreatedEvent, TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]

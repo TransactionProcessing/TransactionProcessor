@@ -59,10 +59,10 @@ namespace TransactionProcessor.BusinessLogic.Services
 
             // This is only allowed if the statement has been generated but not yet built
             if (statementHeader.IsBuilt)
-                return Result.Invalid("Statement has already been built");
+                return new Error(ErrorType.Validation, "Statement has already been built");
 
             if (statementHeader.IsGenerated == false)
-                return Result.Invalid("Statement has not yet been generated");
+                return new Error(ErrorType.Validation, "Statement has not yet been generated");
 
             String mainHtml = await this.FileSystem.File.ReadAllTextAsync($"{path}/Templates/Email/statement.html", cancellationToken);
             List<(Int32 lineNumber, MerchantStatementLine statementLine)> statementLines = statementHeader.GetStatementLines();
@@ -89,7 +89,7 @@ namespace TransactionProcessor.BusinessLogic.Services
             mainHtml = await this.AddCSSToHtml(mainHtml, "{fontawesomemincss}", "fontawesome/css/fontawesome.min.css", cancellationToken);
             mainHtml = await this.AddCSSToHtml(mainHtml, "{fontawesomesolidcss}", "fontawesome/css/solid.css", cancellationToken);
 
-            return Result.Success<String>(mainHtml);
+            return Results.Ok<String>(mainHtml);
         }
 
         private async Task<String> BuildStatementLinesHtml(IDirectoryInfo path,

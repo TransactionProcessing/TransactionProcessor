@@ -31,7 +31,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.AgencyBanking
 
         public async Task<Result<OperatorResponse>> ProcessLogonMessage(CancellationToken cancellationToken) {
             Logger.LogInformation("AgencyBanking logon requested");
-            return Result.Success(new OperatorResponse { IsSuccessful = true, ResponseCode = "0000", ResponseMessage = "SUCCESS" });
+            return Results.Ok(new OperatorResponse { IsSuccessful = true, ResponseCode = "0000", ResponseMessage = "SUCCESS" });
         }
 
         public async Task<Result<OperatorResponse>> ProcessSaleMessage(Guid transactionId,
@@ -51,7 +51,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.AgencyBanking
                 if (String.IsNullOrEmpty(messageType))
                 {
                     Logger.LogWarning("AgencyBanking sale request rejected. TransactionId=[{TransactionId}] missing AgencyBankingMessageType", transactionId);
-                    return Result.Invalid("AgencyBankingMessageType - Message Type is a required field for this transaction type");
+                    return new Error(ErrorType.Validation, "AgencyBankingMessageType - Message Type is a required field for this transaction type");
                 }
             
                 // Check the meta data for the account number
@@ -60,7 +60,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.AgencyBanking
                 if (String.IsNullOrEmpty(accountNumber))
                 {
                     Logger.LogWarning("AgencyBanking sale request rejected. TransactionId=[{TransactionId}] missing AgencyBankingAccountNumber", transactionId);
-                    return Result.Invalid("AgencyBankingAccountNumber - Account Number is a required field for this transaction type");
+                    return new Error(ErrorType.Validation, "AgencyBankingAccountNumber - Account Number is a required field for this transaction type");
                 }
 
                 Logger.LogInformation("AgencyBanking sale request metadata resolved. TransactionId=[{TransactionId}], MessageType=[{MessageType}], AccountNumber=[{AccountNumber}]", transactionId, messageType, accountNumber);
@@ -70,10 +70,10 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.AgencyBanking
                     "deposit" => await ProcessDeposit(transactionId, merchant.MerchantId.ToString(), accountNumber, additionalTransactionMetadata, cancellationToken),
                     "withdrawal" => await ProcessWithdrawal(transactionId, merchant.MerchantId.ToString(), accountNumber, additionalTransactionMetadata, cancellationToken),
                     "ministatement" => await ProcessMiniStatement(merchant.MerchantId.ToString(), accountNumber, cancellationToken),
-                    _ => Result<OperatorResponse>.Fail(Result.Invalid($"AgencyBankingMessageType - Message Type {messageType} is not supported for this transaction type"))
+                    _ => new Result<OperatorResponse>(new Error(ErrorType.Validation, $"AgencyBankingMessageType - Message Type {messageType} is not supported for this transaction type"))
                 };
             
-                if (result.IsFailed) {
+                if (result.IsSuccess() == false) {
                     Logger.LogWarning("AgencyBanking sale request rejected. TransactionId=[{TransactionId}] unsupported message type [{MessageType}]", transactionId, messageType);
                 }
 
@@ -84,7 +84,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.AgencyBanking
             }
             catch (Exception ex) {
                 Logger.LogError(ex,"AgencyBanking sale request failed. TransactionId=[{TransactionId}]", transactionId);
-                return Result.Failure($"AgencyBanking request failed [{ex.Message}]");
+                return new Error(ErrorType.Failure, $"AgencyBanking request failed [{ex.Message}]");
             }
         }
 
@@ -105,13 +105,13 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.AgencyBanking
             if (String.IsNullOrWhiteSpace(amountValue))
             {
                 Logger.LogWarning("AgencyBanking withdrawal request rejected. TransactionId=[{TransactionId}] missing Amount", transactionId);
-                return Result.Invalid("Amount - Amount is a required field for this transaction type");
+                return new Error(ErrorType.Validation, "Amount - Amount is a required field for this transaction type");
             }
 
             if (Decimal.TryParse(amountValue, out Decimal amount) == false)
             {
                 Logger.LogWarning("AgencyBanking withdrawal request rejected. TransactionId=[{TransactionId}] invalid Amount [{Amount}]", amountValue);
-                return Result.Invalid("Amount - Amount is not a valid decimal value");
+                return new Error(ErrorType.Validation, "Amount - Amount is not a valid decimal value");
             }
 
             WithdrawalRequest body = new() { AgentId = agentId, AccountNumber = accountNumber, Amount = amount, TransactionId = transactionId.ToString() };
@@ -130,7 +130,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.AgencyBanking
             if (response.IsSuccessStatusCode == false)
             {
                 Logger.LogWarning("AgencyBanking withdrawal failed. TransactionId=[{TransactionId}], StatusCode=[{StatusCode}], ResponseBody=[{ResponseBody}]",transactionId, response.StatusCode, responseContent);
-                return Result.Invalid($"Failed to process withdrawal {responseContent}");
+                return new Error(ErrorType.Validation, $"Failed to process withdrawal {responseContent}");
             }
 
             TransactionResult withdrawalResponse = StringSerialiser.Deserialise<TransactionResult>(responseContent, SerialiserOptions);
@@ -144,7 +144,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.AgencyBanking
                 AdditionalTransactionResponseMetadata = new Dictionary<String, String>()
             };
 
-            return Result.Success(operatorResponse);
+            return Results.Ok(operatorResponse);
         }
 
         private async Task<Result<OperatorResponse>> ProcessMiniStatement(String agentId,
@@ -167,7 +167,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.AgencyBanking
             if (response.IsSuccessStatusCode == false) {
                 Logger.LogWarning("AgencyBanking mini-statement failed. AgentId=[{AgentId}], AccountNumber=[{AccountNumber}], StatusCode=[{StatusCode}], ResponseBody=[{ResponseContent}]",
                     agentId, accountNumber, response.StatusCode, responseContent);
-                return Result.Invalid($"Failed to process mini-statement {responseContent}");
+                return new Error(ErrorType.Validation, $"Failed to process mini-statement {responseContent}");
             }
 
             MiniStatementResponse miniStatementResponse = StringSerialiser.Deserialise<MiniStatementResponse>(responseContent, SerialiserOptions);
@@ -181,7 +181,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.AgencyBanking
 
             operatorResponse.AdditionalTransactionResponseMetadata.Add("StatementLines", StringSerialiser.Serialise(statementLines));
 
-            return Result.Success(operatorResponse);
+            return Results.Ok(operatorResponse);
         }
 
         private async Task<Result<OperatorResponse>> ProcessDeposit(Guid transactionId,
@@ -197,13 +197,13 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.AgencyBanking
             if (String.IsNullOrWhiteSpace(amountValue))
             {
                 Logger.LogWarning("AgencyBanking deposit request rejected. TransactionId=[{TransactionId}] missing Amount", transactionId);
-                return Result.Invalid("Amount - Amount is a required field for this transaction type");
+                return new Error(ErrorType.Validation, "Amount - Amount is a required field for this transaction type");
             }
 
             if (Decimal.TryParse(amountValue, out Decimal amount) == false)
             {
                 Logger.LogWarning("AgencyBanking deposit request rejected. TransactionId=[{TransactionId}] invalid Amount [{Amount}]", transactionId, amountValue);
-                return Result.Invalid("Amount - Amount is not a valid decimal value");
+                return new Error(ErrorType.Validation, "Amount - Amount is not a valid decimal value");
             }
 
             DepositRequest body = new() { AgentId = agentId, AccountNumber = accountNumber, Amount = amount, TransactionId = transactionId.ToString() };
@@ -221,7 +221,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.AgencyBanking
             if (response.IsSuccessStatusCode == false)
             {
                 Logger.LogWarning("AgencyBanking deposit failed. TransactionId=[{TransactionId}], StatusCode=[{StatusCode}], ResponseBody=[{ResponseContent}]", transactionId, response.StatusCode, responseContent);
-                return Result.Invalid($"Failed to process deposit {responseContent}");
+                return new Error(ErrorType.Validation, $"Failed to process deposit {responseContent}");
             }
 
             TransactionResult depositResponse = StringSerialiser.Deserialise<TransactionResult>(responseContent, SerialiserOptions);
@@ -235,7 +235,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.AgencyBanking
                 AdditionalTransactionResponseMetadata = new Dictionary<String, String>()
             };
             
-            return Result.Success(operatorResponse);
+            return Results.Ok(operatorResponse);
         }
 
         private async Task<Result<OperatorResponse>> ProcessBalanceEnquiry(Guid transactionId,
@@ -263,7 +263,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.AgencyBanking
             if (response.IsSuccessStatusCode == false) {
                 Logger.LogWarning("AgencyBanking balance enquiry failed. TransactionId=[{TransactionId}], StatusCode=[{StatusCode}], ResponseBody=[{ResponseContent}]",
                     transactionId, response.StatusCode, responseContent);
-                return Result.Invalid($"Failed to process balance enquiry {responseContent}");
+                return new Error(ErrorType.Validation, $"Failed to process balance enquiry {responseContent}");
             }
 
             BalanceEnquiryResponse balanceEnquiryResponse = StringSerialiser.Deserialise<BalanceEnquiryResponse>(responseContent, SerialiserOptions);
@@ -279,7 +279,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.AgencyBanking
 
             operatorResponse.AdditionalTransactionResponseMetadata.Add("AgencyBankingBalance", balanceEnquiryResponse.AvailableBalance.ToString());
 
-            return Result.Success(operatorResponse);
+            return Results.Ok(operatorResponse);
         }
     }
 }

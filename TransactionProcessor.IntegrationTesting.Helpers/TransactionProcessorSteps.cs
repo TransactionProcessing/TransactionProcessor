@@ -59,12 +59,12 @@ public class TransactionProcessorSteps
                         endDate.ToString("yyyyMMdd"),
                         CancellationToken.None);
 
-                settlementList.IsSuccess.ShouldBeTrue(settlementList.Message);
-                settlementList.GetValueOrThrow().ShouldNotBeNull();
-                settlementList.GetValueOrThrow().ShouldNotBeEmpty();
+                settlementList.IsSuccess().ShouldBeTrue(settlementList.GetErrorMessage());
+                settlementList.Data.ShouldNotBeNull();
+                settlementList.Data.ShouldNotBeEmpty();
 
                 DataTransferObjects.Responses.Settlement.SettlementResponse? settlement =
-                    settlementList.GetValueOrThrow().SingleOrDefault(s => s.SettlementDate == expectedSettlementDetails.SettlementDate &&
+                    settlementList.Data.SingleOrDefault(s => s.SettlementDate == expectedSettlementDetails.SettlementDate &&
                                                              s.NumberOfFeesSettled == expectedSettlementDetails.NumberOfFeesSettled &&
                                                              s.ValueOfFeesSettled == expectedSettlementDetails.ValueOfFeesSettled && s.IsCompleted == expectedSettlementDetails.IsCompleted);
 
@@ -94,10 +94,10 @@ public class TransactionProcessorSteps
                                                           settlementFeeDetails.SettlementId,
                                                           CancellationToken.None);
 
-                settlement.IsSuccess.ShouldBeTrue(settlement.Message);
+                settlement.IsSuccess().ShouldBeTrue(settlement.GetErrorMessage());
 
-                settlement.GetValueOrThrow().SettlementFees.ShouldNotBeNull();
-                settlement.GetValueOrThrow().SettlementFees.ShouldNotBeEmpty();
+                settlement.Data.SettlementFees.ShouldNotBeNull();
+                settlement.Data.SettlementFees.ShouldNotBeEmpty();
 
                 List<ReqnrollExtensions.SettlementFeeDetails> settlementFees = settlementFeeDetailsList.Where(s => s.EstateId == settlementFeeDetails.EstateId &&
                                                                                                                    s.MerchantId == settlementFeeDetails.MerchantId &&
@@ -106,7 +106,7 @@ public class TransactionProcessorSteps
                 foreach (ReqnrollExtensions.SettlementFeeDetails feeDetails in settlementFees)
                 {
                     SettlementFeeResponse settlementFee =
-                        settlement.GetValueOrThrow().SettlementFees.SingleOrDefault(sf => sf.FeeDescription == feeDetails.FeeDescription && sf.IsSettled == feeDetails.IsSettled &&
+                        settlement.Data.SettlementFees.SingleOrDefault(sf => sf.FeeDescription == feeDetails.FeeDescription && sf.IsSettled == feeDetails.IsSettled &&
                                                                              sf.OperatorIdentifier == feeDetails.Operator &&
                                                                              sf.CalculatedValue == feeDetails.CalculatedValue);
 
@@ -137,8 +137,8 @@ public class TransactionProcessorSteps
             Result<List<MerchantResponse>> getMerchantsResult = await this.TransactionProcessorClient
                 .GetMerchants(token, estateDetails.EstateId, CancellationToken.None)
                 .ConfigureAwait(false);
-            getMerchantsResult.IsSuccess.ShouldBeTrue(getMerchantsResult.Message);
-            List<MerchantResponse> merchantList = getMerchantsResult.GetValueOrThrow();
+            getMerchantsResult.IsSuccess().ShouldBeTrue(getMerchantsResult.GetErrorMessage());
+            List<MerchantResponse> merchantList = getMerchantsResult.Data;
             merchantList.ShouldNotBeNull();
             merchantList.ShouldNotBeEmpty();
             merchantList.Count.ShouldBe(expectedMerchantCount);
@@ -165,8 +165,8 @@ public class TransactionProcessorSteps
         Result<MerchantResponse> result = await this.TransactionProcessorClient
             .GetMerchant(token, estateDetails.EstateId, merchantId, CancellationToken.None)
             .ConfigureAwait(false);
-        result.IsFailed.ShouldBeTrue();
-        result.Errors.Any(error => error.ErrorType == ErrorType.NotFound).ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
+        result.GetErrors().Any(error => error.ErrorType == ErrorType.NotFound).ShouldBeTrue();
     }
 
     public async Task WhenIPerformTheFollowingTransactions(String accessToken, List<(EstateDetails, Guid, String, TransactionRequest)> serialisedMessages)
@@ -174,18 +174,18 @@ public class TransactionProcessorSteps
         foreach ((EstateDetails, Guid, String, TransactionRequest) serialisedMessage in serialisedMessages) {
             if (serialisedMessage.Item4 is LogonTransactionRequest ltr) {
                 Result<LogonTransactionResponse> logonResult = await this.TransactionProcessorClient.PerformTransaction(accessToken, ltr, CancellationToken.None);
-                logonResult.IsSuccess.ShouldBeTrue(logonResult.Message);
-                serialisedMessage.Item1.AddTransactionResponse(serialisedMessage.Item2, serialisedMessage.Item3, logonResult.GetValueOrThrow());
+                logonResult.IsSuccess().ShouldBeTrue(logonResult.GetErrorMessage());
+                serialisedMessage.Item1.AddTransactionResponse(serialisedMessage.Item2, serialisedMessage.Item3, logonResult.Data);
             }
             if (serialisedMessage.Item4 is SaleTransactionRequest str) {
                 Result<SaleTransactionResponse> saleResult = await this.TransactionProcessorClient.PerformTransaction(accessToken, str, CancellationToken.None);
-                saleResult.IsSuccess.ShouldBeTrue(saleResult.Message);
-                serialisedMessage.Item1.AddTransactionResponse(serialisedMessage.Item2, serialisedMessage.Item3, saleResult.GetValueOrThrow());
+                saleResult.IsSuccess().ShouldBeTrue(saleResult.GetErrorMessage());
+                serialisedMessage.Item1.AddTransactionResponse(serialisedMessage.Item2, serialisedMessage.Item3, saleResult.Data);
             }
             if (serialisedMessage.Item4 is ReconciliationRequest rr) {
                 Result<ReconciliationResponse> reconciliationResult = await this.TransactionProcessorClient.PerformTransaction(accessToken, rr, CancellationToken.None);
-                reconciliationResult.IsSuccess.ShouldBeTrue(reconciliationResult.Message);
-                serialisedMessage.Item1.AddTransactionResponse(serialisedMessage.Item2, serialisedMessage.Item3, reconciliationResult.GetValueOrThrow());
+                reconciliationResult.IsSuccess().ShouldBeTrue(reconciliationResult.GetErrorMessage());
+                serialisedMessage.Item1.AddTransactionResponse(serialisedMessage.Item2, serialisedMessage.Item3, reconciliationResult.Data);
             }
         }
     }
@@ -199,7 +199,7 @@ public class TransactionProcessorSteps
                 request.Item2,
                 request.Item3,
                 CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue(result.Message);
+            result.IsSuccess().ShouldBeTrue(result.GetErrorMessage());
 
             await Retry.For(async () =>
             {
@@ -208,8 +208,8 @@ public class TransactionProcessorSteps
                     request.Item1.EstateId,
                     request.Item2,
                     CancellationToken.None);
-                merchantResult.IsSuccess.ShouldBeTrue(merchantResult.Message);
-                MerchantResponse? merchant = merchantResult.GetValueOrThrow();
+                merchantResult.IsSuccess().ShouldBeTrue(merchantResult.GetErrorMessage());
+                MerchantResponse? merchant = merchantResult.Data;
                 merchant.ShouldNotBeNull();
                 merchant.SettlementSchedule.ShouldBe(request.Item3.SettlementSchedule);
             });
@@ -227,7 +227,7 @@ public class TransactionProcessorSteps
                 scheduleRequest.request,
                 CancellationToken.None);
 
-            result.IsSuccess.ShouldBeTrue(result.Message);
+            result.IsSuccess().ShouldBeTrue(result.GetErrorMessage());
 
             await Retry.For(async () => {
                 Result<MerchantScheduleResponse> getMerchantScheduleResult = await this.TransactionProcessorClient.GetMerchantScheduleFromReadModel(accessToken,
@@ -236,8 +236,8 @@ public class TransactionProcessorSteps
                     scheduleRequest.request.Year,
                     CancellationToken.None);
 
-                getMerchantScheduleResult.IsSuccess.ShouldBeTrue(getMerchantScheduleResult.Message);
-                MerchantScheduleResponse merchantSchedule = getMerchantScheduleResult.GetValueOrThrow();
+                getMerchantScheduleResult.IsSuccess().ShouldBeTrue(getMerchantScheduleResult.GetErrorMessage());
+                MerchantScheduleResponse merchantSchedule = getMerchantScheduleResult.Data;
                 merchantSchedule.ShouldNotBeNull();
 
                 merchantSchedule.Year.ShouldBe(scheduleRequest.request.Year);
@@ -263,7 +263,7 @@ public class TransactionProcessorSteps
                     request.Item3,
                     request.Item4,
                     CancellationToken.None).ConfigureAwait(false);
-            swapResult.IsSuccess.ShouldBeTrue(swapResult.Message);
+            swapResult.IsSuccess().ShouldBeTrue(swapResult.GetErrorMessage());
 
             //this.TestingContext.Logger.LogInformation($"Device {newDeviceIdentifier} assigned to Merchant {merchantName}");
 
@@ -271,8 +271,8 @@ public class TransactionProcessorSteps
                 Result<MerchantResponse> getMerchantResult = await this.TransactionProcessorClient
                     .GetMerchant(accessToken, request.Item1.EstateId, request.Item2, CancellationToken.None)
                     .ConfigureAwait(false);
-                getMerchantResult.IsSuccess.ShouldBeTrue(getMerchantResult.Message);
-                MerchantResponse? merchantResponse = getMerchantResult.GetValueOrThrow();
+                getMerchantResult.IsSuccess().ShouldBeTrue(getMerchantResult.GetErrorMessage());
+                MerchantResponse? merchantResponse = getMerchantResult.Data;
                 merchantResponse.ShouldNotBeNull();
                 merchantResponse.Devices.ContainsValue(request.Item4.NewDeviceIdentifier).ShouldBeTrue();
             });
@@ -287,7 +287,7 @@ public class TransactionProcessorSteps
             Result result = await this.TransactionProcessorClient.MakeMerchantDeposit(accessToken, makeDepositRequest.Item1.EstateId,
                 makeDepositRequest.Item2, makeDepositRequest.Item3, CancellationToken.None).ConfigureAwait(false);
 
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
     }
 
@@ -312,8 +312,8 @@ public class TransactionProcessorSteps
                 makeMerchantWithdrawalRequest.Item1.EstateId,
                 makeMerchantWithdrawalRequest.Item2,
                 CancellationToken.None);
-            balanceBeforeResult.IsSuccess.ShouldBeTrue(balanceBeforeResult.Message);
-            MerchantBalanceResponse? balanceBefore = balanceBeforeResult.GetValueOrThrow();
+            balanceBeforeResult.IsSuccess().ShouldBeTrue(balanceBeforeResult.GetErrorMessage());
+            MerchantBalanceResponse? balanceBefore = balanceBeforeResult.Data;
             balanceBefore.ShouldNotBeNull();
 
             Result result = await this.TransactionProcessorClient
@@ -323,7 +323,7 @@ public class TransactionProcessorSteps
                     makeMerchantWithdrawalRequest.Item3,
                     CancellationToken.None).ConfigureAwait(false);
 
-            result.IsSuccess.ShouldBeTrue(result.Message);
+            result.IsSuccess().ShouldBeTrue(result.GetErrorMessage());
 
             await Retry.For(async () =>
             {
@@ -332,8 +332,8 @@ public class TransactionProcessorSteps
                     makeMerchantWithdrawalRequest.Item1.EstateId,
                     makeMerchantWithdrawalRequest.Item2,
                     CancellationToken.None);
-                balanceAfterResult.IsSuccess.ShouldBeTrue(balanceAfterResult.Message);
-                MerchantBalanceResponse? balanceAfter = balanceAfterResult.GetValueOrThrow();
+                balanceAfterResult.IsSuccess().ShouldBeTrue(balanceAfterResult.GetErrorMessage());
+                MerchantBalanceResponse? balanceAfter = balanceAfterResult.Data;
                 balanceAfter.ShouldNotBeNull();
                 balanceAfter.Balance.ShouldBe(balanceBefore.Balance - makeMerchantWithdrawalRequest.Item3.Amount);
             });
@@ -353,11 +353,11 @@ public class TransactionProcessorSteps
                 .CreateMerchant(accessToken, request.estate.EstateId, request.request, CancellationToken.None)
                 .ConfigureAwait(false);
 
-            result.IsSuccess.ShouldBeTrue(result.Message);
+            result.IsSuccess().ShouldBeTrue(result.GetErrorMessage());
 
             if (request.enableAgencyBanking) {
                 CreateAgentRequest createAgentRequest = new() {
-                    AgentId = result.GetValueOrThrow().ToString(),
+                    AgentId = result.Data.ToString(),
                     DailyLimit = 100000,
                     Name = request.request.Name,
                     MinimumFloat = 10000,
@@ -366,12 +366,12 @@ public class TransactionProcessorSteps
                     PhoneNumber = request.request.Contact.PhoneNumber
                 };
                 Result enableAgencyBankingResult = await this.AgencyBankingClient.CreateRetailAgent(createAgentRequest, CancellationToken.None);
-                enableAgencyBankingResult.IsSuccess.ShouldBeTrue(enableAgencyBankingResult.Message);
+                enableAgencyBankingResult.IsSuccess().ShouldBeTrue(enableAgencyBankingResult.GetErrorMessage());
 
                 await Retry.For(async () =>
                 {
                     Result<AgentResponse> agentResult = await this.AgencyBankingClient.GetAgentById(createAgentRequest.AgentId, CancellationToken.None);
-                    agentResult.IsSuccess.ShouldBeTrue(agentResult.Message);
+                    agentResult.IsSuccess().ShouldBeTrue(agentResult.GetErrorMessage());
                     AgentResponse? agent = agentResult.Data;
                     agent.ShouldNotBeNull();
                     agent.AgentId.ShouldBe(createAgentRequest.AgentId);
@@ -381,12 +381,12 @@ public class TransactionProcessorSteps
                 // Activate the agent
                 ActivateAgentRequest activateAgentRequest = new ActivateAgentRequest { ActivatedBy = "INTEGRATIONTEST" };
                 Result activateAgentResult = await this.AgencyBankingClient.ActivateAgent(createAgentRequest.AgentId, activateAgentRequest, CancellationToken.None);
-                activateAgentResult.IsSuccess.ShouldBeTrue(activateAgentResult.Message);
+                activateAgentResult.IsSuccess().ShouldBeTrue(activateAgentResult.GetErrorMessage());
 
                 await Retry.For(async () =>
                 {
                     Result<AgentResponse> agentResult = await this.AgencyBankingClient.GetAgentById(createAgentRequest.AgentId, CancellationToken.None);
-                    agentResult.IsSuccess.ShouldBeTrue(agentResult.Message);
+                    agentResult.IsSuccess().ShouldBeTrue(agentResult.GetErrorMessage());
                     AgentResponse? agent = agentResult.Data;
                     agent.ShouldNotBeNull();
                     agent.Active.ShouldBeTrue();
@@ -397,14 +397,14 @@ public class TransactionProcessorSteps
                     AgentId = createAgentRequest.AgentId, DailyFloatLimit = 100000, MaximumFloat = 100000, MinimumFloat = 10000,
                 };
                 Result configureFloatResult = await this.AgencyBankingClient.ConfigureFloat(configureFloatRequest, CancellationToken.None);
-                configureFloatResult.IsSuccess.ShouldBeTrue(configureFloatResult.Message);
+                configureFloatResult.IsSuccess().ShouldBeTrue(configureFloatResult.GetErrorMessage());
 
                 await Retry.For(async () =>
                 {
                     Result<FloatConfigurationResponse> floatConfigurationResult = await this.AgencyBankingClient.GetFloatConfigurationByAgentId(
                         createAgentRequest.AgentId,
                         CancellationToken.None);
-                    floatConfigurationResult.IsSuccess.ShouldBeTrue(floatConfigurationResult.Message);
+                    floatConfigurationResult.IsSuccess().ShouldBeTrue(floatConfigurationResult.GetErrorMessage());
                     FloatConfigurationResponse? floatConfiguration = floatConfigurationResult.Data;
                     floatConfiguration.ShouldNotBeNull();
                     floatConfiguration.AgentId.ShouldBe(createAgentRequest.AgentId);
@@ -421,7 +421,7 @@ public class TransactionProcessorSteps
                     TransactionId = Guid.NewGuid().ToString()
                 };
                 Result floatCreditResult = await this.AgencyBankingClient.CreditFloat(floatCreditRequest, CancellationToken.None);
-                floatCreditResult.IsSuccess.ShouldBeTrue(floatCreditResult.Message);
+                floatCreditResult.IsSuccess().ShouldBeTrue(floatCreditResult.GetErrorMessage());
 
                 await Retry.For(async () =>
                 {
@@ -429,7 +429,7 @@ public class TransactionProcessorSteps
                         createAgentRequest.AgentId,
                         1,
                         CancellationToken.None);
-                    floatHistoryResult.IsSuccess.ShouldBeTrue(floatHistoryResult.Message);
+                    floatHistoryResult.IsSuccess().ShouldBeTrue(floatHistoryResult.GetErrorMessage());
                     FloatHistoryResponse[]? floatHistory = floatHistoryResult.Data;
                     floatHistory.ShouldNotBeNull();
                     floatHistory.ShouldNotBeEmpty();
@@ -441,7 +441,7 @@ public class TransactionProcessorSteps
             }
 
 
-            merchants.Add((request.estate.EstateId, result.GetValueOrThrow(), request.request.Name));
+            merchants.Add((request.estate.EstateId, result.Data, request.request.Name));
         }
 
         foreach ((Guid, Guid, String) m in merchants)
@@ -451,21 +451,21 @@ public class TransactionProcessorSteps
                 Result<MerchantResponse> getMerchantResult = await this.TransactionProcessorClient
                     .GetMerchant(accessToken, m.Item1, m.Item2, CancellationToken.None)
                     .ConfigureAwait(false);
-                getMerchantResult.IsSuccess.ShouldBeTrue(getMerchantResult.Message);
-                merchant = getMerchantResult.GetValueOrThrow();
+                getMerchantResult.IsSuccess().ShouldBeTrue(getMerchantResult.GetErrorMessage());
+                merchant = getMerchantResult.Data;
                 merchant.ShouldNotBeNull();
 
                 string projectionName = "MerchantBalanceProjection";
                 String partitionId = $"MerchantBalance-{m.Item2:N}";
 
                 Result<MerchantBalanceResponse> getMerchantBalanceResult = await this.TransactionProcessorClient.GetMerchantBalance(accessToken, m.Item1, m.Item2, CancellationToken.None);
-                getMerchantBalanceResult.IsSuccess.ShouldBeTrue(getMerchantBalanceResult.Message);
-                getMerchantBalanceResult.GetValueOrThrow().ShouldNotBeNull();
+                getMerchantBalanceResult.IsSuccess().ShouldBeTrue(getMerchantBalanceResult.GetErrorMessage());
+                getMerchantBalanceResult.Data.ShouldNotBeNull();
 
                 // Force a read model database hit
                 Result<MerchantBalanceResponse> getMerchantBalanceResult2 = await this.TransactionProcessorClient.GetMerchantBalance(accessToken, m.Item1, m.Item2, CancellationToken.None, liveBalance: false);
-                getMerchantBalanceResult2.IsSuccess.ShouldBeTrue(getMerchantBalanceResult2.Message);
-                getMerchantBalanceResult2.GetValueOrThrow().ShouldNotBeNull();
+                getMerchantBalanceResult2.IsSuccess().ShouldBeTrue(getMerchantBalanceResult2.GetErrorMessage());
+                getMerchantBalanceResult2.Data.ShouldNotBeNull();
             });
             merchant.ShouldNotBeNull();
             createdMerchants.Add(m.Item2, merchant);
@@ -520,7 +520,7 @@ public class TransactionProcessorSteps
                                                                                                           transactionResponse.EstateId,
                                                                                                           transactionResponse.TransactionId,
                                                                                                           CancellationToken.None);
-                                result.IsSuccess.ShouldBeTrue(result.Message);
+                                result.IsSuccess().ShouldBeTrue(result.GetErrorMessage());
                             });
 
         }
@@ -550,8 +550,8 @@ public class TransactionProcessorSteps
                                                                                                     endDate,
                                                                                                     CancellationToken.None);
 
-                    balanceHistoryResult.IsSuccess.ShouldBeTrue(balanceHistoryResult.Message);
-                    balanceHistory = balanceHistoryResult.GetValueOrThrow();
+                    balanceHistoryResult.IsSuccess().ShouldBeTrue(balanceHistoryResult.GetErrorMessage());
+                    balanceHistory = balanceHistoryResult.Data;
                                 balanceHistory.ShouldNotBeNull();
                                 balanceHistory.ShouldNotBeEmpty();
                                 balanceHistory.Count.ShouldBe(m.NumberEntries);
@@ -605,8 +605,8 @@ public class TransactionProcessorSteps
                                                                                                       estate.EstateId,
                                                                                                       transactionResponse.TransactionId,
                                                                                                       CancellationToken.None);
-                            getVoucherResult.IsSuccess.ShouldBeTrue(getVoucherResult.Message);
-                            voucher = getVoucherResult.GetValueOrThrow();
+                            getVoucherResult.IsSuccess().ShouldBeTrue(getVoucherResult.GetErrorMessage());
+                            voucher = getVoucherResult.Data;
                             voucher.ShouldNotBeNull();
                         });
         return voucher;
@@ -626,14 +626,14 @@ public class TransactionProcessorSteps
                             Result<RedeemVoucherResponse> redeemVoucherResult = await this.TransactionProcessorClient
                                                                        .RedeemVoucher(accessToken, redeemVoucherRequest, CancellationToken.None)
                                                                        .ConfigureAwait(false);
-                            redeemVoucherResult.IsSuccess.ShouldBeTrue(redeemVoucherResult.Message);
-                            //RedeemVoucherResponse response = redeemVoucherResult.GetValueOrThrow();
+                            redeemVoucherResult.IsSuccess().ShouldBeTrue(redeemVoucherResult.GetErrorMessage());
+                            //RedeemVoucherResponse response = redeemVoucherResult.Data;
                             //response.ShouldNotBeNull();
                             //response.RemainingBalance.ShouldBe(expectedBalance);
 
                             var x = await this.TransactionProcessorClient.GetVoucherByCode(accessToken, estate.EstateId, voucher.VoucherCode, CancellationToken.None);
-                            x.IsSuccess.ShouldBeTrue(x.Message);
-                            x.GetValueOrThrow().Balance.ShouldBe(expectedBalance);
+                            x.IsSuccess().ShouldBeTrue(x.GetErrorMessage());
+                            x.Data.Balance.ShouldBe(expectedBalance);
                         });
     }
 
@@ -649,10 +649,10 @@ public class TransactionProcessorSteps
                                 request.MerchantId,
                                 CancellationToken.None);
 
-                            result.IsSuccess.ShouldBeTrue(
+                            result.IsSuccess().ShouldBeTrue(
                                 $"Failed to process settlement for estate '{request.EstateDetails.EstateId}', " +
                                 $"merchant '{request.MerchantId}', date '{request.SettlementDate:yyyy-MM-dd}'. " +
-                                result.Message);
+                                result.GetErrorMessage());
                         },
                         TimeSpan.FromMinutes(2),
                         TimeSpan.FromSeconds(5));
@@ -664,8 +664,8 @@ public class TransactionProcessorSteps
                                                                                           request.EstateDetails.EstateId,
                                                                                           request.MerchantId,
                                                                                           CancellationToken.None);
-                            getSettlementByDateResult.IsSuccess.ShouldBeTrue(getSettlementByDateResult.Message);
-                            SettlementResponse? settlement = getSettlementByDateResult.GetValueOrThrow();
+                            getSettlementByDateResult.IsSuccess().ShouldBeTrue(getSettlementByDateResult.GetErrorMessage());
+                            SettlementResponse? settlement = getSettlementByDateResult.Data;
                             settlement.ShouldNotBeNull();
 
                             settlement.NumberOfFeesPendingSettlement.ShouldBe(0);
@@ -686,8 +686,8 @@ public class TransactionProcessorSteps
                                                                                               request.Item1.EstateId,
                                                                                               request.Item2,
                                                                                               CancellationToken.None);
-                            getSettlementByDateResult.IsSuccess.ShouldBeTrue(getSettlementByDateResult.Message);
-                            SettlementResponse? settlement = getSettlementByDateResult.GetValueOrThrow();
+                            getSettlementByDateResult.IsSuccess().ShouldBeTrue(getSettlementByDateResult.GetErrorMessage());
+                            SettlementResponse? settlement = getSettlementByDateResult.Data;
                             settlement.ShouldNotBeNull();
                                 settlement.NumberOfFeesSettled.ShouldBe(request.Item4, $"Settlement date {request.Item3}");
                             },
@@ -707,8 +707,8 @@ public class TransactionProcessorSteps
                                                                                               request.Item2,
                                                                                               CancellationToken.None);
 
-                                getSettlementByDateResult.IsSuccess.ShouldBeTrue(getSettlementByDateResult.Message);
-                                SettlementResponse settlement = getSettlementByDateResult.GetValueOrThrow();
+                                getSettlementByDateResult.IsSuccess().ShouldBeTrue(getSettlementByDateResult.GetErrorMessage());
+                                SettlementResponse settlement = getSettlementByDateResult.Data;
                                 settlement.ShouldNotBeNull();
                                 settlement.NumberOfFeesPendingSettlement.ShouldBe(request.Item4, $"Settlement date {request.Item3}");
                             },
@@ -725,8 +725,8 @@ public class TransactionProcessorSteps
                                             .CreateEstate(accessToken, createEstateRequest, CancellationToken.None)
                                             .ConfigureAwait(false);
 
-            result.IsSuccess.ShouldBeTrue(result.Message);
-            createdEstates.Add(result.GetValueOrThrow(), createEstateRequest);
+            result.IsSuccess().ShouldBeTrue(result.GetErrorMessage());
+            createdEstates.Add(result.Data, createEstateRequest);
         }
 
         List<EstateResponse> results = new List<EstateResponse>();
@@ -737,10 +737,10 @@ public class TransactionProcessorSteps
                     Result<List<EstateResponse>> getEstatesResult = await this.TransactionProcessorClient
                         .GetEstates(accessToken, createEstateRequest.Key, CancellationToken.None).ConfigureAwait(false);
 
-                    List<EstateResponse>? estates = getEstatesResult.GetValueOrThrow();
+                    List<EstateResponse>? estates = getEstatesResult.Data;
                     try
                     {
-                        getEstatesResult.IsSuccess.ShouldBeTrue(getEstatesResult.Message);
+                        getEstatesResult.IsSuccess().ShouldBeTrue(getEstatesResult.GetErrorMessage());
                         estates.ShouldNotBeNull();
                         estates.Count.ShouldBe(1);
                         estate = estates.Single();
@@ -751,7 +751,7 @@ public class TransactionProcessorSteps
                     {
                         StringBuilder snapshot = new StringBuilder();
                         snapshot.Append($"estateId={createEstateRequest.Key}, expectedName={createEstateRequest.Value.EstateName}, ");
-                        snapshot.Append($"isSuccess={getEstatesResult.IsSuccess}, ");
+                        snapshot.Append($"isSuccess={getEstatesResult.IsSuccess()}, ");
                         snapshot.Append($"rows={(estates == null ? "null" : estates.Count.ToString())}");
 
                         if (estates != null)
@@ -784,7 +784,7 @@ public class TransactionProcessorSteps
             Result updateResult = await this.TransactionProcessorClient
                 .UpdateMerchant(accessToken, request.estate.EstateId, request.merchantId, request.request, CancellationToken.None)
                 .ConfigureAwait(false);
-            updateResult.IsSuccess.ShouldBeTrue(updateResult.Message);
+            updateResult.IsSuccess().ShouldBeTrue(updateResult.GetErrorMessage());
         }
 
         foreach ((EstateDetails estate, Guid merchantId, UpdateMerchantRequest request) request in requests)
@@ -794,8 +794,8 @@ public class TransactionProcessorSteps
                 Result<MerchantResponse> getMerchantResult = await this.TransactionProcessorClient
                     .GetMerchant(accessToken, request.estate.EstateId, request.merchantId, CancellationToken.None)
                     .ConfigureAwait(false);
-                getMerchantResult.IsSuccess.ShouldBeTrue(getMerchantResult.Message);
-                merchant = getMerchantResult.GetValueOrThrow();
+                getMerchantResult.IsSuccess().ShouldBeTrue(getMerchantResult.GetErrorMessage());
+                merchant = getMerchantResult.Data;
                 merchant.ShouldNotBeNull();
                 merchant.MerchantName.ShouldBe(request.request.Name);
                 merchant.SettlementSchedule.ShouldBe(request.request.SettlementSchedule);
@@ -816,7 +816,7 @@ public class TransactionProcessorSteps
             Result updateResult = await this.TransactionProcessorClient
                 .UpdateMerchantOpeningHours(accessToken, request.estate.EstateId, request.merchantId, request.request, CancellationToken.None)
                 .ConfigureAwait(false);
-            updateResult.IsSuccess.ShouldBeTrue(updateResult.Message);
+            updateResult.IsSuccess().ShouldBeTrue(updateResult.GetErrorMessage());
         }
 
         foreach ((EstateDetails estate, Guid merchantId, MerchantOpeningRequest request) request in requests)
@@ -826,8 +826,8 @@ public class TransactionProcessorSteps
                 Result<MerchantResponse> getMerchantResult = await this.TransactionProcessorClient
                     .GetMerchant(accessToken, request.estate.EstateId, request.merchantId, CancellationToken.None)
                     .ConfigureAwait(false);
-                getMerchantResult.IsSuccess.ShouldBeTrue(getMerchantResult.Message);
-                merchant = getMerchantResult.GetValueOrThrow();
+                getMerchantResult.IsSuccess().ShouldBeTrue(getMerchantResult.GetErrorMessage());
+                merchant = getMerchantResult.Data;
                 merchant.ShouldNotBeNull();
                 merchant.OpeningHours.ShouldNotBeNull();
                 merchant.OpeningHours[DayOfWeek.Sunday].Opening.ShouldBe(request.request.Sunday.Opening);
@@ -867,7 +867,7 @@ public class TransactionProcessorSteps
                     request.merchantId,
                     request.request,
                     CancellationToken.None).ConfigureAwait(false);
-            assignOperatorToMerchantResult.IsSuccess.ShouldBeTrue(assignOperatorToMerchantResult.Message);
+            assignOperatorToMerchantResult.IsSuccess().ShouldBeTrue(assignOperatorToMerchantResult.GetErrorMessage());
             merchantOperators.Add((request.estate, request.merchantId, request.request.OperatorId));
         }
 
@@ -878,8 +878,8 @@ public class TransactionProcessorSteps
                 Result<MerchantResponse> getMerchantResult = await this.TransactionProcessorClient
                     .GetMerchant(accessToken, m.estate.EstateId, m.merchantId, CancellationToken.None)
                     .ConfigureAwait(false);
-                getMerchantResult.IsSuccess.ShouldBeTrue(getMerchantResult.Message);
-                MerchantResponse? merchant = getMerchantResult.GetValueOrThrow();
+                getMerchantResult.IsSuccess().ShouldBeTrue(getMerchantResult.GetErrorMessage());
+                MerchantResponse? merchant = getMerchantResult.Data;
                 merchant.ShouldNotBeNull();
                 merchant.Operators.ShouldNotBeNull();
                 op = merchant.Operators.SingleOrDefault(o => o.OperatorId == m.operatorId);
@@ -903,7 +903,7 @@ public class TransactionProcessorSteps
                                                 request.request,
                                                 CancellationToken.None).ConfigureAwait(false);
 
-            result.IsSuccess.ShouldBeTrue(result.Message);
+            result.IsSuccess().ShouldBeTrue(result.GetErrorMessage());
         }
 
         foreach ((EstateDetails estate, CreateOperatorRequest request) request in requests)
@@ -912,9 +912,9 @@ public class TransactionProcessorSteps
             await Retry.For(async () => {
                 Result<List<OperatorResponse>> operators = await this.TransactionProcessorClient
                     .GetOperators(accessToken, request.estate.EstateId, CancellationToken.None).ConfigureAwait(false);
-                operators.IsSuccess.ShouldBeTrue(operators.Message);
-                operators.GetValueOrThrow().ShouldNotBeNull();
-                @operator = operators.GetValueOrThrow().SingleOrDefault(o => o.Name == request.request.Name);
+                operators.IsSuccess().ShouldBeTrue(operators.GetErrorMessage());
+                operators.Data.ShouldNotBeNull();
+                @operator = operators.Data.SingleOrDefault(o => o.Name == request.request.Name);
                 @operator.ShouldNotBeNull();
             });
             @operator.ShouldNotBeNull();
@@ -941,7 +941,7 @@ public class TransactionProcessorSteps
                 request.estate.EstateId,
                 request.request,
                 CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue(result.Message);
+            result.IsSuccess().ShouldBeTrue(result.GetErrorMessage());
         }
 
         // verify at the read model
@@ -952,8 +952,8 @@ public class TransactionProcessorSteps
                     Result<EstateResponse> getEstateResult = await this.TransactionProcessorClient.GetEstate(accessToken,
                         request.estate.EstateId,
                         CancellationToken.None);
-                    getEstateResult.IsSuccess.ShouldBeTrue(getEstateResult.Message);
-                    EstateResponse? e = getEstateResult.GetValueOrThrow();
+                    getEstateResult.IsSuccess().ShouldBeTrue(getEstateResult.GetErrorMessage());
+                    EstateResponse? e = getEstateResult.Data;
                     e.ShouldNotBeNull();
                     e.Operators.ShouldNotBeNull();
                     operatorResponse = e.Operators.SingleOrDefault(o => o.OperatorId == request.request.OperatorId);
@@ -974,7 +974,7 @@ public class TransactionProcessorSteps
         {
             Result<Guid> result = await this.TransactionProcessorClient.CreateContract(accessToken, request.Item1.EstateId, request.Item2,
                 CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue(result.Message);
+            result.IsSuccess().ShouldBeTrue(result.GetErrorMessage());
         }
 
         foreach ((EstateDetails, CreateContractRequest) request in requests)
@@ -982,9 +982,9 @@ public class TransactionProcessorSteps
             ContractResponse contract = null;
             await Retry.For(async () => {
                 Result<List<ContractResponse>> getContractsResult = await this.TransactionProcessorClient.GetContracts(accessToken, request.Item1.EstateId, CancellationToken.None).ConfigureAwait(false);
-                getContractsResult.IsSuccess.ShouldBeTrue(getContractsResult.Message);
-                getContractsResult.GetValueOrThrow().ShouldNotBeNull();
-                contract = getContractsResult.GetValueOrThrow().Single(c => c.Description == request.Item2.Description);
+                getContractsResult.IsSuccess().ShouldBeTrue(getContractsResult.GetErrorMessage());
+                getContractsResult.Data.ShouldNotBeNull();
+                contract = getContractsResult.Data.Single(c => c.Description == request.Item2.Description);
             });
             contract.ShouldNotBeNull();
             contractList.Add(contract);
@@ -1003,7 +1003,7 @@ public class TransactionProcessorSteps
                 request.Item2.ContractId,
                 request.Item3,
                 CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue(result.Message);
+            result.IsSuccess().ShouldBeTrue(result.GetErrorMessage());
             estateContractProducts.Add((request.Item1, request.Item2, request.Item3));
         }
 
@@ -1012,8 +1012,8 @@ public class TransactionProcessorSteps
 
             await Retry.For(async () => {
                 Result<ContractResponse> getContractResult = await this.TransactionProcessorClient.GetContract(accessToken, estateContractProduct.Item1.EstateId, estateContractProduct.Item2.ContractId, CancellationToken.None).ConfigureAwait(false);
-                getContractResult.IsSuccess.ShouldBeTrue(getContractResult.Message);
-                ContractResponse contract = getContractResult.GetValueOrThrow();
+                getContractResult.IsSuccess().ShouldBeTrue(getContractResult.GetErrorMessage());
+                ContractResponse contract = getContractResult.Data;
                 contract.ShouldNotBeNull();
 
                 ContractProduct product = contract.Products.SingleOrDefault(c => c.Name == estateContractProduct.Item3.ProductName);
@@ -1038,7 +1038,7 @@ public class TransactionProcessorSteps
                                                                           request.Item3.ProductId,
                                                                           request.Item4,
                                                                           CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue(result.Message);
+            result.IsSuccess().ShouldBeTrue(result.GetErrorMessage());
             estateContractProductsFees.Add(request);
         }
 
@@ -1046,8 +1046,8 @@ public class TransactionProcessorSteps
         {
             await Retry.For(async () => {
                 Result<ContractResponse> getContractResult = await this.TransactionProcessorClient.GetContract(accessToken, estateContractProductsFee.Item1.EstateId, estateContractProductsFee.Item2.ContractId, CancellationToken.None).ConfigureAwait(false);
-                getContractResult.IsSuccess.ShouldBeTrue(getContractResult.Message);
-                ContractResponse contract = getContractResult.GetValueOrThrow();
+                getContractResult.IsSuccess().ShouldBeTrue(getContractResult.GetErrorMessage());
+                ContractResponse contract = getContractResult.Data;
                 contract.ShouldNotBeNull();
 
                 ContractProduct product = contract.Products.SingleOrDefault(c => c.ProductId == estateContractProductsFee.Item3.ProductId);
@@ -1070,8 +1070,8 @@ public class TransactionProcessorSteps
                                                                                                                      contract.ContractId,
                                                                                                                      product.ProductId,
                                                                                                                      CancellationToken.None);
-                    feesResult.IsSuccess.ShouldBeTrue(feesResult.Message);
-                    List<ContractProductTransactionFee>? fees = feesResult.GetValueOrThrow();
+                    feesResult.IsSuccess().ShouldBeTrue(feesResult.GetErrorMessage());
+                    List<ContractProductTransactionFee>? fees = feesResult.Data;
                     fees.ShouldNotBeNull();
 
                     ContractProductTransactionFee? fee = fees.SingleOrDefault(f => f.TransactionFeeId == transactionFee.TransactionFeeId);
@@ -1094,7 +1094,7 @@ public class TransactionProcessorSteps
                                      request.Item3,
                                      CancellationToken.None)
                 .ConfigureAwait(false);
-            addDeviceResult.IsSuccess.ShouldBeTrue(addDeviceResult.Message);
+            addDeviceResult.IsSuccess().ShouldBeTrue(addDeviceResult.GetErrorMessage());
             merchantDevices.Add((request.Item1, request.Item2, request.Item3.DeviceIdentifier));
         }
 
@@ -1106,8 +1106,8 @@ public class TransactionProcessorSteps
                 Result<MerchantResponse> getMerchantResult = await this.TransactionProcessorClient
                     .GetMerchant(accessToken, m.estate.EstateId, m.merchantId, CancellationToken.None)
                     .ConfigureAwait(false);
-                getMerchantResult.IsSuccess.ShouldBeTrue(getMerchantResult.Message);
-                merchant = getMerchantResult.GetValueOrThrow();
+                getMerchantResult.IsSuccess().ShouldBeTrue(getMerchantResult.GetErrorMessage());
+                merchant = getMerchantResult.Data;
                 merchant.ShouldNotBeNull();
                 KeyValuePair <Guid, String> device = merchant.Devices.SingleOrDefault(o => o.Value == m.deviceIdentifier);
                 device.Value.ShouldNotBeNull();
@@ -1134,22 +1134,22 @@ public class TransactionProcessorSteps
                 request.Item2,
                 addMerchantContractRequest,
                 CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue(result.Message);
+            result.IsSuccess().ShouldBeTrue(result.GetErrorMessage());
 
             await Retry.For(async () =>
             {
                 Result<List<ContractResponse>> merchantContractsResult = await this.TransactionProcessorClient
                     .GetMerchantContracts(accessToken, request.Item1.EstateId, request.Item2, CancellationToken.None)
                     .ConfigureAwait(false);
-                merchantContractsResult.IsSuccess.ShouldBeTrue(
+                merchantContractsResult.IsSuccess().ShouldBeTrue(
                     $"Unable to read contracts for estate '{request.Item1.EstateId}' and merchant '{request.Item2}' " +
-                    $"after adding contract '{request.Item3}'. {merchantContractsResult.Message}");
+                    $"after adding contract '{request.Item3}'. {merchantContractsResult.GetErrorMessage()}");
 
-                merchantContractsResult.GetValueOrThrow().ShouldNotBeNull(
+                merchantContractsResult.Data.ShouldNotBeNull(
                     $"The merchant-contract read model returned no data for estate '{request.Item1.EstateId}' " +
                     $"and merchant '{request.Item2}' after adding contract '{request.Item3}'.");
 
-                ContractResponse? contract = merchantContractsResult.GetValueOrThrow()
+                ContractResponse? contract = merchantContractsResult.Data
                     .SingleOrDefault(c => c.ContractId == request.Item3);
                 contract.ShouldNotBeNull(
                     $"Contract '{request.Item3}' was not present in the merchant-contract read model for " +
@@ -1165,12 +1165,12 @@ public class TransactionProcessorSteps
             request.Item1.EstateId,
             request.Item2,
             CancellationToken.None);
-        balanceBeforeResult.IsSuccess.ShouldBeTrue(balanceBeforeResult.Message);
-        MerchantBalanceResponse? balanceBefore = balanceBeforeResult.GetValueOrThrow();
+        balanceBeforeResult.IsSuccess().ShouldBeTrue(balanceBeforeResult.GetErrorMessage());
+        MerchantBalanceResponse? balanceBefore = balanceBeforeResult.Data;
         balanceBefore.ShouldNotBeNull();
 
         Result result = await this.TransactionProcessorClient.MakeMerchantDeposit(accessToken, request.Item1.EstateId, request.Item2, request.Item3, CancellationToken.None).ConfigureAwait(false);
-        result.IsSuccess.ShouldBeTrue(result.Message);
+        result.IsSuccess().ShouldBeTrue(result.GetErrorMessage());
 
         await Retry.For(async () =>
         {
@@ -1179,8 +1179,8 @@ public class TransactionProcessorSteps
                 request.Item1.EstateId,
                 request.Item2,
                 CancellationToken.None);
-            balanceAfterResult.IsSuccess.ShouldBeTrue(balanceAfterResult.Message);
-            MerchantBalanceResponse? balanceAfter = balanceAfterResult.GetValueOrThrow();
+            balanceAfterResult.IsSuccess().ShouldBeTrue(balanceAfterResult.GetErrorMessage());
+            MerchantBalanceResponse? balanceAfter = balanceAfterResult.Data;
             balanceAfter.ShouldNotBeNull();
             balanceAfter.Balance.ShouldBe(balanceBefore.Balance + request.Item3.Amount);
         });
@@ -1208,7 +1208,7 @@ public class TransactionProcessorSteps
                                                          estateDetails.EstateId,
                                                          request,
                                                          CancellationToken.None);
-                estateResult.IsSuccess.ShouldBeTrue(estateResult.Message);
+                estateResult.IsSuccess().ShouldBeTrue(estateResult.GetErrorMessage());
                 estateDetails.SetEstateUser(request.EmailAddress, request.Password);
             }
             else
@@ -1234,7 +1234,7 @@ public class TransactionProcessorSteps
                                                            createNewUserRequest.MerchantId.Value,
                                                            createMerchantUserRequest,
                                                            CancellationToken.None);
-                merchantResult.IsSuccess.ShouldBeTrue(merchantResult.Message);
+                merchantResult.IsSuccess().ShouldBeTrue(merchantResult.GetErrorMessage());
 
                 estateDetails.AddMerchantUser(createNewUserRequest.MerchantName, createMerchantUserRequest.EmailAddress, createMerchantUserRequest.Password);
             }
@@ -1260,8 +1260,8 @@ public class TransactionProcessorSteps
 
         await Retry.For(async () => {
             Result<EstateResponse> getEstateResult = await this.TransactionProcessorClient.GetEstate(token, estateId, CancellationToken.None).ConfigureAwait(false);
-            getEstateResult.IsSuccess.ShouldBeTrue(getEstateResult.Message);
-            EstateResponse? estate = getEstateResult.GetValueOrThrow();
+            getEstateResult.IsSuccess().ShouldBeTrue(getEstateResult.GetErrorMessage());
+            EstateResponse? estate = getEstateResult.Data;
             estate.ShouldNotBeNull();
             estate.EstateName.ShouldBe(expectedEstateDetails.Single());
         });
@@ -1276,8 +1276,8 @@ public class TransactionProcessorSteps
         {
             await Retry.For(async () => {
                 Result<List<OperatorResponse>> getOperatorsResult = await this.TransactionProcessorClient.GetOperators(accessToken, estateId, CancellationToken.None);
-                getOperatorsResult.IsSuccess.ShouldBeTrue(getOperatorsResult.Message);
-                List<OperatorResponse>? operatorList = getOperatorsResult.GetValueOrThrow();
+                getOperatorsResult.IsSuccess().ShouldBeTrue(getOperatorsResult.GetErrorMessage());
+                List<OperatorResponse>? operatorList = getOperatorsResult.Data;
                 operatorList.ShouldNotBeNull();
 
                 List<OperatorResponse> expectedOperators = expectedOperatorResponses
@@ -1316,9 +1316,9 @@ public class TransactionProcessorSteps
 
         await Retry.For(async () => {
             Result<List<EstateResponse>> getEstatesResult = await this.TransactionProcessorClient.GetEstates(token, estateId, CancellationToken.None).ConfigureAwait(false);
-            getEstatesResult.IsSuccess.ShouldBeTrue(getEstatesResult.Message);
-            getEstatesResult.GetValueOrThrow().ShouldNotBeEmpty();
-            EstateResponse estate = getEstatesResult.GetValueOrThrow().Single();
+            getEstatesResult.IsSuccess().ShouldBeTrue(getEstatesResult.GetErrorMessage());
+            getEstatesResult.Data.ShouldNotBeEmpty();
+            EstateResponse estate = getEstatesResult.Data.Single();
             estate.Operators.ShouldNotBeNull();
             foreach (String expectedOperator in expectedOperators)
             {
@@ -1347,8 +1347,8 @@ public class TransactionProcessorSteps
 
         await Retry.For(async () => {
             Result<EstateResponse> getEstateResult = await this.TransactionProcessorClient.GetEstate(token, estateId, CancellationToken.None).ConfigureAwait(false);
-            getEstateResult.IsSuccess.ShouldBeTrue(getEstateResult.Message);
-            EstateResponse? estate = getEstateResult.GetValueOrThrow();
+            getEstateResult.IsSuccess().ShouldBeTrue(getEstateResult.GetErrorMessage());
+            EstateResponse? estate = getEstateResult.Data;
             estate.ShouldNotBeNull();
             estate.SecurityUsers.ShouldNotBeNull();
             foreach (String expectedSecurityUser in expectedSecurityUsers)
@@ -1363,9 +1363,9 @@ public class TransactionProcessorSteps
     {
         Guid estateId = Guid.NewGuid();
         Result<EstateResponse> result = await this.TransactionProcessorClient.GetEstate(accessToken, estateId, CancellationToken.None).ConfigureAwait(false);
-        result.IsSuccess.ShouldBeFalse(result.Message);
+        result.IsSuccess().ShouldBeFalse(result.GetErrorMessage());
         ErrorType errorType = Enum.Parse<ErrorType>(errorStatus);
-        result.Errors.Any(error => error.ErrorType == errorType).ShouldBeTrue();
+        result.GetErrors().Any(error => error.ErrorType == errorType).ShouldBeTrue();
     }
 
     public async Task WhenIRemoveTheOperatorFromEstateTheOperatorIsRemoved(String accessToken, List<EstateDetails> estateDetailsList, String estateName, String operatorName)
@@ -1376,12 +1376,12 @@ public class TransactionProcessorSteps
 
         Result removeResult = await this.TransactionProcessorClient
             .RemoveOperatorFromEstate(accessToken, estateDetails.EstateId, operatorId, CancellationToken.None);
-        removeResult.IsSuccess.ShouldBeTrue(removeResult.Message);
+        removeResult.IsSuccess().ShouldBeTrue(removeResult.GetErrorMessage());
 
         await Retry.For(async () => {
             Result<EstateResponse> getEstateResult = await this.TransactionProcessorClient.GetEstate(accessToken, estateDetails.EstateId, CancellationToken.None);
-            getEstateResult.IsSuccess.ShouldBeTrue(getEstateResult.Message);
-            EstateResponse? estateResponse = getEstateResult.GetValueOrThrow();
+            getEstateResult.IsSuccess().ShouldBeTrue(getEstateResult.GetErrorMessage());
+            EstateResponse? estateResponse = getEstateResult.Data;
             estateResponse.ShouldNotBeNull();
 
             EstateOperatorResponse? operatorResponse = estateResponse.Operators.SingleOrDefault(c => c.OperatorId == operatorId);
@@ -1399,7 +1399,7 @@ public class TransactionProcessorSteps
             Result updateResult = await this.TransactionProcessorClient
                 .UpdateOperator(accessToken, request.estate.EstateId, request.operatorId, request.request, CancellationToken.None)
                 .ConfigureAwait(false);
-            updateResult.IsSuccess.ShouldBeTrue(updateResult.Message);
+            updateResult.IsSuccess().ShouldBeTrue(updateResult.GetErrorMessage());
         }
 
         foreach ((EstateDetails estate, Guid operatorId, UpdateOperatorRequest request) request in requests)
@@ -1409,9 +1409,9 @@ public class TransactionProcessorSteps
                 Result<OperatorResponse> getOperatorResult = await this.TransactionProcessorClient
                     .GetOperator(accessToken, request.estate.EstateId, request.operatorId, CancellationToken.None)
                     .ConfigureAwait(false);
-                getOperatorResult.IsSuccess.ShouldBeTrue(getOperatorResult.Message);
+                getOperatorResult.IsSuccess().ShouldBeTrue(getOperatorResult.GetErrorMessage());
 
-                operatorResponse = getOperatorResult.GetValueOrThrow();
+                operatorResponse = getOperatorResult.Data;
                 operatorResponse.ShouldNotBeNull();
                 operatorResponse.Name.ShouldBe(request.request.Name);
                 operatorResponse.RequireCustomTerminalNumber.ShouldBe(request.request.RequireCustomTerminalNumber.Value);
@@ -1446,8 +1446,8 @@ public class TransactionProcessorSteps
         await Retry.For(async () => {
             Result<List<ContractResponse>> getContractsResult =
                 await this.TransactionProcessorClient.GetContracts(token, estateDetails.EstateId, CancellationToken.None);
-            getContractsResult.IsSuccess.ShouldBeTrue(getContractsResult.Message);
-            List<ContractResponse>? contracts = getContractsResult.GetValueOrThrow();
+            getContractsResult.IsSuccess().ShouldBeTrue(getContractsResult.GetErrorMessage());
+            List<ContractResponse>? contracts = getContractsResult.Data;
             contracts.ShouldNotBeNull();
             contracts.ShouldHaveSingleItem();
             ContractResponse contract = contracts.Single();
@@ -1483,9 +1483,9 @@ public class TransactionProcessorSteps
         await Retry.For(async () => {
             Result<List<ContractResponse>> getContractsResult =
                 await this.TransactionProcessorClient.GetMerchantContracts(token, estateDetails.EstateId, merchantId, CancellationToken.None);
-            getContractsResult.IsSuccess.ShouldBeTrue(getContractsResult.Message);
+            getContractsResult.IsSuccess().ShouldBeTrue(getContractsResult.GetErrorMessage());
 
-            List<ContractResponse> contracts = getContractsResult.GetValueOrThrow();
+            List<ContractResponse> contracts = getContractsResult.Data;
             contracts.ShouldNotBeNull();
             contracts.ShouldHaveSingleItem();
             ContractResponse contractResponse = contracts.Single();
@@ -1530,8 +1530,8 @@ public class TransactionProcessorSteps
                                                                      product.ProductId,
                                                                      CancellationToken.None);
 
-            transactionFeesResult.IsSuccess.ShouldBeTrue(transactionFeesResult.Message);
-            List<ContractProductTransactionFee>? transactionFeesList = transactionFeesResult.GetValueOrThrow();
+            transactionFeesResult.IsSuccess().ShouldBeTrue(transactionFeesResult.GetErrorMessage());
+            List<ContractProductTransactionFee>? transactionFeesList = transactionFeesResult.Data;
             transactionFeesList.ShouldNotBeNull();
             transactionFeesList.Count.ShouldBe(transactionFees.Count);
 
@@ -1552,8 +1552,8 @@ public class TransactionProcessorSteps
         Result<Guid> result = await this.TransactionProcessorClient.CreateContract(accessToken, createContractRequest.Item1.EstateId,
             createContractRequest.Item2, CancellationToken.None);
 
-        result.IsFailed.ShouldBeTrue();
-        result.Errors.Any(error => error.ErrorType == ErrorType.Conflict).ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
+        result.GetErrors().Any(error => error.ErrorType == ErrorType.Conflict).ShouldBeTrue();
 
     }
 
@@ -1568,15 +1568,15 @@ public class TransactionProcessorSteps
                                        addressUpdate.Item3,
                                        addressUpdate.Item4,
                                        CancellationToken.None);
-            updateResult.IsSuccess.ShouldBeTrue(updateResult.Message);
+            updateResult.IsSuccess().ShouldBeTrue(updateResult.GetErrorMessage());
         }
 
         foreach ((EstateDetails, MerchantResponse, Guid, Address) addressVerify in addressUpdatesList)
         {
             await Retry.For(async () => {
                 Result<MerchantResponse> getMerchantResult = await this.TransactionProcessorClient.GetMerchant(accessToken, addressVerify.Item1.EstateId, addressVerify.Item2.MerchantId, CancellationToken.None);
-                getMerchantResult.IsSuccess.ShouldBeTrue(getMerchantResult.Message);
-                MerchantResponse? merchant = getMerchantResult.GetValueOrThrow();
+                getMerchantResult.IsSuccess().ShouldBeTrue(getMerchantResult.GetErrorMessage());
+                MerchantResponse? merchant = getMerchantResult.Data;
                 merchant.ShouldNotBeNull();
 
                 AddressResponse? address = merchant.Addresses.SingleOrDefault(a => a.AddressId == addressVerify.Item3);
@@ -1604,15 +1604,15 @@ public class TransactionProcessorSteps
                                        contactUpdate.Item3,
                                        contactUpdate.Item4,
                                        CancellationToken.None);
-            updateResult.IsSuccess.ShouldBeTrue(updateResult.Message);
+            updateResult.IsSuccess().ShouldBeTrue(updateResult.GetErrorMessage());
         }
 
         foreach ((EstateDetails, MerchantResponse, Guid, Contact) contactVerify in contactUpdatesList)
         {
             await Retry.For(async () => {
                 var getMerchantResult = await this.TransactionProcessorClient.GetMerchant(accessToken, contactVerify.Item1.EstateId, contactVerify.Item2.MerchantId, CancellationToken.None);
-                getMerchantResult.IsSuccess.ShouldBeTrue(getMerchantResult.Message);
-                MerchantResponse? merchant = getMerchantResult.GetValueOrThrow();
+                getMerchantResult.IsSuccess().ShouldBeTrue(getMerchantResult.GetErrorMessage());
+                MerchantResponse? merchant = getMerchantResult.Data;
                 merchant.ShouldNotBeNull();
 
                 ContactResponse? contact = merchant.Contacts.SingleOrDefault(c => c.ContactId == contactVerify.Item3);
@@ -1641,12 +1641,12 @@ public class TransactionProcessorSteps
                                         merchant.MerchantId,
                                         estateContract.ContractId,
                                         CancellationToken.None);
-        removeResult.IsSuccess.ShouldBeTrue(removeResult.Message);
+        removeResult.IsSuccess().ShouldBeTrue(removeResult.GetErrorMessage());
 
         await Retry.For(async () => {
             Result<MerchantResponse> getMerchantResult = await this.TransactionProcessorClient.GetMerchant(accessToken, estateDetails.EstateId, merchant.MerchantId, CancellationToken.None);
-            getMerchantResult.IsSuccess.ShouldBeTrue(getMerchantResult.Message);
-            MerchantResponse? merchantResponse = getMerchantResult.GetValueOrThrow();
+            getMerchantResult.IsSuccess().ShouldBeTrue(getMerchantResult.GetErrorMessage());
+            MerchantResponse? merchantResponse = getMerchantResult.Data;
             merchantResponse.ShouldNotBeNull();
 
             MerchantContractResponse? contractResponse = merchantResponse.Contracts.SingleOrDefault(c => c.ContractId == estateContract.ContractId);
@@ -1668,12 +1668,12 @@ public class TransactionProcessorSteps
                                         merchant.MerchantId,
                                         operatorId,
                                         CancellationToken.None);
-        removeResult.IsSuccess.ShouldBeTrue(removeResult.Message);
+        removeResult.IsSuccess().ShouldBeTrue(removeResult.GetErrorMessage());
 
         await Retry.For(async () => {
             var getMerchantResult = await this.TransactionProcessorClient.GetMerchant(accessToken, estateDetails.EstateId, merchant.MerchantId, CancellationToken.None);
-            getMerchantResult.IsSuccess.ShouldBeTrue(getMerchantResult.Message);
-            MerchantResponse? merchantResponse = getMerchantResult.GetValueOrThrow();
+            getMerchantResult.IsSuccess().ShouldBeTrue(getMerchantResult.GetErrorMessage());
+            MerchantResponse? merchantResponse = getMerchantResult.Data;
             merchantResponse.ShouldNotBeNull();
 
             MerchantOperatorResponse? operatorResponse = merchantResponse.Operators.SingleOrDefault(c => c.OperatorId == operatorId);

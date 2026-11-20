@@ -61,7 +61,7 @@ public class TransactionValidationService : ITransactionValidationService{
     
     internal static Result<T> CreateFailedResult<T>(T resultData) {
         // Validation failures are business outcomes with a response payload, not transport errors.
-        return Result.Success(resultData);
+        return Results.Ok(resultData);
     }
 
     private static bool IsValidationSuccessful(TransactionValidationResult result) =>
@@ -75,17 +75,17 @@ public class TransactionValidationService : ITransactionValidationService{
                                                                                     CancellationToken cancellationToken) {
         // Validate Estate
         Result<TransactionValidationResult<EstateAggregate>> estateValidationResult = await ValidateEstate(transactionValidationIdentifiers.EstateId, cancellationToken);
-        if (!IsValidationSuccessful(estateValidationResult.GetValueOrThrow())) return Result.Success(estateValidationResult.GetValueOrThrow().validationResult);
+        if (!IsValidationSuccessful(estateValidationResult.Data)) return Results.Ok(estateValidationResult.Data.validationResult);
 
         // Validate Merchant
-        var merchantValidationResult = await ValidateMerchant(estateValidationResult.GetValueOrThrow().additionalData.EstateName, transactionValidationIdentifiers.MerchantId, cancellationToken);
-        if (!IsValidationSuccessful(merchantValidationResult.GetValueOrThrow())) return Result.Success(merchantValidationResult.GetValueOrThrow().validationResult);
+        var merchantValidationResult = await ValidateMerchant(estateValidationResult.Data.additionalData.EstateName, transactionValidationIdentifiers.MerchantId, cancellationToken);
+        if (!IsValidationSuccessful(merchantValidationResult.Data)) return Results.Ok(merchantValidationResult.Data.validationResult);
 
-        Models.Merchant.Merchant merchant = merchantValidationResult.GetValueOrThrow().additionalData.GetMerchant();
+        Models.Merchant.Merchant merchant = merchantValidationResult.Data.additionalData.GetMerchant();
 
         // Validate Device
         Result<TransactionValidationResult> deviceValidationResult = ValidateDeviceForLogon(merchant, transactionValidationIdentifiers.DeviceIdentifier);
-        if (!IsValidationSuccessful(deviceValidationResult.GetValueOrThrow())) return deviceValidationResult;
+        if (!IsValidationSuccessful(deviceValidationResult.Data)) return deviceValidationResult;
 
         // Validate the merchant device
         return deviceValidationResult;
@@ -96,24 +96,24 @@ public class TransactionValidationService : ITransactionValidationService{
                                                                                              Decimal transactionValue,
                                                                                              CancellationToken cancellationToken) {
         Result result = (transactionCount, transactionValue) switch {
-                            (0, > 0) t => Result.Invalid($"Transaction Count is 0 but Value is {t.transactionValue}"),
-                            (> 0, 0) t => Result.Invalid($"Transaction Value is 0 but Count is {t.transactionCount}"),
-                            _ => Result.Success()
+                            (0, > 0) t => new Error(ErrorType.Validation, $"Transaction Count is 0 but Value is {t.transactionValue}"),
+                            (> 0, 0) t => new Error(ErrorType.Validation, $"Transaction Value is 0 but Count is {t.transactionCount}"),
+                            _ => Results.Ok()
                         };
-        if (result.IsFailed)
+        if (result.IsSuccess() == false)
             return ResultHelpers.CreateFailure(result);
 
         // Validate Estate
         Result<TransactionValidationResult<EstateAggregate>> estateValidationResult = await ValidateEstate(transactionValidationIdentifiers.EstateId, cancellationToken);
         if (!IsValidationSuccessful(estateValidationResult.Data))
-            return Result.Success(estateValidationResult.Data.validationResult);
+            return Results.Ok(estateValidationResult.Data.validationResult);
 
         EstateAggregate estate = estateValidationResult.Data.additionalData;
 
         // Validate Merchant
         Result<TransactionValidationResult<MerchantAggregate>> merchantValidationResult = await ValidateMerchant(estate.EstateName, transactionValidationIdentifiers.MerchantId, cancellationToken);
         if (!IsValidationSuccessful(merchantValidationResult.Data))
-            return Result.Success(merchantValidationResult.Data.validationResult);
+            return Results.Ok(merchantValidationResult.Data.validationResult);
 
         Models.Merchant.Merchant merchant = merchantValidationResult.Data.additionalData.GetMerchant();
 
@@ -123,7 +123,7 @@ public class TransactionValidationService : ITransactionValidationService{
             return deviceValidationResult;
 
         // Validate the merchant device
-        return Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, SuccessResponseMessage));
+        return Results.Ok(new TransactionValidationResult(TransactionResponseCode.Success, SuccessResponseMessage));
     }
 
     private const String SuccessResponseMessage = "SUCCESS";
@@ -140,54 +140,54 @@ public class TransactionValidationService : ITransactionValidationService{
     {
         // Validate Estate
         Result<TransactionValidationResult<EstateAggregate>> estateValidationResult = await ValidateEstate(transactionValidationIdentifiers.EstateId, cancellationToken);
-        if (!IsValidationSuccessful(estateValidationResult.GetValueOrThrow())) return Result.Success(estateValidationResult.GetValueOrThrow().validationResult);
+        if (!IsValidationSuccessful(estateValidationResult.Data)) return Results.Ok(estateValidationResult.Data.validationResult);
 
-        EstateAggregate estate = estateValidationResult.GetValueOrThrow().additionalData;
+        EstateAggregate estate = estateValidationResult.Data.additionalData;
 
         // Validate Operator for Estate
         Result<TransactionValidationResult> estateOperatorValidationResult = ValidateEstateOperator(estate, operatorId);
-        if (!IsValidationSuccessful(estateOperatorValidationResult.GetValueOrThrow())) return estateOperatorValidationResult;
+        if (!IsValidationSuccessful(estateOperatorValidationResult.Data)) return estateOperatorValidationResult;
 
         // Validate Merchant
         Result<TransactionValidationResult<MerchantAggregate>> merchantValidationResult = await ValidateMerchant(estate.EstateName, transactionValidationIdentifiers.MerchantId, cancellationToken);
-        if (!IsValidationSuccessful(merchantValidationResult.GetValueOrThrow())) return Result.Success(merchantValidationResult.GetValueOrThrow().validationResult);
+        if (!IsValidationSuccessful(merchantValidationResult.Data)) return Results.Ok(merchantValidationResult.Data.validationResult);
 
-        Models.Merchant.Merchant merchant = merchantValidationResult.GetValueOrThrow().additionalData.GetMerchant();
+        Models.Merchant.Merchant merchant = merchantValidationResult.Data.additionalData.GetMerchant();
 
         if (transactionSource == TransactionSource.OnlineSale)
         {
             // Validate Device
             Result<TransactionValidationResult> deviceValidationResult = ValidateDevice(merchant, transactionValidationIdentifiers.DeviceIdentifier);
-            if (!IsValidationSuccessful(deviceValidationResult.GetValueOrThrow())) return deviceValidationResult;
+            if (!IsValidationSuccessful(deviceValidationResult.Data)) return deviceValidationResult;
         }
 
         // Validate Operator for Merchant
         Result<TransactionValidationResult> merchantOperatorValidationResult = ValidateMerchantOperator(merchant, operatorId);
-        if (!IsValidationSuccessful(merchantOperatorValidationResult.GetValueOrThrow())) return merchantOperatorValidationResult;
+        if (!IsValidationSuccessful(merchantOperatorValidationResult.Data)) return merchantOperatorValidationResult;
 
         // Validate Contract and Product
         Result<TransactionValidationResult> contractProductValidationResult = ValidateContractAndProduct(merchant, contractId, productId);
-        if (!IsValidationSuccessful(contractProductValidationResult.GetValueOrThrow())) return contractProductValidationResult;
+        if (!IsValidationSuccessful(contractProductValidationResult.Data)) return contractProductValidationResult;
 
         // Validate Transaction Amount
         Result<TransactionValidationResult> transactionAmountValidationResult = await ValidateTransactionAmount(transactionValidationIdentifiers.MerchantId, merchant.MerchantName, transactionAmount, cancellationToken);
-        if (!IsValidationSuccessful(transactionAmountValidationResult.GetValueOrThrow())) return transactionAmountValidationResult;
+        if (!IsValidationSuccessful(transactionAmountValidationResult.Data)) return transactionAmountValidationResult;
 
         // If we get here everything is good
-        return Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, SuccessResponseMessage));
+        return Results.Ok(new TransactionValidationResult(TransactionResponseCode.Success, SuccessResponseMessage));
     }
 
     private async Task<Result<TransactionValidationResult<EstateAggregate>>> ValidateEstate(Guid estateId, CancellationToken cancellationToken)
     {
         Result<EstateAggregate> getEstateResult= await this.AggregateService.Get<EstateAggregate>(estateId, cancellationToken);
-        if (getEstateResult.IsFailed) {
-            bool isNotFound = getEstateResult.Errors.Any(error => error.ErrorType == ErrorType.NotFound);
+        if (getEstateResult.IsSuccess() == false) {
+            bool isNotFound = getEstateResult.GetErrors().Any(error => error.ErrorType == ErrorType.NotFound);
             TransactionValidationResult transactionValidationResult = isNotFound
                 ? new TransactionValidationResult(TransactionResponseCode.InvalidEstateId, $"Estate Id [{estateId}] is not a valid estate")
-                : new TransactionValidationResult(TransactionResponseCode.UnknownFailure, $"An error occurred while getting Estate Id [{estateId}] Message: [{String.Join("; ", getEstateResult.Errors.Select(error => error.Message))}]");
+                : new TransactionValidationResult(TransactionResponseCode.UnknownFailure, $"An error occurred while getting Estate Id [{estateId}] Message: [{String.Join("; ", getEstateResult.GetErrors().Select(error => error.Message))}]");
             return CreateFailedResult(new TransactionValidationResult<EstateAggregate>(transactionValidationResult));
         }
-        return Result.Success(new TransactionValidationResult<EstateAggregate>(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS"), getEstateResult.GetValueOrThrow()));
+        return Results.Ok(new TransactionValidationResult<EstateAggregate>(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS"), getEstateResult.Data));
     }
 
     private Result<TransactionValidationResult> ValidateEstateOperator(EstateAggregate estate, Guid operatorId) {
@@ -203,7 +203,7 @@ public class TransactionValidationService : ITransactionValidationService{
         Result<TransactionValidationResult> result = estateOperatorRecord switch {
             null => CreateFailedResult(new TransactionValidationResult(TransactionResponseCode.OperatorNotValidForEstate, $"Operator {operatorId} not configured for Estate [{estate.EstateName}]")),
             _ when estateOperatorRecord.IsDeleted => CreateFailedResult(new TransactionValidationResult(TransactionResponseCode.OperatorNotEnabledForEstate, $"Operator {operatorId} not enabled for Estate [{estate.EstateName}]")),
-            _ => Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, SuccessResponseMessage))
+            _ => Results.Ok(new TransactionValidationResult(TransactionResponseCode.Success, SuccessResponseMessage))
         };
         return result;
     }
@@ -211,15 +211,15 @@ public class TransactionValidationService : ITransactionValidationService{
     private async Task<Result<TransactionValidationResult<MerchantAggregate>>> ValidateMerchant(String estateName, Guid merchantId, CancellationToken cancellationToken)
     {
         Result<MerchantAggregate> getMerchantResult = await this.AggregateService.Get<MerchantAggregate>(merchantId, cancellationToken);
-        if (getMerchantResult.IsFailed)
+        if (getMerchantResult.IsSuccess() == false)
         {
-            bool isNotFound = getMerchantResult.Errors.Any(error => error.ErrorType == ErrorType.NotFound);
+            bool isNotFound = getMerchantResult.GetErrors().Any(error => error.ErrorType == ErrorType.NotFound);
             TransactionValidationResult transactionValidationResult = isNotFound
                 ? new TransactionValidationResult(TransactionResponseCode.InvalidMerchantId, $"Merchant Id [{merchantId}] is not a valid merchant for estate [{estateName}]")
-                : new TransactionValidationResult(TransactionResponseCode.UnknownFailure, $"An error occurred while getting Merchant Id [{merchantId}] Message: [{String.Join("; ", getMerchantResult.Errors.Select(error => error.Message))}]");
+                : new TransactionValidationResult(TransactionResponseCode.UnknownFailure, $"An error occurred while getting Merchant Id [{merchantId}] Message: [{String.Join("; ", getMerchantResult.GetErrors().Select(error => error.Message))}]");
             return CreateFailedResult(new TransactionValidationResult<MerchantAggregate>(transactionValidationResult));
         }
-        return Result.Success(new TransactionValidationResult<MerchantAggregate>(new TransactionValidationResult(TransactionResponseCode.Success, SuccessResponseMessage), getMerchantResult.GetValueOrThrow()));
+        return Results.Ok(new TransactionValidationResult<MerchantAggregate>(new TransactionValidationResult(TransactionResponseCode.Success, SuccessResponseMessage), getMerchantResult.Data));
 
     }
 
@@ -236,14 +236,14 @@ public class TransactionValidationService : ITransactionValidationService{
             return CreateFailedResult(new TransactionValidationResult(TransactionResponseCode.InvalidDeviceIdentifier, $"Device Identifier {deviceIdentifier} not valid for Merchant {merchant.MerchantName}"));
         }
 
-        return Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, SuccessResponseMessage));
+        return Results.Ok(new TransactionValidationResult(TransactionResponseCode.Success, SuccessResponseMessage));
     }
 
     private Result<TransactionValidationResult> ValidateDeviceForLogon(Models.Merchant.Merchant merchant, String deviceIdentifier)
     {
         if (merchant.Devices == null || !merchant.Devices.Any())
         {
-            return Result.Success(new TransactionValidationResult(TransactionResponseCode.SuccessNeedToAddDevice,SuccessResponseMessage));
+            return Results.Ok(new TransactionValidationResult(TransactionResponseCode.SuccessNeedToAddDevice,SuccessResponseMessage));
         }
 
         Device device = merchant.Devices.SingleOrDefault(d => d.DeviceIdentifier == deviceIdentifier);
@@ -252,7 +252,7 @@ public class TransactionValidationService : ITransactionValidationService{
             return CreateFailedResult(new TransactionValidationResult(TransactionResponseCode.InvalidDeviceIdentifier, $"Device Identifier {deviceIdentifier} not valid for Merchant {merchant.MerchantName}"));
         }
 
-        return Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, SuccessResponseMessage));
+        return Results.Ok(new TransactionValidationResult(TransactionResponseCode.Success, SuccessResponseMessage));
     }
 
     private Result<TransactionValidationResult> ValidateMerchantOperator(Models.Merchant.Merchant merchant, Guid operatorId)
@@ -268,7 +268,7 @@ public class TransactionValidationService : ITransactionValidationService{
         {
             null => CreateFailedResult(new TransactionValidationResult(TransactionResponseCode.OperatorNotValidForMerchant, $"Operator {operatorId} not configured for Merchant [{merchant.MerchantName}]")),
             _ when merchantOperatorRecord.IsDeleted => CreateFailedResult(new TransactionValidationResult(TransactionResponseCode.OperatorNotEnabledForMerchant, $"Operator {operatorId} not enabled for Merchant [{merchant.MerchantName}]")),
-            _ => Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, SuccessResponseMessage))
+            _ => Results.Ok(new TransactionValidationResult(TransactionResponseCode.Success, SuccessResponseMessage))
         };
         return result;
     }
@@ -303,7 +303,7 @@ public class TransactionValidationService : ITransactionValidationService{
             return CreateFailedResult(new TransactionValidationResult(TransactionResponseCode.ProductNotValidForMerchant, $"Product Id [{productId}] not valid for Merchant [{merchant.MerchantName}]"));
         }
 
-        return Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, SuccessResponseMessage));
+        return Results.Ok(new TransactionValidationResult(TransactionResponseCode.Success, SuccessResponseMessage));
     }
 
     private async Task<Result<TransactionValidationResult>> ValidateTransactionAmount(Guid merchantId, String merchantName, Decimal? transactionAmount, CancellationToken cancellationToken)
@@ -314,18 +314,18 @@ public class TransactionValidationService : ITransactionValidationService{
         }
 
         Result<String> getBalanceResult = await this.EventStoreContext.GetPartitionStateFromProjection("MerchantBalanceProjection", $"MerchantBalance-{merchantId:N}", cancellationToken);
-        if (getBalanceResult.IsFailed)
+        if (getBalanceResult.IsSuccess() == false)
         {
             return CreateFailedResult(new TransactionValidationResult(TransactionResponseCode.UnknownFailure, $"Error getting balance for Merchant [{merchantName}]"));
         }
 
-        MerchantBalanceProjectionState1 projectionState = StringSerialiser.Deserialise<MerchantBalanceProjectionState1>(getBalanceResult.GetValueOrThrow());
+        MerchantBalanceProjectionState1 projectionState = StringSerialiser.Deserialise<MerchantBalanceProjectionState1>(getBalanceResult.Data);
         if (projectionState.merchant.balance < transactionAmount)
         {
             return CreateFailedResult(new TransactionValidationResult(TransactionResponseCode.MerchantDoesNotHaveEnoughCredit, $"Merchant [{merchantName}] does not have enough credit available [{projectionState.merchant.balance:0.00}] to perform transaction amount [{transactionAmount}]"));
         }
 
-        return Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, SuccessResponseMessage));
+        return Results.Ok(new TransactionValidationResult(TransactionResponseCode.Success, SuccessResponseMessage));
     }
 }
 

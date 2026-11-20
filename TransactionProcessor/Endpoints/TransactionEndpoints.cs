@@ -36,13 +36,13 @@ namespace TransactionProcessor.Endpoints
             // note: controller used absolute route; map both forms � keep support for the original absolute route
             group.MapPost("/{transactionId:guid}/resendreceipt", TransactionHandlers.ResendTransactionReceipt)
                  .WithName("ResendTransactionReceipt").WithSummary("Resend a transaction receipt")
-                 .WithDescription("Resends the receipt for the transactionId. estateId is currently bound from the query string on this route.");
+                 .WithDescription("Resends the receipt for the transactionId. estateId is currently bound from the query string on this route.").ProducesUnionResult();
 
             // Also map legacy absolute route (controller had "/api/{estateId}/transactions/{transactionId}/resendreceipt")
             endpoints.MapGroup("/api").AddUnionResultFilter()
                      .MapPost("/{estateId:guid}/transactions/{transactionId:guid}/resendreceipt", TransactionHandlers.ResendTransactionReceipt)
                      .WithName("ResendTransactionReceiptLegacy").WithSummary("Resend a transaction receipt (legacy route)")
-                     .WithDescription("Resends the receipt for the transaction identified by estateId and transactionId in the route.");
+                     .WithDescription("Resends the receipt for the transaction identified by estateId and transactionId in the route.").ProducesUnionResult();
 
             return endpoints;
         }

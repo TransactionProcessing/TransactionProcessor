@@ -15,7 +15,7 @@ public class MerchantEventTests : BaseTest {
     private async Task CreateMerchantAsync()
     {
         Result result = await this.Repository.AddMerchant(TestData.DomainEvents.MerchantCreatedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     private static MerchantDomainEvents.MerchantOpeningHoursUpdatedEvent CreateMerchantOpeningHoursUpdatedEvent(DayOfWeek dayOfWeek, String opening, String closing)
@@ -27,7 +27,7 @@ public class MerchantEventTests : BaseTest {
     public async Task AddMerchant_MerchantIsAdded()
     {
         Result result = await this.Repository.AddMerchant(TestData.DomainEvents.MerchantCreatedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         EstateManagementContext context = this.GetContext();
         Merchant? merchant = await context.Merchants.SingleOrDefaultAsync(c => c.MerchantId == TestData.DomainEvents.MerchantCreatedEvent.MerchantId, TestContext.Current.CancellationToken);
         merchant.ShouldNotBeNull();
@@ -36,9 +36,9 @@ public class MerchantEventTests : BaseTest {
     [Fact]
     public async Task AddMerchant_EventReplayHandled() {
         Result result = await this.Repository.AddMerchant(TestData.DomainEvents.MerchantCreatedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         result = await this.Repository.AddMerchant(TestData.DomainEvents.MerchantCreatedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
@@ -47,7 +47,7 @@ public class MerchantEventTests : BaseTest {
         await this.CreateMerchantAsync();
 
         Result result = await this.Repository.AddMerchantAddress(TestData.DomainEvents.AddressAddedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
         MerchantAddress? merchantAddress = await context.MerchantAddresses.SingleOrDefaultAsync(c => c.AddressId == TestData.DomainEvents.AddressAddedEvent.AddressId, TestContext.Current.CancellationToken);
@@ -69,9 +69,9 @@ public class MerchantEventTests : BaseTest {
         await this.CreateMerchantAsync();
 
         Result result = await this.Repository.AddMerchantAddress(TestData.DomainEvents.AddressAddedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         result = await this.Repository.AddMerchantAddress(TestData.DomainEvents.AddressAddedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
@@ -80,7 +80,7 @@ public class MerchantEventTests : BaseTest {
         await this.CreateMerchantAsync();
 
         Result result = await this.Repository.AddMerchantContact(TestData.DomainEvents.ContactAddedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
         MerchantContact? merchantContact = await context.MerchantContacts.SingleOrDefaultAsync(c => c.ContactId == TestData.DomainEvents.ContactAddedEvent.ContactId, TestContext.Current.CancellationToken);
@@ -97,9 +97,9 @@ public class MerchantEventTests : BaseTest {
         await this.CreateMerchantAsync();
 
         Result result = await this.Repository.AddMerchantContact(TestData.DomainEvents.ContactAddedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         result = await this.Repository.AddMerchantContact(TestData.DomainEvents.ContactAddedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
@@ -108,7 +108,7 @@ public class MerchantEventTests : BaseTest {
         await this.CreateMerchantAsync();
 
         Result result = await this.Repository.AddMerchantDevice(TestData.DomainEvents.DeviceAddedToMerchantEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         EstateManagementContext context = this.GetContext();
         var merchantDevice = await context.MerchantDevices.SingleOrDefaultAsync(c => c.DeviceId == TestData.DomainEvents.DeviceAddedToMerchantEvent.DeviceId, TestContext.Current.CancellationToken);
         merchantDevice.ShouldNotBeNull();
@@ -119,9 +119,9 @@ public class MerchantEventTests : BaseTest {
         await this.CreateMerchantAsync();
 
         Result result = await this.Repository.AddMerchantDevice(TestData.DomainEvents.DeviceAddedToMerchantEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         result = await this.Repository.AddMerchantDevice(TestData.DomainEvents.DeviceAddedToMerchantEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
@@ -130,7 +130,7 @@ public class MerchantEventTests : BaseTest {
         await this.CreateMerchantAsync();
 
         Result result = await this.Repository.AddMerchantOperator(TestData.DomainEvents.OperatorAssignedToMerchantEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
         MerchantOperator? merchantOperator = await context.MerchantOperators.SingleOrDefaultAsync(c => c.OperatorId == TestData.DomainEvents.OperatorAssignedToMerchantEvent.OperatorId && c.MerchantId == TestData.DomainEvents.OperatorAssignedToMerchantEvent.MerchantId, TestContext.Current.CancellationToken);
@@ -147,9 +147,9 @@ public class MerchantEventTests : BaseTest {
         await this.CreateMerchantAsync();
 
         Result result = await this.Repository.AddMerchantOperator(TestData.DomainEvents.OperatorAssignedToMerchantEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         result = await this.Repository.AddMerchantOperator(TestData.DomainEvents.OperatorAssignedToMerchantEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
@@ -158,7 +158,7 @@ public class MerchantEventTests : BaseTest {
         await this.CreateMerchantAsync();
 
         Result result = await this.Repository.AddMerchantSecurityUser(TestData.DomainEvents.MerchantSecurityUserAddedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
         MerchantSecurityUser? merchantSecurityUser = await context.MerchantSecurityUsers.SingleOrDefaultAsync(c => c.SecurityUserId == TestData.DomainEvents.MerchantSecurityUserAddedEvent.SecurityUserId, TestContext.Current.CancellationToken);
@@ -173,9 +173,9 @@ public class MerchantEventTests : BaseTest {
         await this.CreateMerchantAsync();
 
         Result result = await this.Repository.AddMerchantSecurityUser(TestData.DomainEvents.MerchantSecurityUserAddedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         result = await this.Repository.AddMerchantSecurityUser(TestData.DomainEvents.MerchantSecurityUserAddedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
@@ -184,7 +184,7 @@ public class MerchantEventTests : BaseTest {
         await this.CreateMerchantAsync();
 
         Result result = await this.Repository.AddMerchantSchedule(TestData.DomainEvents.MerchantScheduleCreatedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
         MerchantSchedule? merchantSchedule = await context.MerchantSchedules.SingleOrDefaultAsync(c => c.MerchantScheduleId == TestData.DomainEvents.MerchantScheduleCreatedEvent.MerchantScheduleId, TestContext.Current.CancellationToken);
@@ -200,9 +200,9 @@ public class MerchantEventTests : BaseTest {
         await this.CreateMerchantAsync();
 
         Result result = await this.Repository.AddMerchantSchedule(TestData.DomainEvents.MerchantScheduleCreatedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         result = await this.Repository.AddMerchantSchedule(TestData.DomainEvents.MerchantScheduleCreatedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
@@ -210,10 +210,10 @@ public class MerchantEventTests : BaseTest {
     {
         await this.CreateMerchantAsync();
         Result result = await this.Repository.AddMerchantOperator(TestData.DomainEvents.OperatorAssignedToMerchantEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         result = await this.Repository.RemoveOperatorFromMerchant(TestData.DomainEvents.OperatorRemovedFromMerchantEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
         MerchantOperator? merchantOperator = await context.MerchantOperators.SingleOrDefaultAsync(c => c.OperatorId == TestData.DomainEvents.OperatorRemovedFromMerchantEvent.OperatorId && c.MerchantId == TestData.DomainEvents.OperatorRemovedFromMerchantEvent.MerchantId, TestContext.Current.CancellationToken);
@@ -226,12 +226,12 @@ public class MerchantEventTests : BaseTest {
     {
         await this.CreateMerchantAsync();
         Result result = await this.Repository.AddMerchantOperator(TestData.DomainEvents.OperatorAssignedToMerchantEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         result = await this.Repository.RemoveOperatorFromMerchant(TestData.DomainEvents.OperatorRemovedFromMerchantEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         result = await this.Repository.RemoveOperatorFromMerchant(TestData.DomainEvents.OperatorRemovedFromMerchantEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
@@ -240,9 +240,9 @@ public class MerchantEventTests : BaseTest {
         await this.CreateMerchantAsync();
 
         Result result = await this.Repository.AddMerchantDevice(TestData.DomainEvents.DeviceAddedToMerchantEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         result = await this.Repository.SwapMerchantDevice(TestData.DomainEvents.DeviceSwappedForMerchantEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         EstateManagementContext context = this.GetContext();
         var merchantDevice = await context.MerchantDevices.SingleOrDefaultAsync(c => c.DeviceId == TestData.DomainEvents.DeviceAddedToMerchantEvent.DeviceId, TestContext.Current.CancellationToken);
         merchantDevice.ShouldNotBeNull();
@@ -261,9 +261,9 @@ public class MerchantEventTests : BaseTest {
         await this.CreateMerchantAsync();
 
         Result result = await this.Repository.AddMerchantDevice(TestData.DomainEvents.DeviceAddedToMerchantEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         result = await this.Repository.SwapMerchantDevice(TestData.DomainEvents.DeviceSwappedForMerchantEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         EstateManagementContext context = this.GetContext();
         var merchantDevice = await context.MerchantDevices.SingleOrDefaultAsync(c => c.DeviceId == TestData.DomainEvents.DeviceAddedToMerchantEvent.DeviceId, TestContext.Current.CancellationToken);
         merchantDevice.ShouldNotBeNull();
@@ -276,7 +276,7 @@ public class MerchantEventTests : BaseTest {
         merchantDevice.IsEnabled.ShouldBeTrue();
 
         result = await this.Repository.SwapMerchantDevice(TestData.DomainEvents.DeviceSwappedForMerchantEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         merchantDevice = await context.MerchantDevices.SingleOrDefaultAsync(c => c.DeviceId == TestData.DomainEvents.DeviceAddedToMerchantEvent.DeviceId, TestContext.Current.CancellationToken);
         merchantDevice.ShouldNotBeNull();
@@ -295,7 +295,7 @@ public class MerchantEventTests : BaseTest {
         await this.CreateMerchantAsync();
 
         Result result = await this.Repository.UpdateMerchant(TestData.DomainEvents.MerchantNameUpdatedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
         Merchant? merchant = await context.Merchants.SingleOrDefaultAsync(c => c.MerchantId == TestData.DomainEvents.MerchantNameUpdatedEvent.MerchantId, TestContext.Current.CancellationToken);
@@ -309,7 +309,7 @@ public class MerchantEventTests : BaseTest {
         await this.CreateMerchantAsync();
 
         Result result = await this.Repository.UpdateMerchant(TestData.DomainEvents.MerchantReferenceAllocatedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
         Merchant? merchant = await context.Merchants.SingleOrDefaultAsync(c => c.MerchantId == TestData.DomainEvents.MerchantReferenceAllocatedEvent.MerchantId, TestContext.Current.CancellationToken);
@@ -323,7 +323,7 @@ public class MerchantEventTests : BaseTest {
         await this.CreateMerchantAsync();
 
         Result result = await this.Repository.UpdateMerchant(TestData.DomainEvents.SettlementScheduleChangedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
         Merchant? merchant = await context.Merchants.SingleOrDefaultAsync(c => c.MerchantId == TestData.DomainEvents.SettlementScheduleChangedEvent.MerchantId, TestContext.Current.CancellationToken);
@@ -336,24 +336,24 @@ public class MerchantEventTests : BaseTest {
     {
         await this.CreateMerchantAsync();
         Result result = await this.Repository.AddMerchantAddress(TestData.DomainEvents.AddressAddedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         result = await this.Repository.UpdateMerchantAddress(TestData.DomainEvents.MerchantAddressLine1UpdatedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         result = await this.Repository.UpdateMerchantAddress(TestData.DomainEvents.MerchantAddressLine2UpdatedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         result = await this.Repository.UpdateMerchantAddress(TestData.DomainEvents.MerchantAddressLine3UpdatedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         result = await this.Repository.UpdateMerchantAddress(TestData.DomainEvents.MerchantAddressLine4UpdatedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         result = await this.Repository.UpdateMerchantAddress(TestData.DomainEvents.MerchantCountyUpdatedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         result = await this.Repository.UpdateMerchantAddress(TestData.DomainEvents.MerchantRegionUpdatedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         result = await this.Repository.UpdateMerchantAddress(TestData.DomainEvents.MerchantTownUpdatedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         result = await this.Repository.UpdateMerchantAddress(TestData.DomainEvents.MerchantPostalCodeUpdatedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
         MerchantAddress? merchantAddress = await context.MerchantAddresses.SingleOrDefaultAsync(c => c.AddressId == TestData.DomainEvents.AddressAddedEvent.AddressId, TestContext.Current.CancellationToken);
@@ -373,14 +373,14 @@ public class MerchantEventTests : BaseTest {
     {
         await this.CreateMerchantAsync();
         Result result = await this.Repository.AddMerchantContact(TestData.DomainEvents.ContactAddedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         result = await this.Repository.UpdateMerchantContact(TestData.DomainEvents.MerchantContactNameUpdatedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         result = await this.Repository.UpdateMerchantContact(TestData.DomainEvents.MerchantContactEmailAddressUpdatedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         result = await this.Repository.UpdateMerchantContact(TestData.DomainEvents.MerchantContactPhoneNumberUpdatedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
         MerchantContact? merchantContact = await context.MerchantContacts.SingleOrDefaultAsync(c => c.ContactId == TestData.DomainEvents.ContactAddedEvent.ContactId, TestContext.Current.CancellationToken);
@@ -396,20 +396,20 @@ public class MerchantEventTests : BaseTest {
         await this.CreateMerchantAsync();
 
         Result result = await this.Repository.UpdateMerchantOpeningHours(TestData.DomainEvents.MerchantOpeningHoursUpdatedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         result = await this.Repository.UpdateMerchantOpeningHours(CreateMerchantOpeningHoursUpdatedEvent(DayOfWeek.Tuesday, "0900", "1800"), TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         result = await this.Repository.UpdateMerchantOpeningHours(CreateMerchantOpeningHoursUpdatedEvent(DayOfWeek.Wednesday, "1000", "1900"), TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         result = await this.Repository.UpdateMerchantOpeningHours(CreateMerchantOpeningHoursUpdatedEvent(DayOfWeek.Thursday, "1100", "2000"), TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         result = await this.Repository.UpdateMerchantOpeningHours(CreateMerchantOpeningHoursUpdatedEvent(DayOfWeek.Friday, "1200", "2100"), TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         result = await this.Repository.UpdateMerchantOpeningHours(CreateMerchantOpeningHoursUpdatedEvent(DayOfWeek.Saturday, "1300", "2200"), TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         result = await this.Repository.UpdateMerchantOpeningHours(CreateMerchantOpeningHoursUpdatedEvent(DayOfWeek.Sunday, "1400", "2300"), TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
         MerchantOpeningHours? merchantOpeningHours = await context.MerchantOpeningHours.SingleOrDefaultAsync(c => c.MerchantId == TestData.MerchantId, TestContext.Current.CancellationToken);

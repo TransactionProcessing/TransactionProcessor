@@ -32,11 +32,11 @@ public class MerchantScheduleDomainEventHandlerTests
     {
         MerchantScheduleDomainEvents.MerchantScheduleCreatedEvent domainEvent = TestData.DomainEvents.MerchantScheduleCreatedEvent;
         this.EstateReportingRepository.AddMerchantSchedule(domainEvent, Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         Result result = await this.DomainEventHandler.Handle(domainEvent, TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         this.EstateReportingRepository.AddMerchantSchedule(domainEvent, Arg<CancellationToken>.Any()).Called(Count.Once());
     }
 
@@ -45,11 +45,11 @@ public class MerchantScheduleDomainEventHandlerTests
     {
         MerchantScheduleDomainEvents.MerchantScheduleMonthUpdatedEvent domainEvent = TestData.DomainEvents.MerchantScheduleMonthUpdatedEvent;
         this.EstateReportingRepository.UpdateMerchantSchedule(domainEvent, Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         Result result = await this.DomainEventHandler.Handle(domainEvent, TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         this.EstateReportingRepository.UpdateMerchantSchedule(domainEvent, Arg<CancellationToken>.Any()).Called(Count.Once());
     }
 }

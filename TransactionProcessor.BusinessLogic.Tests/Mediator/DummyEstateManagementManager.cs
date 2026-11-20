@@ -21,48 +21,48 @@ public class DummyTransactionProcessorManager : ITransactionProcessorManager {
 
     public async Task<Result<List<Contract>>> GetContracts(Guid estateId,
                                                            CancellationToken cancellationToken) {
-        return Result.Success(new List<Contract>());
+        return Results.Ok(new List<Contract>());
     }
 
     public async Task<Result<Contract>> GetContract(Guid estateId,
                                                     Guid contractId,
                                                     CancellationToken cancellationToken) {
-        return Result.Success(new Contract());
+        return Results.Ok(new Contract());
     }
 
     public async Task<Result<Models.Estate.Estate>> GetEstate(Guid estateId,
                                                               CancellationToken cancellationToken) {
-        return Result.Success(new Models.Estate.Estate());
+        return Results.Ok(new Models.Estate.Estate());
     }
 
     public async Task<Result<List<Models.Estate.Estate>>> GetEstates(Guid estateId,
                                                                      CancellationToken cancellationToken) {
-        return Result.Success(new List<Models.Estate.Estate>());
+        return Results.Ok(new List<Models.Estate.Estate>());
     }
 
     public async Task<Result<Merchant>> GetMerchant(Guid estateId,
                                                     Guid merchantId,
                                                     CancellationToken cancellationToken) {
-        return Result<Merchant>.Fail(Error.Failure("Merchant was not found."));
+        return new Result<Merchant>(new Error(ErrorType.Failure, "Merchant was not found."));
     }
 
     public async Task<Result<MerchantScheduleModel>> GetMerchantSchedule(Guid estateId,
                                                                           Guid merchantId,
                                                                           Int32 year,
                                                                           CancellationToken cancellationToken) {
-        return Result.Success(new MerchantScheduleModel());
+        return Results.Ok(new MerchantScheduleModel());
     }
 
     public async Task<Result<MerchantScheduleModel>> GetMerchantScheduleFromReadModel(Guid estateId,
                                                                                        Guid merchantId,
                                                                                        Int32 year,
                                                                                        CancellationToken cancellationToken) {
-        return Result.Success(new MerchantScheduleModel());
+        return Results.Ok(new MerchantScheduleModel());
     }
 
     public async Task<Result<List<Merchant>>> GetMerchants(Guid estateId,
                                                            CancellationToken cancellationToken) {
-        return Result.Success(new List<Merchant>());
+        return Results.Ok(new List<Merchant>());
     }
 
     public async Task<Result<List<ContractProductTransactionFee>>> GetTransactionFeesForProduct(Guid estateId,
@@ -70,25 +70,25 @@ public class DummyTransactionProcessorManager : ITransactionProcessorManager {
                                                                                                 Guid contractId,
                                                                                                 Guid productId,
                                                                                                 CancellationToken cancellationToken) {
-        return Result.Success(new List<ContractProductTransactionFee>());
+        return Results.Ok(new List<ContractProductTransactionFee>());
     }
 
     public async Task<Result<Models.Operator.Operator>> GetOperator(Guid estateId,
                                                                     Guid operatorId,
                                                                     CancellationToken cancellationToken) {
-        return Result.Success(new Models.Operator.Operator());
+        return Results.Ok(new Models.Operator.Operator());
     }
 
     public async Task<Result<List<Models.Operator.Operator>>> GetOperators(Guid estateId,
                                                                            CancellationToken cancellationToken) {
-        return Result.Success(new List<Models.Operator.Operator>());
+        return Results.Ok(new List<Models.Operator.Operator>());
     }
 
     public async Task<Result<SettlementModel>> GetSettlement(Guid estateId,
                                                              Guid merchantId,
                                                              Guid settlementId,
                                                              CancellationToken cancellationToken) {
-        return Result.Success(new SettlementModel());
+        return Results.Ok(new SettlementModel());
     }
 
     public async Task<Result<List<SettlementModel>>> GetSettlements(Guid estateId,
@@ -96,13 +96,13 @@ public class DummyTransactionProcessorManager : ITransactionProcessorManager {
                                                                     String startDate,
                                                                     String endDate,
                                                                     CancellationToken cancellationToken) {
-        return Result.Success(new List<SettlementModel>());
+        return Results.Ok(new List<SettlementModel>());
     }
 
     public async Task<Result<PendingSettlementModel>> GetPendingSettlement(Guid estateId,
                                                                            Guid merchantId,
                                                                            DateTimeOffset settlementDate,
                                                                            CancellationToken cancellationToken) {
-        return Result.Success(new PendingSettlementModel());
+        return Results.Ok(new PendingSettlementModel());
     }
 }

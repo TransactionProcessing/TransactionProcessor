@@ -53,10 +53,10 @@ namespace TransactionProcessor.BusinessLogic.Manager
             return await AsyncExecutor.ExecuteSafeAsync(async ct =>{
                 Result<List<Contract>> getContractsResult = await this.TransactionProcessorReadModelRepository.GetContracts(estateId, ct);
 
-                if (getContractsResult.IsFailed)
+                if (getContractsResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(getContractsResult);
 
-                return Result.Success(getContractsResult.GetValueOrThrow());
+                return Results.Ok(getContractsResult.Data);
             }, cancellationToken);
         }
 
@@ -66,18 +66,18 @@ namespace TransactionProcessor.BusinessLogic.Manager
         {
             return await AsyncExecutor.ExecuteSafeAsync(async ct => {
                 Result<ContractAggregate> getContractResult = await this.AggregateService.GetLatest<ContractAggregate>(contractId, ct);
-                if (getContractResult.IsFailed)
+                if (getContractResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(getContractResult);
 
-                ContractAggregate contractAggregate = getContractResult.GetValueOrThrow();
+                ContractAggregate contractAggregate = getContractResult.Data;
 
                 if (contractAggregate.IsCreated == false) {
-                    return Result.NotFound($"No contract found with Id [{estateId}]");
+                    return new Error(ErrorType.NotFound, $"No contract found with Id [{estateId}]");
                 }
 
                 Contract contractModel = contractAggregate.GetContract();
 
-                return Result.Success(contractModel);
+                return Results.Ok(contractModel);
             }, cancellationToken);
         }
 
@@ -86,12 +86,12 @@ namespace TransactionProcessor.BusinessLogic.Manager
 
             return await AsyncExecutor.ExecuteSafeAsync(async ct => {
                 Result<EstateAggregate> getEstateResult = await this.AggregateService.GetLatest<EstateAggregate>(estateId, ct);
-                if (getEstateResult.IsFailed)
+                if (getEstateResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(getEstateResult);
 
-                EstateAggregate estateAggregate = getEstateResult.GetValueOrThrow();
+                EstateAggregate estateAggregate = getEstateResult.Data;
                 if (estateAggregate.IsCreated == false) {
-                    return Result.NotFound($"No estate found with Id [{estateId}]");
+                    return new Error(ErrorType.NotFound, $"No estate found with Id [{estateId}]");
                 }
 
                 Models.Estate.Estate estateModel = estateAggregate.GetEstate();
@@ -99,14 +99,14 @@ namespace TransactionProcessor.BusinessLogic.Manager
                 if (estateModel.Operators != null) {
                     foreach (Operator @operator in estateModel.Operators) {
                         var getOperatorResult = await this.AggregateService.GetLatest<OperatorAggregate>(@operator.OperatorId, ct);
-                        if (getOperatorResult.IsSuccess) {
-                            OperatorAggregate operatorAggregate = getOperatorResult.GetValueOrThrow();
+                        if (getOperatorResult.IsSuccess()) {
+                            OperatorAggregate operatorAggregate = getOperatorResult.Data;
                             @operator.Name = operatorAggregate.Name;
                         }
                     }
                 }
 
-                return Result.Success(estateModel);
+                return Results.Ok(estateModel);
             }, cancellationToken);
         }
 
@@ -114,10 +114,10 @@ namespace TransactionProcessor.BusinessLogic.Manager
                                                    CancellationToken cancellationToken){
             return await AsyncExecutor.ExecuteSafeAsync(async ct => {
                     Result<Models.Estate.Estate> getEstateResult = await this.TransactionProcessorReadModelRepository.GetEstate(estateId, ct);
-                    if (getEstateResult.IsFailed)
-                        return Result.NotFound($"No estate found with Id [{estateId}]");
+                    if (getEstateResult.IsSuccess() == false)
+                        return new Error(ErrorType.NotFound, $"No estate found with Id [{estateId}]");
 
-                    return Result.Success(new List<Models.Estate.Estate>() { getEstateResult.GetValueOrThrow() });
+                    return Results.Ok(new List<Models.Estate.Estate>() { getEstateResult.Data });
                 },
                 cancellationToken);
         }
@@ -127,13 +127,13 @@ namespace TransactionProcessor.BusinessLogic.Manager
                                                 CancellationToken cancellationToken)
         {
             Result<MerchantAggregate> getMerchantResult = await this.AggregateService.GetLatest<MerchantAggregate>(merchantId, cancellationToken);
-            if (getMerchantResult.IsFailed)
+            if (getMerchantResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(getMerchantResult);
 
-            MerchantAggregate merchantAggregate = getMerchantResult.GetValueOrThrow();
+            MerchantAggregate merchantAggregate = getMerchantResult.Data;
             if (merchantAggregate.IsCreated == false)
             {
-                return Result.NotFound($"No merchant found with Id [{merchantId}]");
+                return new Error(ErrorType.NotFound, $"No merchant found with Id [{merchantId}]");
             }
 
             Merchant merchantModel = merchantAggregate.GetMerchant();
@@ -144,22 +144,22 @@ namespace TransactionProcessor.BusinessLogic.Manager
                 foreach (Models.Merchant.Operator @operator in merchantModel.Operators)
                 {
                     var getOperatorResult = await this.AggregateService.GetLatest<OperatorAggregate>(@operator.OperatorId, cancellationToken);
-                    if (getOperatorResult.IsFailed)
+                    if (getOperatorResult.IsSuccess() == false)
                         return ResultHelpers.CreateFailure(getOperatorResult);
-                    OperatorAggregate operatorAggregate = getOperatorResult.GetValueOrThrow();
+                    OperatorAggregate operatorAggregate = getOperatorResult.Data;
                     Models.Merchant.Operator newOperator = @operator with { Name = operatorAggregate.Name };
                     operators.Add(newOperator);
                 }
             }
 
             Result<Merchant> merchantReadModelResult = await this.TransactionProcessorReadModelRepository.GetMerchant(estateId, merchantId, cancellationToken);
-            if (merchantReadModelResult.IsFailed) {
+            if (merchantReadModelResult.IsSuccess() == false) {
                 return ResultHelpers.CreateFailure(merchantReadModelResult);
             }
 
-            merchantModel.MerchantReportingId = merchantReadModelResult.GetValueOrThrow().MerchantReportingId;
+            merchantModel.MerchantReportingId = merchantReadModelResult.Data.MerchantReportingId;
 
-            return Result.Success(merchantModel);
+            return Results.Ok(merchantModel);
         }
 
         public async Task<Result<MerchantScheduleModel>> GetMerchantSchedule(Guid estateId,
@@ -170,16 +170,16 @@ namespace TransactionProcessor.BusinessLogic.Manager
             return await AsyncExecutor.ExecuteSafeAsync(async ct => {
                 Guid merchantScheduleId = IdGenerationService.GenerateMerchantScheduleAggregateId(estateId, merchantId, year);
                 Result<MerchantScheduleAggregate> getMerchantScheduleResult = await this.AggregateService.GetLatest<MerchantScheduleAggregate>(merchantScheduleId, ct);
-                if (getMerchantScheduleResult.IsFailed)
+                if (getMerchantScheduleResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(getMerchantScheduleResult);
 
-                MerchantScheduleAggregate merchantScheduleAggregate = getMerchantScheduleResult.GetValueOrThrow();
+                MerchantScheduleAggregate merchantScheduleAggregate = getMerchantScheduleResult.Data;
                 if (merchantScheduleAggregate.IsCreated == false)
-                    return Result.NotFound($"No merchant schedule found for Merchant [{merchantId}] in Year [{year}]");
+                    return new Error(ErrorType.NotFound, $"No merchant schedule found for Merchant [{merchantId}] in Year [{year}]");
 
                 MerchantScheduleModel merchantScheduleModel = merchantScheduleAggregate.GetSchedule();
 
-                return Result.Success(merchantScheduleModel);
+                return Results.Ok(merchantScheduleModel);
             }, cancellationToken);
         }
 
@@ -190,10 +190,10 @@ namespace TransactionProcessor.BusinessLogic.Manager
         {
             return await AsyncExecutor.ExecuteSafeAsync(async ct => {
                 Result<MerchantScheduleModel> getMerchantScheduleResult = await this.TransactionProcessorReadModelRepository.GetMerchantSchedule(estateId, merchantId, year, ct);
-                if (getMerchantScheduleResult.IsFailed)
+                if (getMerchantScheduleResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(getMerchantScheduleResult);
 
-                return Result.Success(getMerchantScheduleResult.GetValueOrThrow());
+                return Results.Ok(getMerchantScheduleResult.Data);
             }, cancellationToken);
         }
 
@@ -203,14 +203,14 @@ namespace TransactionProcessor.BusinessLogic.Manager
         {
             return await AsyncExecutor.ExecuteSafeAsync(async ct => {
                 Result<List<Contract>> getMerchantContractsResult = await this.TransactionProcessorReadModelRepository.GetMerchantContracts(estateId, merchantId, ct);
-                if (getMerchantContractsResult.IsFailed)
+                if (getMerchantContractsResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(getMerchantContractsResult);
 
-                List<Contract> contractModels = getMerchantContractsResult.GetValueOrThrow();
+                List<Contract> contractModels = getMerchantContractsResult.Data;
                 if (contractModels.Any() == false)
-                    return Result.NotFound($"No contracts for Estate {estateId} and Merchant {merchantId}");
+                    return new Error(ErrorType.NotFound, $"No contracts for Estate {estateId} and Merchant {merchantId}");
 
-                return Result.Success(contractModels);
+                return Results.Ok(contractModels);
             }, cancellationToken);
         }
 
@@ -219,14 +219,14 @@ namespace TransactionProcessor.BusinessLogic.Manager
         {
             return await AsyncExecutor.ExecuteSafeAsync(async ct => {
                 Result<List<Merchant>> getMerchantsResult = await this.TransactionProcessorReadModelRepository.GetMerchants(estateId, ct);
-                if (getMerchantsResult.IsFailed)
+                if (getMerchantsResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(getMerchantsResult);
-                List<Merchant> merchants = getMerchantsResult.GetValueOrThrow();
+                List<Merchant> merchants = getMerchantsResult.Data;
                 if (merchants == null || merchants.Any() == false) {
-                    return Result.NotFound($"No Merchants found for estate Id {estateId}");
+                    return new Error(ErrorType.NotFound, $"No Merchants found for estate Id {estateId}");
                 }
 
-                return Result.Success(merchants);
+                return Results.Ok(merchants);
             },cancellationToken);
         }
 
@@ -237,12 +237,12 @@ namespace TransactionProcessor.BusinessLogic.Manager
                                                                              CancellationToken cancellationToken)
         {
             Result<ContractAggregate> getContractResult = await this.AggregateService.GetLatest<ContractAggregate>(contractId, cancellationToken);
-            if (getContractResult.IsFailed)
+            if (getContractResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(getContractResult);
-            ContractAggregate contract = getContractResult.GetValueOrThrow();
+            ContractAggregate contract = getContractResult.Data;
             if (contract.IsCreated == false)
             {
-                return Result.NotFound($"No contract found with Id [{contractId}]");
+                return new Error(ErrorType.NotFound, $"No contract found with Id [{contractId}]");
             }
 
             List<Product> products = contract.GetProducts();
@@ -251,36 +251,36 @@ namespace TransactionProcessor.BusinessLogic.Manager
 
             if (product == null)
             {
-                return Result.NotFound($"No product found with Id [{productId}] on contract Id [{contractId}]");
+                return new Error(ErrorType.NotFound, $"No product found with Id [{productId}] on contract Id [{contractId}]");
             }
 
-            return Result.Success(product.TransactionFees);
+            return Results.Ok(product.TransactionFees);
         }
 
         public async Task<Result<Models.Operator.Operator>> GetOperator(Guid estateId, Guid operatorId, CancellationToken cancellationToken)
         {
             Result<OperatorAggregate> getOperatorResult = await this.AggregateService.GetLatest<OperatorAggregate>(operatorId, cancellationToken);
-            if (getOperatorResult.IsFailed)
+            if (getOperatorResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(getOperatorResult);
-            OperatorAggregate operatorAggregate = getOperatorResult.GetValueOrThrow();
+            OperatorAggregate operatorAggregate = getOperatorResult.Data;
             if (operatorAggregate.IsCreated == false)
             {
-                return Result.NotFound($"No operator found with Id [{operatorId}]");
+                return new Error(ErrorType.NotFound, $"No operator found with Id [{operatorId}]");
             }
 
             Models.Operator.Operator @operator = operatorAggregate.GetOperator();
 
-            return Result.Success(@operator);
+            return Results.Ok(@operator);
         }
 
         public async Task<Result<List<Models.Operator.Operator>>> GetOperators(Guid estateId, CancellationToken cancellationToken)
         {
             return await AsyncExecutor.ExecuteSafeAsync(async ct => {
                 Result<List<Models.Operator.Operator>> getOperatorsResult = await this.TransactionProcessorReadModelRepository.GetOperators(estateId, ct);
-                if (getOperatorsResult.IsFailed)
+                if (getOperatorsResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(getOperatorsResult);
 
-                return Result.Success(getOperatorsResult.GetValueOrThrow());
+                return Results.Ok(getOperatorsResult.Data);
             }, cancellationToken);
         }
 
@@ -301,9 +301,9 @@ namespace TransactionProcessor.BusinessLogic.Manager
         {
             return await AsyncExecutor.ExecuteSafeAsync(async ct => {
                 Result<List<SettlementModel>> getSettlementsResult = await this.TransactionProcessorReadModelRepository.GetSettlements(estateId, merchantId, startDate, endDate, ct);
-                if (getSettlementsResult.IsFailed) return ResultHelpers.CreateFailure(getSettlementsResult);
+                if (getSettlementsResult.IsSuccess() == false) return ResultHelpers.CreateFailure(getSettlementsResult);
 
-                return Result.Success(getSettlementsResult.GetValueOrThrow());
+                return Results.Ok(getSettlementsResult.Data);
             }, cancellationToken);
         }
 
@@ -315,10 +315,10 @@ namespace TransactionProcessor.BusinessLogic.Manager
             Guid aggregateId = IdGenerationService.GenerateSettlementId(estateId, merchantId, settlementDate);
 
             Result<SettlementAggregate> getSettlementResult = await this.AggregateService.GetLatest<SettlementAggregate>(aggregateId, cancellationToken);
-            if (getSettlementResult.IsFailed)
+            if (getSettlementResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(getSettlementResult);
 
-            SettlementAggregate settlementAggregate = getSettlementResult.GetValueOrThrow();
+            SettlementAggregate settlementAggregate = getSettlementResult.Data;
 
             PendingSettlementModel model = new PendingSettlementModel {
                 EstateId = settlementAggregate.EstateId,
@@ -329,7 +329,7 @@ namespace TransactionProcessor.BusinessLogic.Manager
                 SettlementCompleted = settlementAggregate.SettlementComplete,
             };
 
-            return Result.Success(model);
+            return Results.Ok(model);
         }
 
         #endregion

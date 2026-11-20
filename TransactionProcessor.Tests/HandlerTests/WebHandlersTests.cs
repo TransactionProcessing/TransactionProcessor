@@ -1,3 +1,5 @@
+using Results = TransactionProcessing.UnionResults.Results;
+using System.Runtime.CompilerServices;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Imposter.Abstractions;
@@ -58,7 +60,7 @@ public class WebHandlersTests
         IMediatorImposter mediator = new();
         testCase.Setup(mediator);
 
-        IResultOutcome result = await testCase.Invoke(mediator.Instance());
+        object? result = await testCase.Invoke(mediator.Instance());
 
         result.ShouldNotBeNull();
         testCase.Verify?.Invoke(mediator);
@@ -71,7 +73,7 @@ public class WebHandlersTests
         IMediatorImposter mediator = new();
         testCase.Setup(mediator);
 
-        IResultOutcome result = await testCase.Invoke(mediator.Instance());
+        object? result = await testCase.Invoke(mediator.Instance());
 
         result.ShouldNotBeNull();
         testCase.Verify?.Invoke(mediator);
@@ -84,7 +86,7 @@ public class WebHandlersTests
         IMediatorImposter mediator = new();
         testCase.Setup(mediator);
 
-        IResultOutcome result = await testCase.Invoke(mediator.Instance());
+        object? result = await testCase.Invoke(mediator.Instance());
 
         result.ShouldNotBeNull();
         testCase.Verify?.Invoke(mediator);
@@ -97,7 +99,7 @@ public class WebHandlersTests
         IMediatorImposter mediator = new();
         testCase.Setup(mediator);
 
-        IResultOutcome result = await testCase.Invoke(mediator.Instance());
+        object? result = await testCase.Invoke(mediator.Instance());
 
         result.ShouldNotBeNull();
         testCase.Verify?.Invoke(mediator);
@@ -110,7 +112,7 @@ public class WebHandlersTests
         IMediatorImposter mediator = new();
         testCase.Setup(mediator);
 
-        IResultOutcome result = await testCase.Invoke(mediator.Instance());
+        object? result = await testCase.Invoke(mediator.Instance());
 
         result.ShouldNotBeNull();
         testCase.Verify?.Invoke(mediator);
@@ -123,7 +125,7 @@ public class WebHandlersTests
         IMediatorImposter mediator = new();
         testCase.Setup(mediator);
 
-        IResultOutcome result = await testCase.Invoke(mediator.Instance());
+        object? result = await testCase.Invoke(mediator.Instance());
 
         result.ShouldNotBeNull();
         testCase.Verify?.Invoke(mediator);
@@ -136,7 +138,7 @@ public class WebHandlersTests
         IMediatorImposter mediator = new();
         testCase.Setup(mediator);
 
-        IResultOutcome result = await testCase.Invoke(mediator.Instance());
+        object? result = await testCase.Invoke(mediator.Instance());
 
         result.ShouldNotBeNull();
         testCase.Verify?.Invoke(mediator);
@@ -1103,11 +1105,13 @@ public class WebHandlersTests
             mediator => { });
     }
 
-    private static object[] Case(string name, MediatorSetup setup, Func<IMediator, Task<IResultOutcome>> invoke, Action<IMediatorImposter>? verify = null)
-        => new object[] { new HandlerCase(name, setup.Configure, invoke, verify ?? setup.Verify) };
+    private static object[] Case<TResult>(string name, MediatorSetup setup, Func<IMediator, Task<TResult>> invoke, Action<IMediatorImposter>? verify = null)
+        where TResult : struct, IUnion
+        => new object[] { new HandlerCase(name, setup.Configure, async mediator => (await invoke(mediator)).Value, verify ?? setup.Verify) };
 
-    private static object[] Case(string name, Action<IMediatorImposter> setup, Func<IMediator, Task<IResultOutcome>> invoke, Action<IMediatorImposter>? verify = null)
-        => new object[] { new HandlerCase(name, setup, invoke, verify) };
+    private static object[] Case<TResult>(string name, Action<IMediatorImposter> setup, Func<IMediator, Task<TResult>> invoke, Action<IMediatorImposter>? verify = null)
+        where TResult : struct, IUnion
+        => new object[] { new HandlerCase(name, setup, async mediator => (await invoke(mediator)).Value, verify) };
 
     private static MediatorSetup SetupSuccess<TRequest, TResponse>(TResponse response, Action<TRequest>? capture = null)
         where TRequest : class, IRequest<Result<TResponse>>
@@ -1115,7 +1119,7 @@ public class WebHandlersTests
         return new MediatorSetup(mediator =>
         {
             mediator.Send<Result<TResponse>>(Arg<IRequest<Result<TResponse>>>.Any(), Arg<CancellationToken>.Any())
-                    .ReturnsAsync(Result.Success(response))
+                    .ReturnsAsync(Results.Ok(response))
                     .Callback((IRequest<Result<TResponse>> request, CancellationToken _) => { capture?.Invoke((TRequest)request); return Task.CompletedTask; });
         }, mediator => mediator.Send<Result<TResponse>>(Arg<IRequest<Result<TResponse>>>.Any(), Arg<CancellationToken>.Any()).Called(Count.Once()));
     }
@@ -1126,7 +1130,7 @@ public class WebHandlersTests
         return new MediatorSetup(mediator =>
         {
             mediator.Send<Result>(Arg<IRequest<Result>>.Any(), Arg<CancellationToken>.Any())
-                    .ReturnsAsync(Result.Success())
+                    .ReturnsAsync(Results.Ok())
                     .Callback((IRequest<Result> request, CancellationToken _) => { capture?.Invoke((TRequest)request); return Task.CompletedTask; });
         }, mediator => mediator.Send<Result>(Arg<IRequest<Result>>.Any(), Arg<CancellationToken>.Any()).Called(Count.Once()));
     }
@@ -1135,6 +1139,6 @@ public class WebHandlersTests
 
     public sealed record HandlerCase(string Name,
                                      Action<IMediatorImposter> Setup,
-                                     Func<IMediator, Task<IResultOutcome>> Invoke,
+                                     Func<IMediator, Task<object?>> Invoke,
                                      Action<IMediatorImposter>? Verify = null);
 }

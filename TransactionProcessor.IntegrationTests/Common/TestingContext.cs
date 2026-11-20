@@ -198,8 +198,8 @@ namespace TransactionProcessor.IntegrationTests.Common {
                                                                                                                                           estate.EstateId,
                                                                                                                                           transactionResponse.TransactionId,
                                                                                                                                           CancellationToken.None);
-                getVoucherByTransactionIdResult.IsSuccess.ShouldBeTrue(getVoucherByTransactionIdResult.Message);
-                voucher = getVoucherByTransactionIdResult.GetValueOrThrow();
+                getVoucherByTransactionIdResult.IsSuccess().ShouldBeTrue(getVoucherByTransactionIdResult.GetErrorMessage());
+                voucher = getVoucherByTransactionIdResult.Data;
 
             });
             return voucher;

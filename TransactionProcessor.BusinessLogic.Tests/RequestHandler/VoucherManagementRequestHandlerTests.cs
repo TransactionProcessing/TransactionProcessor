@@ -1,3 +1,4 @@
+using TransactionProcessing.UnionResults;
 using Imposter.Abstractions;
 using Shouldly;
 using System;
@@ -27,13 +28,13 @@ namespace TransactionProcessor.BusinessLogic.Tests.RequestHandler
             IVoucherDomainServiceImposter voucherDomainService = new();
             IVoucherManagementManagerImposter voucherManagementManager = new();
             voucherDomainService.IssueVoucher(Arg<VoucherCommands.IssueVoucherCommand>.Any(),
-                                                           Arg<CancellationToken>.Any()).ReturnsAsync(TransactionProcessing.UnionResults.Result.Success(TestData.IssueVoucherResponse));
+                                                           Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.IssueVoucherResponse));
 
             VoucherManagementRequestHandler handler = new VoucherManagementRequestHandler(voucherDomainService.Instance(), voucherManagementManager.Instance());
             
             var command = TestData.IssueVoucherCommand;
             var result = await handler.Handle(command, TestContext.Current.CancellationToken);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
         }
 
         [Fact]
@@ -42,13 +43,13 @@ namespace TransactionProcessor.BusinessLogic.Tests.RequestHandler
             IVoucherDomainServiceImposter voucherDomainService = new();
             IVoucherManagementManagerImposter voucherManagementManager = new();
             voucherDomainService.RedeemVoucher(Arg<VoucherCommands.RedeemVoucherCommand>.Any(),
-                                                           Arg<CancellationToken>.Any()).ReturnsAsync(TransactionProcessing.UnionResults.Result.Success(TestData.RedeemVoucherResponse));
+                                                           Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.RedeemVoucherResponse));
 
             VoucherManagementRequestHandler handler = new VoucherManagementRequestHandler(voucherDomainService.Instance(), voucherManagementManager.Instance());
 
             var command = TestData.RedeemVoucherCommand;
             var result = await handler.Handle(command, TestContext.Current.CancellationToken);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
         }
     }
 }

@@ -17,11 +17,11 @@ namespace TransactionProcessor.Aggregates
                                     IEnumerable<MerchantScheduleMonthModel>? months)
         {
             Result result = ValidateCreateArguments(aggregate, estateId, merchantId, year);
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return result;
 
             if (aggregate.IsCreated)
-                return Result.Success();
+                return Results.Ok();
 
             MerchantScheduleDomainEvents.MerchantScheduleCreatedEvent merchantScheduleCreatedEvent =
                 new(aggregate.AggregateId, estateId, merchantId, year);
@@ -35,21 +35,21 @@ namespace TransactionProcessor.Aggregates
                                             IEnumerable<MerchantScheduleMonthModel> months)
         {
             Result result = aggregate.EnsureScheduleHasBeenCreated();
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return result;
 
             List<MerchantScheduleMonthModel> monthList = months?.ToList() ?? [];
             if (monthList.GroupBy(m => m.Month).Any(g => g.Count() > 1))
-                return Result.Invalid("Each month can only be provided once when updating a merchant schedule");
+                return new Error(ErrorType.Validation, "Each month can only be provided once when updating a merchant schedule");
 
             foreach (MerchantScheduleMonthModel month in monthList.OrderBy(m => m.Month))
             {
                 Result monthResult = aggregate.SetMonthSchedule(month.Month, month.ClosedDays);
-                if (monthResult.IsFailed)
+                if (monthResult.IsSuccess() == false)
                     return monthResult;
             }
 
-            return Result.Success();
+            return Results.Ok();
         }
 
         public static Result SetMonthSchedule(this MerchantScheduleAggregate aggregate,
@@ -57,11 +57,11 @@ namespace TransactionProcessor.Aggregates
                                               IEnumerable<Int32>? closedDays)
         {
             Result result = aggregate.EnsureScheduleHasBeenCreated();
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return result;
 
             result = ValidateMonth(aggregate.Year, month, closedDays);
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return result;
 
             Int32[] normalisedClosedDays = NormaliseDays(closedDays);
@@ -69,7 +69,7 @@ namespace TransactionProcessor.Aggregates
             if (aggregate.Months.TryGetValue(month, out MerchantScheduleMonthModel? existingMonth))
             {
                 if (existingMonth.ClosedDays.SequenceEqual(normalisedClosedDays))
-                    return Result.Success();
+                    return Results.Ok();
             }
 
             MerchantScheduleDomainEvents.MerchantScheduleMonthUpdatedEvent merchantScheduleMonthUpdatedEvent =
@@ -77,7 +77,7 @@ namespace TransactionProcessor.Aggregates
 
             aggregate.ApplyAndAppend(merchantScheduleMonthUpdatedEvent);
 
-            return Result.Success();
+            return Results.Ok();
         }
 
         public static MerchantScheduleModel GetSchedule(this MerchantScheduleAggregate aggregate)
@@ -125,9 +125,9 @@ namespace TransactionProcessor.Aggregates
         private static Result EnsureScheduleHasBeenCreated(this MerchantScheduleAggregate aggregate)
         {
             if (aggregate.IsCreated == false)
-                return Result.Invalid("Merchant schedule has not been created");
+                return new Error(ErrorType.Validation, "Merchant schedule has not been created");
 
-            return Result.Success();
+            return Results.Ok();
         }
 
         private static Result ValidateCreateArguments(MerchantScheduleAggregate aggregate,
@@ -136,18 +136,18 @@ namespace TransactionProcessor.Aggregates
                                                       Int32 year)
         {
             if (aggregate.AggregateId == Guid.Empty)
-                return Result.Invalid("Merchant schedule id must be provided");
+                return new Error(ErrorType.Validation, "Merchant schedule id must be provided");
 
             if (estateId == Guid.Empty)
-                return Result.Invalid("Estate id must be provided when creating a merchant schedule");
+                return new Error(ErrorType.Validation, "Estate id must be provided when creating a merchant schedule");
 
             if (merchantId == Guid.Empty)
-                return Result.Invalid("Merchant id must be provided when creating a merchant schedule");
+                return new Error(ErrorType.Validation, "Merchant id must be provided when creating a merchant schedule");
 
             if (year < 1900)
-                return Result.Invalid("A valid year must be provided when creating a merchant schedule");
+                return new Error(ErrorType.Validation, "A valid year must be provided when creating a merchant schedule");
 
-            return Result.Success();
+            return Results.Ok();
         }
 
         private static Result ValidateMonth(Int32 year,
@@ -155,15 +155,15 @@ namespace TransactionProcessor.Aggregates
                                             IEnumerable<Int32>? closedDays)
         {
             if (month is < 1 or > 12)
-                return Result.Invalid("A valid month must be provided when updating a merchant schedule");
+                return new Error(ErrorType.Validation, "A valid month must be provided when updating a merchant schedule");
 
             Int32 daysInMonth = DateTime.DaysInMonth(year, month);
             Int32[] normalisedClosedDays = NormaliseDays(closedDays);
 
             if (normalisedClosedDays.Any(day => day < 1 || day > daysInMonth))
-                return Result.Invalid($"Only days between 1 and {daysInMonth} can be supplied for {year}-{month:D2}");
+                return new Error(ErrorType.Validation, $"Only days between 1 and {daysInMonth} can be supplied for {year}-{month:D2}");
 
-            return Result.Success();
+            return Results.Ok();
         }
 
         private static Int32[] NormaliseDays(IEnumerable<Int32>? days) =>

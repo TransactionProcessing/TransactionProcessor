@@ -15,17 +15,17 @@ namespace TransactionProcessor.Aggregates{
                                        Guid operatorId){
 
             Result result = aggregate.CheckEstateHasBeenCreated();
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return result;
             result = aggregate.CheckOperatorHasNotAlreadyBeenCreated(operatorId);
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return result;
 
             EstateDomainEvents.OperatorAddedToEstateEvent operatorAddedToEstateEvent = new(aggregate.AggregateId, operatorId);
 
             aggregate.ApplyAndAppend(operatorAddedToEstateEvent);
 
-            return Result.Success();
+            return Results.Ok();
         }
 
         public static Result RemoveOperator(this EstateAggregate aggregate,
@@ -33,40 +33,40 @@ namespace TransactionProcessor.Aggregates{
         {
 
             Result result = aggregate.CheckEstateHasBeenCreated();
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return result;
             result = aggregate.CheckOperatorHasBeenAdded(operatorId);
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return result;
             EstateDomainEvents.OperatorRemovedFromEstateEvent operatorRemovedFromEstateEvent = new(aggregate.AggregateId, operatorId);
 
             aggregate.ApplyAndAppend(operatorRemovedFromEstateEvent);
 
-            return Result.Success();
+            return Results.Ok();
         }
 
         public static Result AddSecurityUser(this EstateAggregate aggregate,
                                            Guid securityUserId,
                                            String emailAddress){
             Result result = aggregate.CheckEstateHasBeenCreated();
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return result;
 
             EstateDomainEvents.SecurityUserAddedToEstateEvent securityUserAddedEvent = new(aggregate.AggregateId, securityUserId, emailAddress);
 
             aggregate.ApplyAndAppend(securityUserAddedEvent);
 
-            return Result.Success();
+            return Results.Ok();
         }
 
         [Pure]
         public static Result Create(this EstateAggregate aggregate, String estateName){
             if (String.IsNullOrEmpty(estateName))
-                return Result.Invalid("Estate name must be provided when registering a new estate");
+                return new Error(ErrorType.Validation, "Estate name must be provided when registering a new estate");
 
             // Just return if already created
             if (aggregate.IsCreated)
-                return Result.Success();
+                return Results.Ok();
 
             EstateDomainEvents.EstateCreatedEvent estateCreatedEvent = new(aggregate.AggregateId, estateName);
 
@@ -78,7 +78,7 @@ namespace TransactionProcessor.Aggregates{
 
             aggregate.ApplyAndAppend(estateReferenceAllocatedEvent);
 
-            return Result.Success();
+            return Results.Ok();
         }
         
         public static Estate GetEstate(this EstateAggregate aggregate) {
@@ -137,27 +137,27 @@ namespace TransactionProcessor.Aggregates{
 
         private static Result CheckEstateHasBeenCreated(this EstateAggregate aggregate){
             if (aggregate.IsCreated == false){
-                return Result.Invalid("Estate has not been created");
+                return new Error(ErrorType.Validation, "Estate has not been created");
             }
-            return Result.Success();
+            return Results.Ok();
         }
 
         private static Result CheckOperatorHasNotAlreadyBeenCreated(this EstateAggregate aggregate,
                                                                     Guid operatorId) {
             Boolean operatorRecordExists = aggregate.Operators.Any(o => o.Key == operatorId && o.Value.IsDeleted == false);
             if (operatorRecordExists) {
-                return Result.Invalid($"Duplicate operator details are not allowed, an operator already exists on this estate with Id [{operatorId}]");
+                return new Error(ErrorType.Validation, $"Duplicate operator details are not allowed, an operator already exists on this estate with Id [{operatorId}]");
             }
-            return Result.Success();
+            return Results.Ok();
         }
 
         private static Result CheckOperatorHasBeenAdded(this EstateAggregate aggregate,
                                                         Guid operatorId) {
             Boolean operatorRecordExists = aggregate.Operators.ContainsKey(operatorId);
             if (operatorRecordExists == false) {
-                return Result.Invalid($"Operator not added to this Estate with Id [{operatorId}]");
+                return new Error(ErrorType.Validation, $"Operator not added to this Estate with Id [{operatorId}]");
             }
-            return Result.Success();
+            return Results.Ok();
         }
 
         #endregion

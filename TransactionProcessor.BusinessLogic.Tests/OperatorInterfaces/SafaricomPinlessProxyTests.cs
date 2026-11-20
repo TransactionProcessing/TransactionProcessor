@@ -36,8 +36,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
             IOperatorProxy safaricomPinlessproxy = new SafaricomPinlessProxy(safaricomConfiguration, httpClient);
             var processLogonMessageResult = await safaricomPinlessproxy.ProcessLogonMessage(TestContext.Current.CancellationToken);
-            processLogonMessageResult.IsSuccess.ShouldBeTrue();
-            OperatorResponse operatorResponse = processLogonMessageResult.GetValueOrThrow();
+            processLogonMessageResult.IsSuccess().ShouldBeTrue();
+            OperatorResponse operatorResponse = processLogonMessageResult.Data;
             operatorResponse.ShouldNotBeNull();
             operatorResponse.IsSuccessful.ShouldBeTrue();
             operatorResponse.ResponseCode.ShouldBe("0000");
@@ -65,11 +65,11 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                 TestData.TransactionReference,
                                                                                                 TestData.AdditionalTransactionMetaDataForMobileTopup(),
                                                                                                 TestContext.Current.CancellationToken);
-            result.IsSuccess.ShouldBeTrue();
-            result.GetValueOrThrow().ShouldNotBeNull();
-            result.GetValueOrThrow().IsSuccessful.ShouldBeTrue();
-            result.GetValueOrThrow().ResponseCode.ShouldBe("200");
-            result.GetValueOrThrow().ResponseMessage.ShouldBe("Topup Successful");
+            result.IsSuccess().ShouldBeTrue();
+            result.Data.ShouldNotBeNull();
+            result.Data.IsSuccessful.ShouldBeTrue();
+            result.Data.ResponseCode.ShouldBe("200");
+            result.Data.ResponseMessage.ShouldBe("Topup Successful");
         }
 
         [Theory]
@@ -97,11 +97,11 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                 TestData.AdditionalTransactionMetaDataForMobileTopup(amountName: amountFieldName),
                                                                                                 TestContext.Current.CancellationToken);
 
-            result.IsSuccess.ShouldBeTrue();
-            result.GetValueOrThrow().ShouldNotBeNull();
-            result.GetValueOrThrow().IsSuccessful.ShouldBeTrue();
-            result.GetValueOrThrow().ResponseCode.ShouldBe("200");
-            result.GetValueOrThrow().ResponseMessage.ShouldBe("Topup Successful");
+            result.IsSuccess().ShouldBeTrue();
+            result.Data.ShouldNotBeNull();
+            result.Data.IsSuccessful.ShouldBeTrue();
+            result.Data.ResponseCode.ShouldBe("200");
+            result.Data.ResponseMessage.ShouldBe("Topup Successful");
         }
 
         [Theory]
@@ -130,11 +130,11 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                 TestData.AdditionalTransactionMetaDataForMobileTopup(customerAccountNumberName: customerAccountNumberFieldName),
                                                                                                 TestContext.Current.CancellationToken);
 
-            result.IsSuccess.ShouldBeTrue();
-            result.GetValueOrThrow().ShouldNotBeNull();
-            result.GetValueOrThrow().IsSuccessful.ShouldBeTrue();
-            result.GetValueOrThrow().ResponseCode.ShouldBe("200");
-            result.GetValueOrThrow().ResponseMessage.ShouldBe("Topup Successful");
+            result.IsSuccess().ShouldBeTrue();
+            result.Data.ShouldNotBeNull();
+            result.Data.IsSuccessful.ShouldBeTrue();
+            result.Data.ResponseCode.ShouldBe("200");
+            result.Data.ResponseMessage.ShouldBe("Topup Successful");
         }
 
         [Fact]
@@ -159,8 +159,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                                TestData.AdditionalTransactionMetaDataForMobileTopup(),
                                                                                                TestContext.Current.CancellationToken);
 
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Failure);
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Failure);
         }
 
         [Fact]
@@ -184,8 +184,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                        TestData.AdditionalTransactionMetaDataForMobileTopup(),
                                                                                        TestContext.Current.CancellationToken);
 
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Failure);
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Failure);
         }
 
         [Fact]
@@ -206,10 +206,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                        TestData.AdditionalTransactionMetaDataForMobileTopup(),
                                                                                        TestContext.Current.CancellationToken);
 
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Failure);
-            result.Message.ShouldContain("Error sending request to Safaricom");
-            result.Message.ShouldContain("Execution Timeout Expired");
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Failure);
+            result.GetErrorMessage().ShouldContain("Error sending request to Safaricom");
+            result.GetErrorMessage().ShouldContain("Execution Timeout Expired");
         }
 
         [Theory]
@@ -244,8 +244,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                                                        TestData.TransactionReference,
                                                                                        additionalMetatdata,
                                                                                        TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         private HttpClient SetupMockHttpClient(HttpResponseMessage responseMessage)

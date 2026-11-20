@@ -40,7 +40,7 @@ public class TransactionValidationServiceTests {
         this.EventStoreContext = new IEventStoreContextImposter();
         this.AggregateService = new IAggregateServiceImposter();
         IAggregateService AggregateServiceResolver() => this.AggregateService.Instance();
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
 
         this.TransactionValidationService = new TransactionValidationService(this.EventStoreContext.Instance(), AggregateServiceResolver);
     }
@@ -48,104 +48,104 @@ public class TransactionValidationServiceTests {
     [Fact]
     public async Task ValidateLogonTransactionX_ValidationSuccessful_CorrectResponseReturned() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
             TestData.DeviceIdentifier);
 
         Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateLogonTransaction(identifiers, TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.Success);
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.Success);
     }
 
     [Fact]
     public async Task ValidateLogonTransactionX_InvalidEstate_CorrectResponseReturned() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.NotFound("Estate not found"));
+            .ReturnsAsync(new Error(ErrorType.NotFound, "Estate not found"));
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
             TestData.DeviceIdentifier);
         Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateLogonTransaction(identifiers, TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.InvalidEstateId);
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.InvalidEstateId);
     }
 
     [Fact]
     public async Task ValidateLogonTransactionX_FailureWhileGettingEstate_CorrectResponseReturned() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Failed"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Failed"));
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
             TestData.DeviceIdentifier);
         Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateLogonTransaction(identifiers, TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.UnknownFailure);
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.UnknownFailure);
     }
 
     [Fact]
     public async Task ValidateLogonTransactionX_InvalidMerchant_CorrectResponseReturned() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.NotFound("Merchant Not Found"));
+            .ReturnsAsync(new Error(ErrorType.NotFound, "Merchant Not Found"));
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
             TestData.DeviceIdentifier);
         Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateLogonTransaction(identifiers, TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.InvalidMerchantId);
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.InvalidMerchantId);
     }
 
     [Fact]
     public async Task ValidateLogonTransactionX_FailureWhileGettingMerchant_CorrectResponseReturned() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Merchant Not Found"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Merchant Not Found"));
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
             TestData.DeviceIdentifier);
         Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateLogonTransaction(identifiers, TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.UnknownFailure);
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.UnknownFailure);
     }
 
     [Fact]
     public async Task ValidateLogonTransactionX_InvalidDeviceId_CorrectResponseReturned() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
 
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
             TestData.DeviceIdentifier1);
         Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateLogonTransaction(identifiers, TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.InvalidDeviceIdentifier);
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.InvalidDeviceIdentifier);
     }
 
     [Fact]
     public async Task ValidateLogonTransactionX_MerchantHasNoDevices_CorrectResponseReturned() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
 
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
             TestData.DeviceIdentifier1);
         Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateLogonTransaction(identifiers, TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.SuccessNeedToAddDevice);
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.SuccessNeedToAddDevice);
     }
 
     [Theory]
@@ -153,17 +153,17 @@ public class TransactionValidationServiceTests {
     [InlineData(2, 25)]
     public async Task ValidateReconciliationTransactionX_ValidationSuccessful_CorrectResponseReturned(Int32 transactionCount, Decimal transactionValue) {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
 
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
             TestData.DeviceIdentifier);
         Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateReconciliationTransaction(identifiers, transactionCount, transactionValue, TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.Success);
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.Success);
     }
 
     [Theory]
@@ -174,112 +174,112 @@ public class TransactionValidationServiceTests {
 
         Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateReconciliationTransaction(identifiers, transactionCount, transactionValue, TestContext.Current.CancellationToken);
 
-        result.IsFailed.ShouldBeTrue();
-        result.Errors.ShouldHaveSingleItem().ErrorType.ShouldBe(ErrorType.Validation);
-        result.Message.ShouldBe(expectedMessage);
+        result.IsSuccess().ShouldBeFalse();
+        result.GetErrors().ShouldHaveSingleItem().ErrorType.ShouldBe(ErrorType.Validation);
+        result.GetErrorMessage().ShouldBe(expectedMessage);
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
     }
 
     [Fact]
     public async Task ValidateReconciliationTransactionX_InvalidEstate_CorrectResponseReturned() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.NotFound("Estate Not Found"));
+            .ReturnsAsync(new Error(ErrorType.NotFound, "Estate Not Found"));
 
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
             TestData.DeviceIdentifier);
         Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateReconciliationTransaction(identifiers, 2, 25m, TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.InvalidEstateId);
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.InvalidEstateId);
     }
 
     [Fact]
     public async Task ValidateReconciliationTransactionX_FailureWhileGettingEstate_CorrectResponseReturned() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Failed"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Failed"));
 
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
             TestData.DeviceIdentifier);
         Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateReconciliationTransaction(identifiers, 2, 25m, TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.UnknownFailure);
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.UnknownFailure);
     }
 
     [Fact]
     public async Task ValidateReconciliationTransactionX_InvalidMerchant_CorrectResponseReturned() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.NotFound("Merchant Not Found"));
+            .ReturnsAsync(new Error(ErrorType.NotFound, "Merchant Not Found"));
 
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
             TestData.DeviceIdentifier);
         Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateReconciliationTransaction(identifiers, 2, 25m, TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.InvalidMerchantId);
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.InvalidMerchantId);
     }
 
     [Fact]
     public async Task ValidateReconciliationTransactionX_FailureWhileGettingMerchant_CorrectResponseReturned() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Merchant Not Found"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Merchant Not Found"));
 
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
             TestData.DeviceIdentifier);
         Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateReconciliationTransaction(identifiers, 2, 25m, TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.UnknownFailure);
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.UnknownFailure);
     }
 
     [Fact]
     public async Task ValidateReconciliationTransactionX_InvalidDeviceId_CorrectResponseReturned() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
 
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
             TestData.DeviceIdentifier1);
         Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateReconciliationTransaction(identifiers, 2, 25m, TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.InvalidDeviceIdentifier);
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.InvalidDeviceIdentifier);
     }
 
     [Fact]
     public async Task ValidateReconciliationTransactionX_MerchantHasNoDevices_CorrectResponseReturned() {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
 
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
             TestData.DeviceIdentifier1);
         Result<TransactionValidationResult> result = await this.TransactionValidationService.ValidateReconciliationTransaction(identifiers, 2, 25m, TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.NoValidDevices);
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.NoValidDevices);
     }
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_DeviceNotRegisteredToMerchant_ResponseIsInvalidDeviceIdentifier() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
 
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
@@ -292,16 +292,16 @@ public class TransactionValidationServiceTests {
             TransactionSource.OnlineSale,
             TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.InvalidDeviceIdentifier);
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.InvalidDeviceIdentifier);
     }
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_EstateFoundButHasNoOperators_ResponseIsInvalidEstateId() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
@@ -313,16 +313,16 @@ public class TransactionValidationServiceTests {
             TransactionSource.OnlineSale,
             TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.NoEstateOperators);
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.NoEstateOperators);
     }
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_EstateFoundButOperatorIsDeleted_ResponseIsOperatorNotEnabledForEstate() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperatorDeleted()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperatorDeleted()));
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
             TestData.DeviceIdentifier);
@@ -334,16 +334,16 @@ public class TransactionValidationServiceTests {
             TransactionSource.OnlineSale,
             TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.OperatorNotEnabledForEstate);
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.OperatorNotEnabledForEstate);
     }
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_EstateFoundButHasNullOperators_ResponseIsInvalidEstateId() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
@@ -356,16 +356,16 @@ public class TransactionValidationServiceTests {
             TransactionSource.OnlineSale,
             TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.NoEstateOperators);
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.NoEstateOperators);
     }
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_EstateFoundOperatorsNotConfiguredForEstate_ResponseIsOperatorNotValidForEstate() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
 
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
@@ -378,16 +378,16 @@ public class TransactionValidationServiceTests {
             TransactionSource.OnlineSale,
             TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.OperatorNotValidForEstate);
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.OperatorNotValidForEstate);
     }
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_EstateNotFound_ResponseIsInvalidEstateId() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.NotFound("Estate Not Found"));
+            .ReturnsAsync(new Error(ErrorType.NotFound, "Estate Not Found"));
 
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
@@ -400,16 +400,16 @@ public class TransactionValidationServiceTests {
             TransactionSource.OnlineSale,
             TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.InvalidEstateId);
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.InvalidEstateId);
     }
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_GetEstateFailed_ResponseIsInvalidEstateId() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Failed"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Failed"));
 
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
@@ -422,21 +422,21 @@ public class TransactionValidationServiceTests {
             TransactionSource.OnlineSale,
             TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.UnknownFailure);
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.UnknownFailure);
     }
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_InvalidContractId_ResponseIsInvalidContractIdValue() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
 
         this.EventStoreContext.GetPartitionStateFromProjection(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(StringSerialiser.Serialise(TestData.MerchantBalanceProjectionState)));
+            .ReturnsAsync(Results.Ok(StringSerialiser.Serialise(TestData.MerchantBalanceProjectionState)));
 
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
@@ -449,20 +449,20 @@ public class TransactionValidationServiceTests {
             TransactionSource.OnlineSale,
             TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.InvalidContractIdValue);
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.InvalidContractIdValue);
     }
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_InvalidProductId_ResponseIsInvalidProductIdValue() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
-        this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
+        this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
 
         this.EventStoreContext.GetPartitionStateFromProjection(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(StringSerialiser.Serialise(TestData.MerchantBalanceProjectionState)));
+            .ReturnsAsync(Results.Ok(StringSerialiser.Serialise(TestData.MerchantBalanceProjectionState)));
 
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
@@ -475,19 +475,19 @@ public class TransactionValidationServiceTests {
             TransactionSource.OnlineSale,
             TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.InvalidProductIdValue);
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.InvalidProductIdValue);
     }
 
     [Theory]
     [InlineData(0)]
     [InlineData(-1)]
     public async Task TransactionValidationService_ValidateSaleTransaction_InvalidTransactionAmount_ResponseIsInvalidSaleTransactionAmount(Decimal transactionAmount) {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
-        this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
+        this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
 
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
@@ -500,18 +500,18 @@ public class TransactionValidationServiceTests {
             TransactionSource.OnlineSale,
             TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.InvalidSaleTransactionAmount);
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.InvalidSaleTransactionAmount);
     }
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_MerchantDeviceListEmpty_ResponseIsNoValidDevices() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
 
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
@@ -524,20 +524,20 @@ public class TransactionValidationServiceTests {
             TransactionSource.OnlineSale,
             TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.NoValidDevices);
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.NoValidDevices);
     }
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_MerchantDoesNotHaveSuppliedContract_ResponseIsContractNotValidForMerchant() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
-        this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
+        this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
 
         this.EventStoreContext.GetPartitionStateFromProjection(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(StringSerialiser.Serialise(TestData.MerchantBalanceProjectionState)));
+            .ReturnsAsync(Results.Ok(StringSerialiser.Serialise(TestData.MerchantBalanceProjectionState)));
 
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
@@ -550,22 +550,22 @@ public class TransactionValidationServiceTests {
             TransactionSource.OnlineSale,
             TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.ContractNotValidForMerchant);
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.ContractNotValidForMerchant);
     }
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_MerchantHasNoContracts_ResponseIsMerchantDoesNotHaveEnoughCredit() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
-        this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithNoContracts(SettlementSchedule.Immediate)));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
+        this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithNoContracts(SettlementSchedule.Immediate)));
 
 
 
         this.EventStoreContext.GetPartitionStateFromProjection(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(StringSerialiser.Serialise(TestData.MerchantBalanceProjectionState)));
+            .ReturnsAsync(Results.Ok(StringSerialiser.Serialise(TestData.MerchantBalanceProjectionState)));
 
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
@@ -578,19 +578,19 @@ public class TransactionValidationServiceTests {
             TransactionSource.OnlineSale,
             TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.MerchantHasNoContractsConfigured);
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.MerchantHasNoContractsConfigured);
     }
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_MerchantNotEnoughCredit_ResponseIsMerchantDoesNotHaveEnoughCredit() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
-        this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
+        this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
         this.EventStoreContext.GetPartitionStateFromProjection(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(StringSerialiser.Serialise(TestData.MerchantBalanceProjectionStateNoCredit)));
+            .ReturnsAsync(Results.Ok(StringSerialiser.Serialise(TestData.MerchantBalanceProjectionStateNoCredit)));
 
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
@@ -603,18 +603,18 @@ public class TransactionValidationServiceTests {
             TransactionSource.OnlineSale,
             TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.MerchantDoesNotHaveEnoughCredit);
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.MerchantDoesNotHaveEnoughCredit);
     }
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_MerchantNotFound_ResponseIsInvalidMerchantId() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.NotFound("Merchant not found"));
+            .ReturnsAsync(new Error(ErrorType.NotFound, "Merchant not found"));
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
             TestData.DeviceIdentifier);
@@ -626,18 +626,18 @@ public class TransactionValidationServiceTests {
             TransactionSource.OnlineSale,
             TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.InvalidMerchantId);
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.InvalidMerchantId);
     }
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_FailedGettingMerchant_ResponseIsInvalidMerchantId() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Merchant not found"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Merchant not found"));
 
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
@@ -650,23 +650,23 @@ public class TransactionValidationServiceTests {
             TransactionSource.OnlineSale,
             TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.UnknownFailure);
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.UnknownFailure);
     }
 
     [Fact(Skip = "Need to review if test is needed now")]
     public async Task TransactionValidationService_ValidateSaleTransaction_MerchantNotFoundOnGetContract_ResponseIsInvalidMerchantId() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
 
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)))
-            .Then().ReturnsAsync(Result.NotFound("Not found"));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)))
+            .Then().ReturnsAsync(new Error(ErrorType.NotFound, "Not found"));
 
         this.EventStoreContext.GetPartitionStateFromProjection(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(StringSerialiser.Serialise(TestData.MerchantBalanceProjectionState)));
+            .ReturnsAsync(Results.Ok(StringSerialiser.Serialise(TestData.MerchantBalanceProjectionState)));
 
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
@@ -679,22 +679,22 @@ public class TransactionValidationServiceTests {
             TransactionSource.OnlineSale,
             TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.InvalidMerchantId);
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.InvalidMerchantId);
     }
 
     [Fact(Skip = "not sure if this needed now")]
     public async Task TransactionValidationService_ValidateSaleTransaction_FailedGettingMerchantOnGetContract_ResponseIsInvalidMerchantId() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)))
-            .Then().ReturnsAsync(Result.NotFound("Not found"));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)))
+            .Then().ReturnsAsync(new Error(ErrorType.NotFound, "Not found"));
 
         this.EventStoreContext.GetPartitionStateFromProjection(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(StringSerialiser.Serialise(TestData.MerchantBalanceProjectionState)));
+            .ReturnsAsync(Results.Ok(StringSerialiser.Serialise(TestData.MerchantBalanceProjectionState)));
 
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
@@ -707,19 +707,19 @@ public class TransactionValidationServiceTests {
             TransactionSource.OnlineSale,
             TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.UnknownFailure);
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.UnknownFailure);
     }
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_MerchantOperatorListEmpty_ResponseIsNoMerchantOperators() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
 
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithDevice()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithDevice()));
 
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
@@ -732,18 +732,18 @@ public class TransactionValidationServiceTests {
             TransactionSource.OnlineSale,
             TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.NoMerchantOperators);
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.NoMerchantOperators);
     }
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_MerchantOperatorIsDeleted_ResponseIsOperatorNotEnabledForMerchant() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithDeletedOperator(SettlementSchedule.Immediate)));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithDeletedOperator(SettlementSchedule.Immediate)));
 
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
@@ -756,17 +756,17 @@ public class TransactionValidationServiceTests {
             TransactionSource.OnlineSale,
             TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.OperatorNotEnabledForMerchant);
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.OperatorNotEnabledForMerchant);
     }
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_OperatorNotConfiguredFroMerchant_ResponseIsOperatorNotValidForMerchant() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator2()));
-        this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator2()));
+        this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
             TestData.DeviceIdentifier);
@@ -777,21 +777,21 @@ public class TransactionValidationServiceTests {
             TestData.TransactionAmount,
             TransactionSource.OnlineSale,
             TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.OperatorNotValidForMerchant);
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.OperatorNotValidForMerchant);
     }
 
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_ProductIdNotConfigured_ResponseIsProductNotValidForMerchant() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
-        this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
+        this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
 
         this.EventStoreContext.GetPartitionStateFromProjection(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(StringSerialiser.Serialise(TestData.MerchantBalanceProjectionState)));
+            .ReturnsAsync(Results.Ok(StringSerialiser.Serialise(TestData.MerchantBalanceProjectionState)));
 
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
@@ -804,20 +804,20 @@ public class TransactionValidationServiceTests {
             TransactionSource.OnlineSale,
             TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.ProductNotValidForMerchant);
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.ProductNotValidForMerchant);
     }
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_SuccessfulSale() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
-        this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
+        this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
 
         this.EventStoreContext.GetPartitionStateFromProjection(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(StringSerialiser.Serialise(TestData.MerchantBalanceProjectionState)));
+            .ReturnsAsync(Results.Ok(StringSerialiser.Serialise(TestData.MerchantBalanceProjectionState)));
 
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
@@ -829,8 +829,8 @@ public class TransactionValidationServiceTests {
             TestData.TransactionAmount,
             TransactionSource.OnlineSale,
             TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.Success);
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.Success);
     }
 
     [Theory]
@@ -838,12 +838,12 @@ public class TransactionValidationServiceTests {
     [InlineData(TransactionSource.FileImport)]
     public async Task TransactionValidationService_ValidateSaleTransaction_NonOnlineSaleWithMissingDevice_ResponseIsSuccess(TransactionSource transactionSource) {
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
 
         this.EventStoreContext.GetPartitionStateFromProjection(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(StringSerialiser.Serialise(TestData.MerchantBalanceProjectionState)));
+            .ReturnsAsync(Results.Ok(StringSerialiser.Serialise(TestData.MerchantBalanceProjectionState)));
 
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
@@ -856,21 +856,21 @@ public class TransactionValidationServiceTests {
             transactionSource,
             TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.Success);
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.Success);
     }
 
     [Fact]
     public async Task TransactionValidationService_ValidateSaleTransaction_FailedGettingMerchantBalance_ResponseIsInvalidMerchantId() {
-        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
+        this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
 
         this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
         this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
+            .ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
 
         this.EventStoreContext.GetPartitionStateFromProjection(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
 
         TransactionValidationIdentifiers identifiers = new(TestData.EstateId, TestData.MerchantId,
@@ -883,8 +883,8 @@ public class TransactionValidationServiceTests {
             TransactionSource.OnlineSale,
             TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe(TransactionResponseCode.UnknownFailure);
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe(TransactionResponseCode.UnknownFailure);
     }
 }
 

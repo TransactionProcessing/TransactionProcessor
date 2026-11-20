@@ -16,7 +16,7 @@ public class FloatEventTests : BaseTest {
     public async Task CreateFloat_FloatIsAdded()
     {
         Result result = await this.Repository.CreateFloat(TestData.DomainEvents.FloatCreatedForContractProductEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
         Float? floatRecord = await context.Floats.SingleOrDefaultAsync(f => f.FloatId == TestData.DomainEvents.FloatCreatedForContractProductEvent.FloatId, TestContext.Current.CancellationToken);
@@ -32,10 +32,10 @@ public class FloatEventTests : BaseTest {
         FloatDomainEvents.FloatCreatedForContractProductEvent @event = TestData.DomainEvents.FloatCreatedForContractProductEvent;
 
         Result result = await this.Repository.CreateFloat(@event, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         result = await this.Repository.CreateFloat(@event, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
         Int32 floatCount = await context.Floats.CountAsync(f => f.FloatId == @event.FloatId, TestContext.Current.CancellationToken);
@@ -54,7 +54,7 @@ public class FloatEventTests : BaseTest {
             TestData.HostDateTime);
 
         Result result = await this.Repository.CreateFloatActivity(@event, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
         FloatActivity? floatActivity = await context.FloatActivity.SingleOrDefaultAsync(f => f.EventId == @event.EventId, TestContext.Current.CancellationToken);
@@ -79,10 +79,10 @@ public class FloatEventTests : BaseTest {
             TestData.HostDateTime);
 
         Result result = await this.Repository.CreateFloatActivity(@event, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         result = await this.Repository.CreateFloatActivity(@event, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
         Int32 floatActivityCount = await context.FloatActivity.CountAsync(f => f.EventId == @event.EventId, TestContext.Current.CancellationToken);
@@ -101,7 +101,7 @@ public class FloatEventTests : BaseTest {
             TestData.FloatCreditAmount);
 
         Result result = await this.Repository.CreateFloatActivity(@event, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
         FloatActivity? floatActivity = await context.FloatActivity.SingleOrDefaultAsync(f => f.EventId == @event.EventId, TestContext.Current.CancellationToken);
@@ -126,10 +126,10 @@ public class FloatEventTests : BaseTest {
             TestData.FloatCreditAmount);
 
         Result result = await this.Repository.CreateFloatActivity(@event, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         result = await this.Repository.CreateFloatActivity(@event, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
         Int32 floatActivityCount = await context.FloatActivity.CountAsync(f => f.EventId == @event.EventId, TestContext.Current.CancellationToken);

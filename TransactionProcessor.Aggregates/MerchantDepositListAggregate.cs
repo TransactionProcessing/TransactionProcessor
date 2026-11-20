@@ -17,18 +17,18 @@ namespace TransactionProcessor.Aggregates{
                                   MerchantAggregate merchantAggregate,
                                   DateTimeOffset dateCreated){
             Result result = aggregate.EnsureMerchantHasBeenCreated(merchantAggregate);
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return result;
 
             // Ensure this aggregate has not already been created
             if (aggregate.IsCreated)
-                return Result.Success();
+                return Results.Ok();
 
             MerchantDomainEvents.MerchantDepositListCreatedEvent merchantDepositListCreatedEvent = new(aggregate.AggregateId, merchantAggregate.EstateId, dateCreated);
 
             aggregate.ApplyAndAppend(merchantDepositListCreatedEvent);
 
-            return Result.Success();
+            return Results.Ok();
         }
 
         public static List<Deposit> GetDeposits(this MerchantDepositListAggregate aggregate){
@@ -69,30 +69,30 @@ namespace TransactionProcessor.Aggregates{
             Guid depositId = aggregate.GenerateGuidFromString(depositData);
 
             Result result = aggregate.EnsureMerchantDepositListHasBeenCreated();
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return result;
 
             result = aggregate.EnsureNotDuplicateDeposit(depositId);
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return result;
 
             result = aggregate.EnsureDepositSourceHasBeenSet(source);
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return result;
 
             if (source == MerchantDepositSource.Manual){
                 MerchantDomainEvents.ManualDepositMadeEvent manualDepositMadeEvent = new(aggregate.AggregateId, aggregate.EstateId, depositId, reference, depositDateTime, amount.Value, hostDateTime);
                 aggregate.ApplyAndAppend(manualDepositMadeEvent);
-                return Result.Success();
+                return Results.Ok();
             }
 
             if (source == MerchantDepositSource.Automatic){
                 MerchantDomainEvents.AutomaticDepositMadeEvent automaticDepositMadeEvent = new(aggregate.AggregateId, aggregate.EstateId, depositId, reference, depositDateTime, amount.Value, hostDateTime);
                 aggregate.ApplyAndAppend(automaticDepositMadeEvent);
-                return Result.Success();
+                return Results.Ok();
             }
 
-            return Result.Invalid("Invalid Deposit Source");
+            return new Error(ErrorType.Validation, "Invalid Deposit Source");
         }
 
         public static Result MakeWithdrawal(this MerchantDepositListAggregate aggregate,
@@ -102,17 +102,17 @@ namespace TransactionProcessor.Aggregates{
             Guid withdrawalId = aggregate.GenerateGuidFromString(depositData);
 
             Result result = aggregate.EnsureMerchantDepositListHasBeenCreated();
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return result;
             result = aggregate.EnsureNotDuplicateWithdrawal(withdrawalId);
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return result;
 
             MerchantDomainEvents.WithdrawalMadeEvent withdrawalMadeEvent = new(aggregate.AggregateId, aggregate.EstateId, withdrawalId, withdrawalDateTime, amount.Value,
                 hostDateTime);
             aggregate.ApplyAndAppend(withdrawalMadeEvent);
 
-            return Result.Success();
+            return Results.Ok();
         }
 
         public static void PlayEvent(this MerchantDepositListAggregate aggregate, MerchantDomainEvents.MerchantDepositListCreatedEvent merchantDepositListCreatedEvent){
@@ -147,37 +147,37 @@ namespace TransactionProcessor.Aggregates{
 
         private static Result EnsureDepositSourceHasBeenSet(this MerchantDepositListAggregate aggregate, MerchantDepositSource merchantDepositSource){
             if (merchantDepositSource == MerchantDepositSource.NotSet){
-                return Result.Invalid("Merchant deposit source must be set");
+                return new Error(ErrorType.Validation, "Merchant deposit source must be set");
             }
-            return Result.Success();
+            return Results.Ok();
         }
 
         private static Result EnsureMerchantDepositListHasBeenCreated(this MerchantDepositListAggregate aggregate){
             if (aggregate.IsCreated == false){
-                return Result.Invalid("Merchant Deposit List has not been created");
+                return new Error(ErrorType.Validation, "Merchant Deposit List has not been created");
             }
-            return Result.Success();
+            return Results.Ok();
         }
 
         private static Result EnsureMerchantHasBeenCreated(this MerchantDepositListAggregate aggregate, MerchantAggregate merchantAggregate){
             if (merchantAggregate.IsCreated == false){
-                return Result.Invalid("Merchant has not been created");
+                return new Error(ErrorType.Validation, "Merchant has not been created");
             }
-            return Result.Success();
+            return Results.Ok();
         }
 
         private static Result EnsureNotDuplicateDeposit(this MerchantDepositListAggregate aggregate, Guid depositId){
             if (aggregate.Deposits.Any(d => d.DepositId == depositId)){
-                return Result.Invalid($"Deposit Id [{depositId}] already made for merchant [{aggregate.AggregateId}]");
+                return new Error(ErrorType.Validation, $"Deposit Id [{depositId}] already made for merchant [{aggregate.AggregateId}]");
             }
-            return Result.Success();
+            return Results.Ok();
         }
 
         private static Result EnsureNotDuplicateWithdrawal(this MerchantDepositListAggregate aggregate, Guid withdrawalId){
             if (aggregate.Withdrawals.Any(d => d.WithdrawalId == withdrawalId)){
-                return Result.Invalid($"Withdrawal Id [{withdrawalId}] already made for merchant [{aggregate.AggregateId}]");
+                return new Error(ErrorType.Validation, $"Withdrawal Id [{withdrawalId}] already made for merchant [{aggregate.AggregateId}]");
             }
-            return Result.Success();
+            return Results.Ok();
         }
 
         private static Guid GenerateGuidFromString(this MerchantDepositListAggregate aggregate, String input){

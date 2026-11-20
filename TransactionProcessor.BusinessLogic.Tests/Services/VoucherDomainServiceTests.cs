@@ -58,53 +58,53 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         [Fact]
         public async Task VoucherDomainService_IssueVoucher_EstateWithNoOperators_ErrorThrown() {
             
-            this.AggregateService.GetLatest<VoucherAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new VoucherAggregate()));
-            this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            this.AggregateService.GetLatest<VoucherAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(new VoucherAggregate()));
+            this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
             var result = await this.VoucherDomainService.IssueVoucher(TestData.IssueVoucherCommand,
                                                                                  TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task VoucherDomainService_IssueVoucher_InvalidEstate_ErrorThrown() {
-            this.AggregateService.GetLatest<VoucherAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new VoucherAggregate()));
-            this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.EmptyEstateAggregate));
+            this.AggregateService.GetLatest<VoucherAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(new VoucherAggregate()));
+            this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyEstateAggregate));
             
             Result<IssueVoucherResponse> result = await this.VoucherDomainService.IssueVoucher(TestData.IssueVoucherCommand,
                                                                                  TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
         
         [Fact]
         public async Task VoucherDomainService_IssueVoucher_OperatorNotSupportedByEstate_ErrorThrown() {
-            this.AggregateService.GetLatest<VoucherAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new VoucherAggregate()));
-            this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+            this.AggregateService.GetLatest<VoucherAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(new VoucherAggregate()));
+            this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
 
             Result<IssueVoucherResponse> result = await this.VoucherDomainService.IssueVoucher(TestData.IssueVoucherCommand,
                                                                                  TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task VoucherDomainService_IssueVoucher_VoucherIssued() {
 
-            this.AggregateService.GetLatest<VoucherAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new VoucherAggregate()));
-            this.AggregateService.Save(Arg<VoucherAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
-            this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+            this.AggregateService.GetLatest<VoucherAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(new VoucherAggregate()));
+            this.AggregateService.Save(Arg<VoucherAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok());
+            this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
 
             Result<IssueVoucherResponse> result = await this.VoucherDomainService.IssueVoucher(TestData.IssueVoucherCommand,
                                                                                          TestContext.Current.CancellationToken);
 
-            result.IsSuccess.ShouldBeTrue();
-            result.GetValueOrThrow().ShouldNotBeNull();
+            result.IsSuccess().ShouldBeTrue();
+            result.Data.ShouldNotBeNull();
         }
 
         [Fact]
         public async Task VoucherDomainService_RedeemVoucher_InvalidEstate_ErrorThrown() {
 
             AggregateService.GetLatest<VoucherAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                                      .ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientMobile()));
-            this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.EmptyEstateAggregate));
+                                      .ReturnsAsync(Results.Ok(TestData.GetVoucherAggregateWithRecipientMobile()));
+            this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyEstateAggregate));
 
             this.Context.VoucherProjectionStates.Add(new TransactionProcessor.Database.Entities.VoucherProjectionState() {
                                                  VoucherCode = TestData.VoucherCode,
@@ -116,17 +116,17 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             
             Result<RedeemVoucherResponse> result = await this.VoucherDomainService.RedeemVoucher(TestData.Commands.RedeemVoucherCommand,
                                                                                   TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task VoucherDomainService_RedeemVoucher_VoucherRedeemed() {
 
             this.AggregateService.GetLatest<VoucherAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                                      .ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientMobile()));
+                                      .ReturnsAsync(Results.Ok(TestData.GetVoucherAggregateWithRecipientMobile()));
             this.AggregateService.Save(Arg<VoucherAggregate>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success());
-            this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+                .ReturnsAsync(Results.Ok());
+            this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
             this.Context.VoucherProjectionStates.Add(new TransactionProcessor.Database.Entities.VoucherProjectionState() {
                                                  VoucherCode = TestData.VoucherCode,
@@ -139,46 +139,46 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
             Result<RedeemVoucherResponse> result = await this.VoucherDomainService.RedeemVoucher(TestData.Commands.RedeemVoucherCommand,
                                                                                             TestContext.Current.CancellationToken);
 
-            result.IsSuccess.ShouldBeTrue();
-            result.GetValueOrThrow().ShouldNotBeNull();
+            result.IsSuccess().ShouldBeTrue();
+            result.Data.ShouldNotBeNull();
         }
 
         [Fact]
         public async Task VoucherDomainService_RedeemVoucher_VoucherNotFound_ErrorThrown() {
             this.AggregateService.GetLatest<VoucherAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                                      .ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientMobile()));
-            this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+                                      .ReturnsAsync(Results.Ok(TestData.GetVoucherAggregateWithRecipientMobile()));
+            this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
             Result<RedeemVoucherResponse> result = await this.VoucherDomainService.RedeemVoucher(TestData.Commands.RedeemVoucherCommand,
                                                                                   TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task VoucherDomainService_IssueVoucher_GetVoucherFailed_ErrorThrown() {
-            this.AggregateService.GetLatest<VoucherAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure("Test failure"));
-            this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+            this.AggregateService.GetLatest<VoucherAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
+            this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
 
             Result<IssueVoucherResponse> result = await this.VoucherDomainService.IssueVoucher(TestData.IssueVoucherCommand,
                                                                                  TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task VoucherDomainService_IssueVoucher_SaveFailed_ErrorThrown() {
-            this.AggregateService.GetLatest<VoucherAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new VoucherAggregate()));
-            this.AggregateService.Save(Arg<VoucherAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure("Test failure"));
-            this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+            this.AggregateService.GetLatest<VoucherAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(new VoucherAggregate()));
+            this.AggregateService.Save(Arg<VoucherAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
+            this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
 
             Result<IssueVoucherResponse> result = await this.VoucherDomainService.IssueVoucher(TestData.IssueVoucherCommand,
                                                                                  TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task VoucherDomainService_RedeemVoucher_GetVoucherAggregateFailed_ErrorThrown() {
-            this.AggregateService.GetLatest<VoucherAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure("Test failure"));
-            this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+            this.AggregateService.GetLatest<VoucherAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
+            this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
             this.Context.VoucherProjectionStates.Add(new TransactionProcessor.Database.Entities.VoucherProjectionState() {
                 VoucherCode = TestData.VoucherCode,
@@ -190,15 +190,15 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             Result<RedeemVoucherResponse> result = await this.VoucherDomainService.RedeemVoucher(TestData.Commands.RedeemVoucherCommand,
                                                                                   TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task VoucherDomainService_RedeemVoucher_SaveFailed_ErrorThrown() {
             this.AggregateService.GetLatest<VoucherAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                                      .ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientMobile()));
-            this.AggregateService.Save(Arg<VoucherAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure("Test failure"));
-            this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedEstateAggregate()));
+                                      .ReturnsAsync(Results.Ok(TestData.GetVoucherAggregateWithRecipientMobile()));
+            this.AggregateService.Save(Arg<VoucherAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
+            this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
             this.Context.VoucherProjectionStates.Add(new TransactionProcessor.Database.Entities.VoucherProjectionState() {
                 VoucherCode = TestData.VoucherCode,
@@ -210,7 +210,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             Result<RedeemVoucherResponse> result = await this.VoucherDomainService.RedeemVoucher(TestData.Commands.RedeemVoucherCommand,
                                                                                             TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
         
         private EstateManagementContext GetContext(String databaseName)

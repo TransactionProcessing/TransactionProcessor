@@ -35,10 +35,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
 
             var result = await proxy.ProcessLogonMessage(TestContext.Current.CancellationToken);
 
-            result.IsSuccess.ShouldBeTrue();
-            result.GetValueOrThrow().ShouldNotBeNull();
-            result.GetValueOrThrow().IsSuccessful.ShouldBeTrue();
-            result.GetValueOrThrow().ResponseCode.ShouldBe("0000");
+            result.IsSuccess().ShouldBeTrue();
+            result.Data.ShouldNotBeNull();
+            result.Data.IsSuccessful.ShouldBeTrue();
+            result.Data.ResponseCode.ShouldBe("0000");
         }
 
         [Fact]
@@ -61,9 +61,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         metadata,
                                                         TestContext.Current.CancellationToken);
 
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
-            result.Message.ShouldBe("AgencyBankingMessageType - Message Type is a required field for this transaction type");
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.GetErrorMessage().ShouldBe("AgencyBankingMessageType - Message Type is a required field for this transaction type");
         }
 
         [Fact]
@@ -86,9 +86,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         metadata,
                                                         TestContext.Current.CancellationToken);
 
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
-            result.Message.ShouldBe("AgencyBankingAccountNumber - Account Number is a required field for this transaction type");
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.GetErrorMessage().ShouldBe("AgencyBankingAccountNumber - Account Number is a required field for this transaction type");
         }
 
         [Fact]
@@ -112,9 +112,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         metadata,
                                                         TestContext.Current.CancellationToken);
 
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
-            result.Message.ShouldBe("AgencyBankingMessageType - Message Type cashwithdrawal is not supported for this transaction type");
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.GetErrorMessage().ShouldBe("AgencyBankingMessageType - Message Type cashwithdrawal is not supported for this transaction type");
         }
 
         [Fact]
@@ -144,9 +144,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         metadata,
                                                         TestContext.Current.CancellationToken);
 
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
-            result.Message.ShouldBe("Failed to process balance enquiry operator unavailable");
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.GetErrorMessage().ShouldBe("Failed to process balance enquiry operator unavailable");
             capturedRequest.ShouldNotBeNull();
             capturedRequest.Method.ShouldBe(HttpMethod.Post);
             capturedRequest.RequestUri.ShouldBe(new Uri("http://localhost/transactions/balance-enquiry"));
@@ -174,10 +174,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         metadata,
                                                         TestContext.Current.CancellationToken);
 
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Failure);
-            result.Message.ShouldContain("AgencyBanking request failed");
-            result.Message.ShouldContain("Execution Timeout Expired");
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Failure);
+            result.GetErrorMessage().ShouldContain("AgencyBanking request failed");
+            result.GetErrorMessage().ShouldContain("Execution Timeout Expired");
         }
 
         [Fact]
@@ -207,11 +207,11 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         metadata,
                                                         TestContext.Current.CancellationToken);
 
-            result.IsSuccess.ShouldBeTrue();
-            result.GetValueOrThrow().ShouldNotBeNull();
-            result.GetValueOrThrow().IsSuccessful.ShouldBeTrue();
-            result.GetValueOrThrow().ResponseCode.ShouldBe("0000");
-            result.GetValueOrThrow().AdditionalTransactionResponseMetadata.ShouldContainKey("AgencyBankingBalance");
+            result.IsSuccess().ShouldBeTrue();
+            result.Data.ShouldNotBeNull();
+            result.Data.IsSuccessful.ShouldBeTrue();
+            result.Data.ResponseCode.ShouldBe("0000");
+            result.Data.AdditionalTransactionResponseMetadata.ShouldContainKey("AgencyBankingBalance");
 
             capturedRequest.ShouldNotBeNull();
             capturedRequest.Method.ShouldBe(HttpMethod.Post);
@@ -251,9 +251,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         metadata,
                                                         TestContext.Current.CancellationToken);
 
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
-            result.Message.ShouldBe("Failed to process deposit deposit rejected");
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.GetErrorMessage().ShouldBe("Failed to process deposit deposit rejected");
 
             capturedRequest.ShouldNotBeNull();
             capturedRequest.Method.ShouldBe(HttpMethod.Post);
@@ -288,9 +288,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         metadata,
                                                         TestContext.Current.CancellationToken);
 
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
-            result.Message.ShouldBe("Amount - Amount is a required field for this transaction type");
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.GetErrorMessage().ShouldBe("Amount - Amount is a required field for this transaction type");
         }
 
         [Fact]
@@ -316,9 +316,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         metadata,
                                                         TestContext.Current.CancellationToken);
 
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
-            result.Message.ShouldBe("Amount - Amount is not a valid decimal value");
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.GetErrorMessage().ShouldBe("Amount - Amount is not a valid decimal value");
         }
 
         [Fact]
@@ -349,12 +349,12 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         metadata,
                                                         TestContext.Current.CancellationToken);
 
-            result.IsSuccess.ShouldBeTrue();
-            result.GetValueOrThrow().ShouldNotBeNull();
-            result.GetValueOrThrow().IsSuccessful.ShouldBeTrue();
-            result.GetValueOrThrow().ResponseCode.ShouldBe("0000");
-            result.GetValueOrThrow().ResponseMessage.ShouldBe("SUCCESS");
-            result.GetValueOrThrow().AdditionalTransactionResponseMetadata.ShouldBeEmpty();
+            result.IsSuccess().ShouldBeTrue();
+            result.Data.ShouldNotBeNull();
+            result.Data.IsSuccessful.ShouldBeTrue();
+            result.Data.ResponseCode.ShouldBe("0000");
+            result.Data.ResponseMessage.ShouldBe("SUCCESS");
+            result.Data.AdditionalTransactionResponseMetadata.ShouldBeEmpty();
 
             capturedRequest.ShouldNotBeNull();
             capturedRequest.Method.ShouldBe(HttpMethod.Post);
@@ -396,9 +396,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         metadata,
                                                         TestContext.Current.CancellationToken);
 
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
-            result.Message.ShouldBe("Failed to process withdrawal withdrawal rejected");
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.GetErrorMessage().ShouldBe("Failed to process withdrawal withdrawal rejected");
 
             capturedRequest.ShouldNotBeNull();
             capturedRequest.Method.ShouldBe(HttpMethod.Post);
@@ -433,9 +433,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         metadata,
                                                         TestContext.Current.CancellationToken);
 
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
-            result.Message.ShouldBe("Amount - Amount is a required field for this transaction type");
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.GetErrorMessage().ShouldBe("Amount - Amount is a required field for this transaction type");
         }
 
         [Fact]
@@ -461,9 +461,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         metadata,
                                                         TestContext.Current.CancellationToken);
 
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
-            result.Message.ShouldBe("Amount - Amount is not a valid decimal value");
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.GetErrorMessage().ShouldBe("Amount - Amount is not a valid decimal value");
         }
 
         [Fact]
@@ -494,12 +494,12 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         metadata,
                                                         TestContext.Current.CancellationToken);
 
-            result.IsSuccess.ShouldBeTrue();
-            result.GetValueOrThrow().ShouldNotBeNull();
-            result.GetValueOrThrow().IsSuccessful.ShouldBeTrue();
-            result.GetValueOrThrow().ResponseCode.ShouldBe("0000");
-            result.GetValueOrThrow().ResponseMessage.ShouldBe("SUCCESS");
-            result.GetValueOrThrow().AdditionalTransactionResponseMetadata.ShouldBeEmpty();
+            result.IsSuccess().ShouldBeTrue();
+            result.Data.ShouldNotBeNull();
+            result.Data.IsSuccessful.ShouldBeTrue();
+            result.Data.ResponseCode.ShouldBe("0000");
+            result.Data.ResponseMessage.ShouldBe("SUCCESS");
+            result.Data.AdditionalTransactionResponseMetadata.ShouldBeEmpty();
 
             capturedRequest.ShouldNotBeNull();
             capturedRequest.Method.ShouldBe(HttpMethod.Post);
@@ -541,12 +541,12 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         metadata,
                                                         TestContext.Current.CancellationToken);
 
-            result.IsSuccess.ShouldBeTrue();
-            result.GetValueOrThrow().ShouldNotBeNull();
-            result.GetValueOrThrow().IsSuccessful.ShouldBeTrue();
-            result.GetValueOrThrow().ResponseCode.ShouldBe("0000");
-            result.GetValueOrThrow().ResponseMessage.ShouldBe("SUCCESS");
-            result.GetValueOrThrow().AdditionalTransactionResponseMetadata.ShouldBeEmpty();
+            result.IsSuccess().ShouldBeTrue();
+            result.Data.ShouldNotBeNull();
+            result.Data.IsSuccessful.ShouldBeTrue();
+            result.Data.ResponseCode.ShouldBe("0000");
+            result.Data.ResponseMessage.ShouldBe("SUCCESS");
+            result.Data.AdditionalTransactionResponseMetadata.ShouldBeEmpty();
 
             capturedRequest.ShouldNotBeNull();
             capturedRequest.Method.ShouldBe(HttpMethod.Post);
@@ -587,9 +587,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         metadata,
                                                         TestContext.Current.CancellationToken);
 
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
-            result.Message.ShouldBe("Failed to process mini-statement mini statement rejected");
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.GetErrorMessage().ShouldBe("Failed to process mini-statement mini statement rejected");
 
             capturedRequest.ShouldNotBeNull();
             capturedRequest.Method.ShouldBe(HttpMethod.Post);
@@ -646,14 +646,14 @@ namespace TransactionProcessor.BusinessLogic.Tests.OperatorInterfaces
                                                         metadata,
                                                         TestContext.Current.CancellationToken);
 
-            result.IsSuccess.ShouldBeTrue();
-            result.GetValueOrThrow().ShouldNotBeNull();
-            result.GetValueOrThrow().IsSuccessful.ShouldBeTrue();
-            result.GetValueOrThrow().ResponseCode.ShouldBe("0000");
-            result.GetValueOrThrow().ResponseMessage.ShouldBe("SUCCESS");
-            result.GetValueOrThrow().AdditionalTransactionResponseMetadata.ShouldContainKey("StatementLines");
+            result.IsSuccess().ShouldBeTrue();
+            result.Data.ShouldNotBeNull();
+            result.Data.IsSuccessful.ShouldBeTrue();
+            result.Data.ResponseCode.ShouldBe("0000");
+            result.Data.ResponseMessage.ShouldBe("SUCCESS");
+            result.Data.AdditionalTransactionResponseMetadata.ShouldContainKey("StatementLines");
 
-            String statementLinesJson = result.GetValueOrThrow().AdditionalTransactionResponseMetadata["StatementLines"];
+            String statementLinesJson = result.Data.AdditionalTransactionResponseMetadata["StatementLines"];
             using JsonDocument statementLinesDocument = JsonDocument.Parse(statementLinesJson);
             statementLinesDocument.RootElement.ValueKind.ShouldBe(JsonValueKind.Array);
             statementLinesDocument.RootElement.GetArrayLength().ShouldBe(2);

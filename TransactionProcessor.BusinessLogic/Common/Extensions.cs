@@ -33,22 +33,22 @@ namespace TransactionProcessor.BusinessLogic.Common
             if (currentToken == null)
             {
                 var tokenResult = await securityServiceClient.GetToken(clientId, clientSecret, cancellationToken);
-                if (tokenResult.IsFailed)
+                if (tokenResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(tokenResult);
                 TokenResponse token =tokenResult.Data;
-                return Result.Success(token);
+                return Results.Ok(token);
             }
 
             if (currentToken.Expires.UtcDateTime.Subtract(DateTime.UtcNow) < TimeSpan.FromMinutes(2))
             {
                 var tokenResult = await securityServiceClient.GetToken(clientId, clientSecret, cancellationToken);
-                if (tokenResult.IsFailed)
+                if (tokenResult.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(tokenResult);
                 TokenResponse token = tokenResult.Data;
-                return Result.Success(token);
+                return Results.Ok(token);
             }
 
-            return Result.Success(currentToken);
+            return Results.Ok(currentToken);
         }
     }
     

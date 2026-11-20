@@ -11,7 +11,7 @@ public static class DomainEventEndpoints{
         endpoints.MapGroup("/api")
                  .AddUnionResultFilter()
                  .MapPost("/domainevents", DomainEventHandlers.HandleDomainEvent)
-                 .WithTags("DomainEvents");
+                 .WithTags("DomainEvents").ProducesUnionResult();
         return endpoints;
     }
 }

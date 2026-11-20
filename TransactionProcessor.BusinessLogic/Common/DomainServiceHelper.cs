@@ -15,18 +15,14 @@ public static class DomainServiceHelper
                                                                                    Boolean isNotFoundError = true) where TAggregate : Aggregate, new()
     {
         Result<TAggregate> result = await fetchFunc(cancellationToken);
-        return result.IsFailed switch
-        {
-            true => DomainServiceHelper.HandleGetAggregateResult(result, aggregateId, isNotFoundError),
-            _ => Result.Success(result.GetValueOrThrow())
-        };
+        return result.IsSuccess() ? result : DomainServiceHelper.HandleGetAggregateResult(result, aggregateId, isNotFoundError);
     }
 
     public static Result<T> HandleGetAggregateResult<T>(Result<T> result, Guid aggregateId, bool isNotFoundError = true)
         where T : Aggregate, new()  // Constraint: T is a subclass of Aggregate and has a parameterless constructor
     {
-        bool isNotFound = result.Errors.Any(error => error.ErrorType == ErrorType.NotFound);
-        if (result.IsFailed && !isNotFound)
+        bool isNotFound = result.GetErrors().Any(error => error.ErrorType == ErrorType.NotFound);
+        if (result.IsSuccess() == false && !isNotFound)
         {
             return ResultHelpers.CreateFailure(result);
         }
@@ -36,8 +32,8 @@ public static class DomainServiceHelper
             return ResultHelpers.CreateFailure(result);
         }
 
-        T aggregate = isNotFound ? new T { AggregateId = aggregateId } : result.GetValueOrThrow();
+        T aggregate = isNotFound ? new T { AggregateId = aggregateId } : result.Data;
 
-        return Result.Success(aggregate);
+        return Results.Ok(aggregate);
     }
 }

@@ -24,7 +24,7 @@ namespace TransactionProcessor.Aggregates.Tests
         {
             Aggregates.FloatAggregate aggregate = Aggregates.FloatAggregate.Create(TestData.FloatAggregateId);
             Result result = aggregate.CreateFloat(TestData.EstateId, TestData.FloatCreatedDateTime);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
 
             aggregate.AggregateId.ShouldBe(TestData.FloatAggregateId);
             aggregate.EstateId.ShouldBe(TestData.EstateId);
@@ -37,7 +37,7 @@ namespace TransactionProcessor.Aggregates.Tests
             aggregate.CreateFloat(TestData.EstateId, TestData.FloatCreatedDateTime);
 
             Result result = aggregate.CreateFloat(TestData.EstateId, TestData.FloatCreatedDateTime);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
         }
 
         [Fact]
@@ -46,7 +46,7 @@ namespace TransactionProcessor.Aggregates.Tests
             Aggregates.FloatAggregate aggregate = Aggregates.FloatAggregate.Create(TestData.FloatAggregateId);
             aggregate.CreateFloat(TestData.EstateId, TestData.FloatCreatedDateTime);
             Result result = aggregate.RecordCreditPurchase(DateTime.Now, 1000, 900, DateTime.Now);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
             aggregate.NumberOfCreditPurchases.ShouldBe(1);
             aggregate.TotalCostPrice.ShouldBe(900);
             aggregate.UnitCostPrice.ShouldBe(0.9m);
@@ -59,8 +59,8 @@ namespace TransactionProcessor.Aggregates.Tests
             Aggregates.FloatAggregate aggregate = Aggregates.FloatAggregate.Create(TestData.FloatAggregateId);
 
             Result result = aggregate.RecordCreditPurchase(DateTime.Now, 1000, 900, DateTime.Now);
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
             
         }
 
@@ -107,8 +107,8 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = aggregate.RecordCreditPurchase(purchaseDateTime, 1000, 900, DateTime.Now);
             
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
 
         }
 

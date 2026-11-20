@@ -2,6 +2,7 @@ using DotNet.Testcontainers.Builders;
 using KurrentDB.Client;
 using System.IO;
 using TestHosts.Clients;
+using TransactionProcessing.UnionResults;
 using TransactionProcessor.Database.Contexts;
 
 namespace TransactionProcessor.IntegrationTests.Common
@@ -212,7 +213,7 @@ namespace TransactionProcessor.IntegrationTests.Common
             this.ProjectionManagementClient = new KurrentDBProjectionManagementClient(this.ConfigureKurrentDbSettings());
 
             var bootstrapToken = await this.SecurityServiceClient.GetToken("management-bootstrap", "management-bootstrap-secret", CancellationToken.None);
-            if (bootstrapToken.IsFailed || String.IsNullOrWhiteSpace(bootstrapToken.Data?.AccessToken))
+            if (bootstrapToken.IsSuccess() == false || String.IsNullOrWhiteSpace(bootstrapToken.Data?.AccessToken))
             {
                 throw new InvalidOperationException("Unable to obtain the integration-test management bootstrap token.");
             }

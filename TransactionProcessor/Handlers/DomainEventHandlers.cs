@@ -1,3 +1,4 @@
+using Results = TransactionProcessing.UnionResults.Results;
 using Lamar;
 using Microsoft.AspNetCore.Http;
 using TransactionProcessing.Shared.DomainDrivenDesign.EventSourcing;
@@ -6,7 +7,6 @@ using TransactionProcessing.Shared.EventStore.EventHandling;
 using TransactionProcessing.Shared.Exceptions;
 using TransactionProcessing.Shared.General;
 using TransactionProcessing.Shared.Logger;
-using TransactionProcessing.UnionResults.AspNetCore;
 using TransactionProcessing.Shared.Serialisation;
 using TransactionProcessing.UnionResults;
 using System;
@@ -19,7 +19,7 @@ using System.Threading.Tasks;
 namespace TransactionProcessor.Handlers;
 
 public static class DomainEventHandlers {
-    public static async Task<IResultOutcome> HandleDomainEvent(IDomainEventHandlerResolver domainEventHandlerResolver, IContainer container, HttpContext ctx, CancellationToken cancellationToken) {
+    public static async Task<Result> HandleDomainEvent(IDomainEventHandlerResolver domainEventHandlerResolver, IContainer container, HttpContext ctx, CancellationToken cancellationToken) {
 
         String eventType = ctx.Request.Headers["eventType"].ToString();
         String subscriptionId = ctx.Request.Headers["subscriptionId"].ToString();
@@ -30,10 +30,10 @@ public static class DomainEventHandlers {
 
         Result<IDomainEvent> domainEventResult = await GetDomainEvent(ctx.Request, eventType, cancellationToken);
 
-        if (domainEventResult.IsFailed)
-            return ResponseFactory.FromResult(domainEventResult, SuccessFactory);
+        if (domainEventResult.IsSuccess() == false)
+            return domainEventResult.Bind(_ => Results.Ok());
 
-        IDomainEvent domainEvent = domainEventResult.GetValueOrThrow();
+        IDomainEvent domainEvent = domainEventResult.Data;
 
         List<IDomainEventHandler> eventHandlers = GetDomainEventHandlers(container, domainEventHandlerResolver, domainEvent, subscriptionId);
 
@@ -45,7 +45,7 @@ public static class DomainEventHandlers {
             if (eventHandlers == null || eventHandlers.Any() == false) {
                 // Log a warning out 
                 Logger.LogInformation($"No event handlers configured for Event Type [{domainEvent.GetType().Name}]");
-                return Result.Success();
+                return Results.Ok();
             }
 
             List<HandlerExecution> executions = eventHandlers
@@ -62,12 +62,12 @@ public static class DomainEventHandlers {
             List<HandlerFailure> failures = executions.SelectMany(GetFailures).ToList();
             if (failures.Any()) {
                 String failureDetails = String.Join("; ", failures.Select(failure => $"{failure.Handler}: {failure.Error}"));
-                return Result.Fail(Error.Critical($"One or more event handlers failed for event {domainEvent.EventId} ({domainEvent.GetType().Name}): {failureDetails}"));
+                return Results.Fail(new Error(ErrorType.Critical, $"One or more event handlers failed for event {domainEvent.EventId} ({domainEvent.GetType().Name}): {failureDetails}"));
             }
 
             Logger.LogWarning($"Finished processing event - ID [{domainEvent.EventId}]");
 
-            return Result.Success();
+            return Results.Ok();
         }
         catch (Exception ex) {
             String domainEventData = StringSerialiser.Serialise(domainEvent);
@@ -86,8 +86,8 @@ public static class DomainEventHandlers {
         else if (execution.Task.IsCanceled) {
             yield return new HandlerFailure(execution.Handler.GetType().Name, "Handler execution was cancelled");
         }
-        else if (execution.Task.Result.IsFailed) {
-            yield return new HandlerFailure(execution.Handler.GetType().Name, execution.Task.Result.Message);
+        else if (execution.Task.Result.IsSuccess() == false) {
+            yield return new HandlerFailure(execution.Handler.GetType().Name, execution.Task.Result.GetErrorMessage());
         }
     }
     private sealed record HandlerFailure(String Handler, String Error);
@@ -113,10 +113,6 @@ public static class DomainEventHandlers {
         }
     }
 
-    private static IDomainEvent SuccessFactory(IDomainEvent arg) {
-        return arg;
-    }
-
     private static async Task<Result<IDomainEvent>> GetDomainEvent(HttpRequest request, String eventType, CancellationToken cancellationToken) {
         Type type;
 
@@ -129,17 +125,17 @@ public static class DomainEventHandlers {
         }
 
         if (type == null)
-            return Result.NotFound($"Failed to find a domain event with type {eventType}");
+            return new Error(ErrorType.NotFound, $"Failed to find a domain event with type {eventType}");
 
         if (type.IsSubclassOf(typeof(DomainEvent))) {
             using JsonDocument requestBody = await JsonDocument.ParseAsync(request.Body, cancellationToken: cancellationToken);
             String json = requestBody.RootElement.GetRawText();
 
             DomainEventFactory domainEventFactory = new();
-            return Result.Success(domainEventFactory.CreateDomainEvent(json, type) as IDomainEvent);
+            return Results.Ok(domainEventFactory.CreateDomainEvent(json, type) as IDomainEvent);
         }
 
-        return Result.Invalid($"The requested type {type.FullName} is not a domain event type.");
+        return new Error(ErrorType.Validation, $"The requested type {type.FullName} is not a domain event type.");
     }
 
     private static List<IDomainEventHandler> GetDomainEventHandlers(IContainer container, IDomainEventHandlerResolver domainEventHandlerResolver, IDomainEvent domainEvent, String subscriptionId) {
@@ -149,16 +145,16 @@ public static class DomainEventHandlers {
             // We are being told by the caller to use a specific handler
             var allhandlers = resolver.GetDomainEventHandlers(domainEvent);
 
-            if (allhandlers.IsFailed)
+            if (allhandlers.IsSuccess() == false)
                 return new List<IDomainEventHandler>();
 
-            return allhandlers.GetValueOrThrow().ToList();
+            return allhandlers.Data.ToList();
         }
 
         var eventHandlersResult = domainEventHandlerResolver.GetDomainEventHandlers(domainEvent);
-        if (eventHandlersResult.IsFailed)
+        if (eventHandlersResult.IsSuccess() == false)
             return new List<IDomainEventHandler>();
-        return eventHandlersResult.GetValueOrThrow();
+        return eventHandlersResult.Data;
     }
 
 }

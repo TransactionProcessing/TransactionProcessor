@@ -25,11 +25,11 @@ public class FloatRequestHandlerTests
     public async Task FloatRequestHandler_CreateFloatForContractProductRequest_IsHandled(){
         IFloatDomainServiceImposter floatDomainService = new();
         FloatRequestHandler handler = new FloatRequestHandler(floatDomainService.Instance());
-        floatDomainService.CreateFloat(Arg<FloatCommands.CreateFloatCommand>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(Guid.NewGuid()));
+        floatDomainService.CreateFloat(Arg<FloatCommands.CreateFloatCommand>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(Guid.NewGuid()));
         var command = TestData.CreateFloatCommand;
 
         var result = await handler.Handle(command, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
@@ -38,12 +38,12 @@ public class FloatRequestHandlerTests
         IFloatDomainServiceImposter floatDomainService = new();
         FloatRequestHandler handler = new FloatRequestHandler(floatDomainService.Instance());
         
-        floatDomainService.RecordCreditPurchase(Arg<FloatCommands.RecordCreditPurchaseForFloatCommand>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
+        floatDomainService.RecordCreditPurchase(Arg<FloatCommands.RecordCreditPurchaseForFloatCommand>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok());
 
         var command = TestData.RecordCreditPurchaseForFloatCommand;
 
         var result = await handler.Handle(command, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
     }
 }

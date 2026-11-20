@@ -552,9 +552,9 @@ public static class Extensions{
 public static class DbQueryHelpers {
     public static Result<T> MapNotFound<T>(Result<T> result, string message)
     {
-        if (result.IsFailed && result.Errors.Any(error => error.ErrorType == ErrorType.NotFound))
+        if (result.IsSuccess() == false && result.GetErrors().Any(error => error.ErrorType == ErrorType.NotFound))
         {
-            return Result<T>.Fail(Error.NotFound(message));
+            return new Result<T>(new Error(ErrorType.NotFound, message));
         }
 
         return result;
@@ -567,12 +567,12 @@ public static class DbQueryHelpers {
         try
         {
             T item = await query.SumAsync(cancellationToken);
-            return Result.Success(item);
+            return Results.Ok(item);
         }
         catch (Exception ex)
         {
             string msg = contextMessage == null ? $"Error executing query: {ex.Message}" : $"{contextMessage}: {ex.Message}";
-            return Result.Failure(msg);
+            return new Error(ErrorType.Failure, msg);
         }
     }
 
@@ -583,12 +583,12 @@ public static class DbQueryHelpers {
         try
         {
             List<T> items = await query.ToListAsync(cancellationToken);
-            return Result.Success(items);
+            return Results.Ok(items);
         }
         catch (Exception ex)
         {
             string msg = contextMessage == null ? $"Error executing query: {ex.Message}" : $"{contextMessage}: {ex.Message}";
-            return Result.Failure(msg);
+            return new Error(ErrorType.Failure, msg);
         }
     }
 
@@ -601,14 +601,14 @@ public static class DbQueryHelpers {
             T item = await query.SingleOrDefaultAsync(cancellationToken);
 
             if (item == null)
-                return Result<T>.Fail(Error.NotFound(contextMessage ?? "The requested record was not found."));
+                return new Result<T>(new Error(ErrorType.NotFound, contextMessage ?? "The requested record was not found."));
 
-            return Result.Success(item);
+            return Results.Ok(item);
         }
         catch (Exception ex)
         {
             string msg = contextMessage == null ? $"Error executing query: {ex.Message}" : $"{contextMessage}: {ex.Message}";
-            return Result.Failure(msg);
+            return new Error(ErrorType.Failure, msg);
         }
     }
 }

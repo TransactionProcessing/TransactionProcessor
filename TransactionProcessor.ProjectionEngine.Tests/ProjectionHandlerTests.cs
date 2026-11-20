@@ -30,7 +30,7 @@ public class ProjectionHandlerTests{
         ProjectionHandler.ProjectionHandler<MerchantBalanceState> ph = new ProjectionHandler.ProjectionHandler<MerchantBalanceState>(repo,projection,
                                                                                                                                      stateDispatcher);
         var result = await ph.Handle(null, CancellationToken.None);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
@@ -44,7 +44,7 @@ public class ProjectionHandlerTests{
 
         projection.ShouldHandle = false;
         var result = await ph.Handle(TestData.MerchantCreatedEvent, CancellationToken.None);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
@@ -59,9 +59,9 @@ public class ProjectionHandlerTests{
         MerchantBalanceState state = new MerchantBalanceState();
         projection.ShouldHandle = true;
         projection.HandleFunc = (_, _, _) => state;
-        repo.LoadResult = Result.Success(state);
+        repo.LoadResult = Results.Ok(state);
         var result = await ph.Handle(TestData.MerchantCreatedEvent, CancellationToken.None);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
@@ -78,10 +78,10 @@ public class ProjectionHandlerTests{
         projection.ShouldHandle = true;
         projection.HandleFunc = (_, _, _) => state.InitialiseBalances();
             
-        repo.LoadResult = Result.Success(state);
+        repo.LoadResult = Results.Ok(state);
 
         var result = await ph.Handle(TestData.MerchantCreatedEvent, CancellationToken.None);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
@@ -98,12 +98,12 @@ public class ProjectionHandlerTests{
         projection.ShouldHandle = true;
         projection.HandleFunc = (_, _, _) => newState;
             
-        repo.LoadResult = Result.Success(state);
-        repo.SaveResult = Result.Success(state);
+        repo.LoadResult = Results.Ok(state);
+        repo.SaveResult = Results.Ok(state);
 
-        stateDispatcher.DispatchResult = Result.Success();
+        stateDispatcher.DispatchResult = Results.Ok();
         var result = await ph.Handle(TestData.MerchantCreatedEvent, CancellationToken.None);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
@@ -120,12 +120,12 @@ public class ProjectionHandlerTests{
         projection.ShouldHandle = true;
         projection.HandleFunc = (_, _, _) => newState;
 
-        repo.LoadResult = Result<MerchantBalanceState>.Fail(Error.Failure("Load failed"));
-        //repo.SaveResult = Result.Success(state);
+        repo.LoadResult = new Result<MerchantBalanceState>(new Error(ErrorType.Failure, "Load failed"));
+        //repo.SaveResult = Results.Ok(state);
 
-        //stateDispatcher.DispatchResult = Result.Success();
+        //stateDispatcher.DispatchResult = Results.Ok();
         var result = await ph.Handle(TestData.MerchantCreatedEvent, CancellationToken.None);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
@@ -142,12 +142,12 @@ public class ProjectionHandlerTests{
         projection.ShouldHandle = true;
         projection.HandleFunc = (_, _, _) => newState;
 
-        repo.LoadResult = Result.Success(state);
-        repo.SaveResult = Result<MerchantBalanceState>.Fail(Error.Failure("Save failed"));
+        repo.LoadResult = Results.Ok(state);
+        repo.SaveResult = new Result<MerchantBalanceState>(new Error(ErrorType.Failure, "Save failed"));
 
-        //stateDispatcher.DispatchResult = Result.Success();
+        //stateDispatcher.DispatchResult = Results.Ok();
         var result = await ph.Handle(TestData.MerchantCreatedEvent, CancellationToken.None);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
@@ -164,12 +164,12 @@ public class ProjectionHandlerTests{
         projection.ShouldHandle = true;
         projection.HandleFunc = (_, _, _) => newState;
 
-        repo.LoadResult = Result.Success(state);
-        repo.SaveResult = Result.Success(state);
+        repo.LoadResult = Results.Ok(state);
+        repo.SaveResult = Results.Ok(state);
 
-        stateDispatcher.DispatchResult = Result.Failure("Dispatch failed");
+        stateDispatcher.DispatchResult = new Error(ErrorType.Failure, "Dispatch failed");
         var result = await ph.Handle(TestData.MerchantCreatedEvent, CancellationToken.None);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 }
 
@@ -188,7 +188,7 @@ public class VoucherStateDispatcherTests {
         IDomainEvent domainEvent = TestData.TransactionHasBeenCompletedEvent;
         
         var result = await this.Dispatcher.Dispatch(state, domainEvent, CancellationToken.None);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 }
 
@@ -213,7 +213,7 @@ public class MerchantBalanceStateDispatcherTests
     public async Task MerchantBalanceStateDispatcher_EventIsDispatched_ResultSuccessful(Type type) {
         MerchantBalanceState state = new();
 
-        this.Repository.AddResult = Result.Success();
+        this.Repository.AddResult = Results.Ok();
 
         IDomainEvent domainEvent = type.Name switch {
             nameof(MerchantDomainEvents.MerchantCreatedEvent) => TestData.MerchantCreatedEvent,
@@ -227,7 +227,7 @@ public class MerchantBalanceStateDispatcherTests
 
         if (domainEvent != null) {
             var result = await this.Dispatcher.Dispatch(state, domainEvent, CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
             this.Repository.AddCalls.ShouldBe(1);
         }
     }
@@ -237,13 +237,13 @@ public class MerchantBalanceStateDispatcherTests
     {
         MerchantBalanceState state = new();
 
-        this.Repository.AddResult = Result.Success();
+        this.Repository.AddResult = Results.Ok();
 
         IDomainEvent domainEvent = TestData.TransactionHasBeenCompletedEvent with {
                 IsAuthorised = false
             };
             var result = await this.Dispatcher.Dispatch(state, domainEvent, CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
             this.Repository.AddCalls.ShouldBe(0);
     }
 
@@ -252,14 +252,14 @@ public class MerchantBalanceStateDispatcherTests
     {
         MerchantBalanceState state = new();
 
-        this.Repository.AddResult = Result.Success();
+        this.Repository.AddResult = Results.Ok();
 
         IDomainEvent domainEvent = TestData.TransactionHasBeenCompletedEvent with
         {
             TransactionAmount = 0
         };
         var result = await this.Dispatcher.Dispatch(state, domainEvent, CancellationToken.None);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         this.Repository.AddCalls.ShouldBe(0);
     }
 
@@ -268,14 +268,14 @@ public class MerchantBalanceStateDispatcherTests
     {
         MerchantBalanceState state = new();
 
-        this.Repository.AddResult = Result.Success();
+        this.Repository.AddResult = Results.Ok();
 
         IDomainEvent domainEvent = TestData.TransactionHasBeenCompletedEvent with
         {
             TransactionAmount = -1
         };
         var result = await this.Dispatcher.Dispatch(state, domainEvent, CancellationToken.None);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         this.Repository.AddCalls.ShouldBe(1);
     }
 
@@ -304,13 +304,13 @@ internal sealed class TestProjection : IProjection<MerchantBalanceState>
 
 internal sealed class TestStateDispatcher : IStateDispatcher<MerchantBalanceState>
 {
-    public Result DispatchResult { get; set; } = Result.Success();
+    public Result DispatchResult { get; set; } = Results.Ok();
     public Task<Result> Dispatch(MerchantBalanceState state, IDomainEvent @event, CancellationToken cancellationToken) => Task.FromResult(DispatchResult);
 }
 
 internal sealed class TestReadRepository : ITransactionProcessorReadRepository
 {
-    public Result AddResult { get; set; } = Result.Success();
+    public Result AddResult { get; set; } = Results.Ok();
     public int AddCalls { get; private set; }
 
     public Task<Result> AddMerchantBalanceChangedEntry(MerchantBalanceChangedEntry entry, CancellationToken cancellationToken)

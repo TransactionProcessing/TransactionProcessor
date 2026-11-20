@@ -56,9 +56,9 @@ public class TransactionProcessorReadRepository : ITransactionProcessorReadRepos
         }
         catch (Exception ex) {
             Logger.LogInformation($"Entry failed {entry.Reference}");
-            return Result.Failure(ex.GetExceptionMessages());
+            return ResultHelpers.CreateFailure(ex.GetExceptionMessages());
         }
-        return Result.Success();
+        return Results.Ok();
     }
 
     public async Task<Result<List<MerchantBalanceChangedEntry>>> GetMerchantBalanceHistory(Guid estateId,
@@ -85,6 +85,6 @@ public class TransactionProcessorReadRepository : ITransactionProcessorReadRepos
                                                                            Reference = e.Reference,
                                                                        });
                         });
-        return Result.Success(result);
+        return Results.Ok(result);
     }
 }

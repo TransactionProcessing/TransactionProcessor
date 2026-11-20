@@ -51,7 +51,7 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
             if (t != null)
                 return await t;
 
-            return Result.Success();
+            return Results.Ok();
         }
 
         private async Task<Result> HandleSpecificDomainEvent(CallbackReceivedEnrichedEvent domainEvent,
@@ -61,17 +61,17 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
                 String merchantReference = domainEvent.Reference.Split("-")[1];
 
                 Result<Merchant> result = await this.EstateReportingRepository.GetMerchantFromReference(domainEvent.EstateId, merchantReference, cancellationToken);
-                if (result.IsFailed)
+                if (result.IsSuccess() == false)
                     return ResultHelpers.CreateFailure(result);
 
                 // We now need to deserialise the message from the callback
                 CallbackHandler.DataTransferObjects.Deposit callbackMessage = StringSerialiser.Deserialise<CallbackHandler.DataTransferObjects.Deposit>(domainEvent.CallbackMessage);
 
-                MerchantCommands.MakeMerchantDepositCommand command = new(domainEvent.EstateId, result.GetValueOrThrow().MerchantId, DataTransferObjects.Requests.Merchant.MerchantDepositSource.Automatic, new MakeMerchantDepositRequest { DepositDateTime = callbackMessage.DateTime, Reference = callbackMessage.Reference, Amount = callbackMessage.Amount,HostDateTime = DateTimeOffset.UtcNow });
+                MerchantCommands.MakeMerchantDepositCommand command = new(domainEvent.EstateId, result.Data.MerchantId, DataTransferObjects.Requests.Merchant.MerchantDepositSource.Automatic, new MakeMerchantDepositRequest { DepositDateTime = callbackMessage.DateTime, Reference = callbackMessage.Reference, Amount = callbackMessage.Amount,HostDateTime = DateTimeOffset.UtcNow });
                 return await this.Mediator.Send(command, cancellationToken);
             }
 
-            return Result.Success();
+            return Results.Ok();
         }
 
         #endregion

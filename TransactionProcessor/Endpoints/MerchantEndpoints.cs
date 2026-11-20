@@ -63,49 +63,49 @@ public static class MerchantEndpoints
             .ProducesUnionResult<Guid>();
 
         merchantGroup.MapPatch("/{merchantId:guid}/operators", MerchantHandlers.AssignOperator).WithName("AssignMerchantOperator")
-            .WithSummary("Assign an operator to a merchant").WithDescription("Associates the request's operator and terminal identifiers with the merchant.");
+            .WithSummary("Assign an operator to a merchant").WithDescription("Associates the request's operator and terminal identifiers with the merchant.").ProducesUnionResult();
         merchantGroup.MapDelete("/{merchantId:guid}/operators/{operatorId:guid}", MerchantHandlers.RemoveOperator).WithName("RemoveMerchantOperator")
-            .WithSummary("Remove an operator from a merchant").WithDescription("Removes the specified operator association from the merchant.");
+            .WithSummary("Remove an operator from a merchant").WithDescription("Removes the specified operator association from the merchant.").ProducesUnionResult();
 
         merchantGroup.MapPatch("/{merchantId:guid}/devices",MerchantHandlers.AddDevice).WithName("AddDevice")
-            .WithSummary("Add a merchant device").WithDescription("Registers the device identifier supplied in the request body for this merchant.");
+            .WithSummary("Add a merchant device").WithDescription("Registers the device identifier supplied in the request body for this merchant.").ProducesUnionResult();
         merchantGroup.MapPatch("/{merchantId:guid}/devices/{deviceIdentifier}", MerchantHandlers.SwapMerchantDevice).WithName("SwapMerchantDevice")
-            .WithSummary("Replace a merchant device").WithDescription("Replaces the device identified by the deviceIdentifier path value with the new identifier in the request body.");
+            .WithSummary("Replace a merchant device").WithDescription("Replaces the device identified by the deviceIdentifier path value with the new identifier in the request body.").ProducesUnionResult();
 
         merchantGroup.MapPatch("/{merchantId:guid}/contracts", MerchantHandlers.AddContract).WithName("AddContract")
-            .WithSummary("Associate a contract with a merchant").WithDescription("Adds the contract ID in the request body to the merchant.");
+            .WithSummary("Associate a contract with a merchant").WithDescription("Adds the contract ID in the request body to the merchant.").ProducesUnionResult();
         merchantGroup.MapDelete("/{merchantId:guid}/contracts/{contractId:guid}", MerchantHandlers.RemoveContract).WithName("RemoveContract")
-            .WithSummary("Remove a merchant contract").WithDescription("Removes the selected contract association from the merchant.");
+            .WithSummary("Remove a merchant contract").WithDescription("Removes the selected contract association from the merchant.").ProducesUnionResult();
 
         merchantGroup.MapPatch("/{merchantId:guid}/users", MerchantHandlers.CreateMerchantUser).WithName("CreateMerchantUser")
-            .WithSummary("Create a merchant user").WithDescription("Creates a security user associated with this merchant.");
+            .WithSummary("Create a merchant user").WithDescription("Creates a security user associated with this merchant.").ProducesUnionResult();
 
         merchantGroup.MapPost("/{merchantId:guid}/deposits", MerchantHandlers.MakeDeposit).WithName("MakeDeposit")
-            .WithSummary("Record a merchant deposit").WithDescription("Records a manual deposit with amount, timestamp, and reference.");
+            .WithSummary("Record a merchant deposit").WithDescription("Records a manual deposit with amount, timestamp, and reference.").ProducesUnionResult();
         merchantGroup.MapPost("/{merchantId:guid}/withdrawals", MerchantHandlers.MakeWithdrawal).WithName("MakeWithdrawal")
-            .WithSummary("Record a merchant withdrawal").WithDescription("Records a withdrawal with amount, timestamp, and reference.");
+            .WithSummary("Record a merchant withdrawal").WithDescription("Records a withdrawal with amount, timestamp, and reference.").ProducesUnionResult();
 
         merchantGroup.MapPatch("/{merchantId:guid}/addresses", MerchantHandlers.AddMerchantAddress).WithName("AddMerchantAddress")
-            .WithSummary("Add a merchant address").WithDescription("Adds the address in the request body to the merchant.");
+            .WithSummary("Add a merchant address").WithDescription("Adds the address in the request body to the merchant.").ProducesUnionResult();
         merchantGroup.MapPatch("/{merchantId:guid}/addresses/{addressId:guid}", MerchantHandlers.UpdateMerchantAddress).WithName("UpdateMerchantAddress")
-            .WithSummary("Update a merchant address").WithDescription("Replaces the selected merchant address with the address in the request body.");
+            .WithSummary("Update a merchant address").WithDescription("Replaces the selected merchant address with the address in the request body.").ProducesUnionResult();
 
         merchantGroup.MapPatch("/{merchantId:guid}/contacts", MerchantHandlers.AddMerchantContact).WithName("AddMerchantContact")
-            .WithSummary("Add a merchant contact").WithDescription("Adds the contact in the request body to the merchant.");
+            .WithSummary("Add a merchant contact").WithDescription("Adds the contact in the request body to the merchant.").ProducesUnionResult();
         merchantGroup.MapPatch("/{merchantId:guid}/contacts/{contactId:guid}", MerchantHandlers.UpdateMerchantContact).WithName("UpdateMerchantContact")
-            .WithSummary("Update a merchant contact").WithDescription("Replaces the selected merchant contact with the contact in the request body.");
+            .WithSummary("Update a merchant contact").WithDescription("Replaces the selected merchant contact with the contact in the request body.").ProducesUnionResult();
 
         merchantGroup.MapPost("/{merchantId:guid}/statements", MerchantHandlers.GenerateMerchantStatement).WithName("GenerateMerchantStatement")
-            .WithSummary("Generate a merchant statement").WithDescription("Generates a statement for the merchant and statement date in the request body.");
+            .WithSummary("Generate a merchant statement").WithDescription("Generates a statement for the merchant and statement date in the request body.").ProducesUnionResult();
 
         merchantGroup.MapPatch("/{merchantId:guid}", MerchantHandlers.UpdateMerchant).WithName("UpdateMerchant")
-            .WithSummary("Update a merchant").WithDescription("Updates the merchant's name and settlement schedule.");
+            .WithSummary("Update a merchant").WithDescription("Updates the merchant's name and settlement schedule.").ProducesUnionResult();
         merchantGroup.MapPatch("/{merchantId:guid}/opening", MerchantHandlers.UpdateMerchantOpening).WithName("UpdateMerchantOpening")
-            .WithSummary("Update merchant opening hours").WithDescription("Sets opening and closing times for each day supplied in the request body.");
+            .WithSummary("Update merchant opening hours").WithDescription("Sets opening and closing times for each day supplied in the request body.").ProducesUnionResult();
         merchantGroup.MapPost("/{merchantId:guid}/schedules", MerchantHandlers.CreateMerchantSchedule).WithName("CreateMerchantSchedule")
-            .WithSummary("Create a merchant schedule").WithDescription("Creates the merchant schedule for the year and month closure days in the request body.");
+            .WithSummary("Create a merchant schedule").WithDescription("Creates the merchant schedule for the year and month closure days in the request body.").ProducesUnionResult();
         merchantGroup.MapPatch("/{merchantId:guid}/schedules/{year:int}", MerchantHandlers.UpdateMerchantSchedule).WithName("UpdateMerchantSchedule")
-            .WithSummary("Update a merchant schedule").WithDescription("Updates month closure days for the year in the route.");
+            .WithSummary("Update a merchant schedule").WithDescription("Updates month closure days for the year in the route.").ProducesUnionResult();
 
         return endpoints;
     }

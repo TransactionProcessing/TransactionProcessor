@@ -184,12 +184,12 @@ using Microsoft.Extensions.DependencyInjection;
                     EmailMerchantStatementCommand command = new(estateId, statementId, pdfData);
 
                     Result result = await this.Mediator.Send(command, CancellationToken.None);
-                    if (result.IsFailed) {
+                    if (result.IsSuccess() == false) {
                         // Move the file to the failed folder
                         String failedFilePath = Path.Combine(failedFolder, e.Name);
                         File.Move(e.FullPath, failedFilePath);
                         // Log the error
-                        Logger.LogWarning("Failed to process file [{FileName}]: " + result.Message, e.FullPath);
+                        Logger.LogWarning("Failed to process file [{FileName}]: " + result.GetErrorMessage(), e.FullPath);
                     }
                     else {
                         // Move the file to the processed folder
@@ -257,12 +257,12 @@ using Microsoft.Extensions.DependencyInjection;
 
                 Result<OperatorResponse> logonResult = await proxy.ProcessLogonMessage(cancellationToken);
 
-                if (logonResult.IsSuccess) {
-                    Logger.LogInformation("Auto logon for operator Id [{OperatorId}] status [{" + logonResult.GetValueOrThrow().IsSuccessful + "}]", operatorId);
+                if (logonResult.IsSuccess()) {
+                    Logger.LogInformation("Auto logon for operator Id [{OperatorId}] status [{" + logonResult.Data.IsSuccessful + "}]", operatorId);
                     return;
                 }
 
-                Logger.LogWarning("Auto logon for operator Id [{OperatorId}] status [{" + logonResult.Message + "}]", operatorId);
+                Logger.LogWarning("Auto logon for operator Id [{OperatorId}] status [{" + logonResult.GetErrorMessage() + "}]", operatorId);
             }
             catch (RpcException ex) when (ex.StatusCode == StatusCode.Unavailable) {
                 Logger.LogWarning("Auto logon for operator Id [{operatorId}] deferred because the operator gRPC service is unavailable: " + ex.Status.Detail, operatorId);
