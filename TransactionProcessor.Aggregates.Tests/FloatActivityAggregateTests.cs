@@ -23,7 +23,7 @@ public class FloatActivityAggregateTests {
     public void FloatActivityAggregate_RecordCreditPurchase_PurchaseRecorded() {
         FloatActivityAggregate aggregate = FloatActivityAggregate.Create(TestData.FloatAggregateId);
         Result result = aggregate.RecordCreditPurchase(TestData.EstateId, TestData.CreditPurchasedDateTime, TestData.FloatCreditAmount, TestData.FloatCreditId);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         aggregate.CreditCount.ShouldBe(1);
         aggregate.Credits.Contains(TestData.FloatCreditId).ShouldBeTrue();
     }
@@ -35,7 +35,7 @@ public class FloatActivityAggregateTests {
         aggregate.RecordCreditPurchase(TestData.EstateId, TestData.CreditPurchasedDateTime, TestData.FloatCreditAmount, TestData.FloatCreditId);
         aggregate.CreditCount.ShouldBe(1);
         Result result = aggregate.RecordCreditPurchase(TestData.EstateId, TestData.CreditPurchasedDateTime, TestData.FloatCreditAmount, TestData.FloatCreditId);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         aggregate.CreditCount.ShouldBe(1);
     }
 
@@ -44,7 +44,7 @@ public class FloatActivityAggregateTests {
     {
         FloatActivityAggregate aggregate = FloatActivityAggregate.Create(TestData.FloatAggregateId);
         Result result = aggregate.RecordTransactionAgainstFloat(TestData.EstateId, TestData.TransactionDateTime, TestData.TransactionAmount, TestData.TransactionId);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         aggregate.DebitCount.ShouldBe(1);
         aggregate.Debits.Contains(TestData.TransactionId).ShouldBeTrue();
     }
@@ -56,7 +56,7 @@ public class FloatActivityAggregateTests {
         aggregate.RecordTransactionAgainstFloat(TestData.EstateId, TestData.TransactionDateTime, TestData.TransactionAmount, TestData.TransactionId);
         aggregate.DebitCount.ShouldBe(1);
         Result result = aggregate.RecordTransactionAgainstFloat(TestData.EstateId, TestData.TransactionDateTime, TestData.TransactionAmount, TestData.TransactionId);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         aggregate.DebitCount.ShouldBe(1);
     }
 }

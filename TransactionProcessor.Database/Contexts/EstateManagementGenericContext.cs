@@ -367,10 +367,10 @@ ALTER DATABASE [{dbName}] SET MULTI_USER;
     public new async Task<Result> SaveChangesAsync(CancellationToken cancellationToken) {
         try {
             await base.SaveChangesAsync(cancellationToken);
-            return Result.Success();
+            return Results.Ok();
         }
         catch (Exception ex) {
-            return Result.Failure(ex.GetExceptionMessages());
+            return ResultHelpers.CreateFailure(ex.GetExceptionMessages());
         }
     }
 
@@ -379,13 +379,13 @@ ALTER DATABASE [{dbName}] SET MULTI_USER;
         try
         {
             await base.SaveChangesAsync(cancellationToken);
-            return Result.Success();
+            return Results.Ok();
         }
         catch (DbUpdateException exception) when (IsUniqueConstraintViolation(exception))
         {
             // Swallow the error
             Logger.LogInformation("Ignoring duplicate event while replaying an event stream: {ExceptionMessage}", exception.GetExceptionMessages());
-            return Result.Success();
+            return Results.Ok();
         }
     }
 
@@ -570,8 +570,8 @@ public static class EstateManagementContextExtensions
 
     //    return voucher switch
     //    {
-    //        null => Result.NotFound($"Voucher not found with Id {voucherId}"),
-    //        _ => Result.Success(voucher)
+    //        null => new Error(ErrorType.NotFound, $"Voucher not found with Id {voucherId}"),
+    //        _ => Results.Ok(voucher)
     //    };
     //}
 

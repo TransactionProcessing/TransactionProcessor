@@ -81,10 +81,10 @@ public class MerchantBalanceStateRepository : IProjectionStateRepository<Merchan
             state = state with { ChangesApplied = false };
         }
         catch (Exception ex) {
-            return Result.Failure(ex.GetExceptionMessages());
+            return ResultHelpers.CreateFailure(ex.GetExceptionMessages());
         }
 
-        return Result.Success(state);
+        return Results.Ok(state);
     }
 
     private static MerchantBalanceProjectionState CreateMerchantBalanceProjectionState(MerchantBalanceState state) {
@@ -125,18 +125,18 @@ public class MerchantBalanceStateRepository : IProjectionStateRepository<Merchan
                                                                                                                   cancellationToken,
                                                                                                                   $"Error getting merchant balance state for estate {estateId} and merchant {merchantId}");
 
-        if (entityResult.IsFailed && entityResult.Errors.Any(error => error.ErrorType == ErrorType.NotFound)) {
-            return Result.Success(new MerchantBalanceState());
+        if (entityResult.IsSuccess() == false && entityResult.GetErrors().Any(error => error.ErrorType == ErrorType.NotFound)) {
+            return Results.Ok(new MerchantBalanceState());
         }
 
-        if (entityResult.IsFailed) {
-            return Result.Failure(entityResult.Message);
+        if (entityResult.IsSuccess() == false) {
+            return new Error(ErrorType.Failure, entityResult.GetErrors()[0].Message);
         }
 
-        MerchantBalanceProjectionState entity = entityResult.GetValueOrThrow();
+        MerchantBalanceProjectionState entity = entityResult.Data;
         
         // We have located a state record so we need to translate to the Model type
-        return Result.Success(new MerchantBalanceState {
+        return Results.Ok(new MerchantBalanceState {
                                             Version = entity.Timestamp,
                                             Balance = entity.Balance,
                                             MerchantId = merchantId,

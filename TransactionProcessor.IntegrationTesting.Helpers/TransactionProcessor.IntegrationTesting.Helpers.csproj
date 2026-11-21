@@ -30,4 +30,7 @@
 			<BuildOutputInPackage Include="$(OutputPath)TransactionProcessor.Client.dll" />
 		</ItemGroup>
 	</Target>
+  <ItemGroup>
+    <Compile Include="..\TransactionProcessor.ResultHelpers\ResultHelpers.cs" Link="ResultHelpers.cs" />
+  </ItemGroup>
 </Project>

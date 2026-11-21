@@ -18,7 +18,7 @@ public class SettlementEventTests : BaseTest
     public async Task CreateSettlement_SettlementIsAdded()
     {
         Result result = await this.Repository.CreateSettlement(TestData.DomainEvents.SettlementCreatedForDateEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
         Settlement? settlement = await context.Settlements.SingleOrDefaultAsync(c => c.SettlementId == TestData.DomainEvents.SettlementCreatedForDateEvent.SettlementId, TestContext.Current.CancellationToken);
@@ -29,20 +29,20 @@ public class SettlementEventTests : BaseTest
     public async Task CreateSettlement_EventReplayHandled()
     {
         Result result = await this.Repository.CreateSettlement(TestData.DomainEvents.SettlementCreatedForDateEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         result = await this.Repository.CreateSettlement(TestData.DomainEvents.SettlementCreatedForDateEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
     public async Task MarkSettlementAsProcessingStarted_SettlementIsUpdated()
     {
         Result result = await this.Repository.CreateSettlement(TestData.DomainEvents.SettlementCreatedForDateEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         result = await this.Repository.MarkSettlementAsProcessingStarted(TestData.DomainEvents.SettlementProcessingStartedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
         Settlement? settlement = await context.Settlements.SingleOrDefaultAsync(c => c.SettlementId == TestData.DomainEvents.SettlementProcessingStartedEvent.SettlementId, TestContext.Current.CancellationToken);
@@ -55,10 +55,10 @@ public class SettlementEventTests : BaseTest
     public async Task MarkSettlementAsCompleted_SettlementIsUpdated()
     {
         Result result = await this.Repository.CreateSettlement(TestData.DomainEvents.SettlementCreatedForDateEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         result = await this.Repository.MarkSettlementAsCompleted(TestData.DomainEvents.SettlementCompletedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
         Settlement? settlement = await context.Settlements.SingleOrDefaultAsync(c => c.SettlementId == TestData.DomainEvents.SettlementCompletedEvent.SettlementId, TestContext.Current.CancellationToken);
@@ -70,7 +70,7 @@ public class SettlementEventTests : BaseTest
     public async Task AddPendingMerchantFeeToSettlement_MerchantFeeIsAdded()
     {
         Result result = await this.Repository.AddPendingMerchantFeeToSettlement(TestData.DomainEvents.MerchantFeeAddedPendingSettlementEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
         MerchantSettlementFee? merchantSettlementFee = await context.MerchantSettlementFees.SingleOrDefaultAsync(f =>
@@ -87,17 +87,17 @@ public class SettlementEventTests : BaseTest
     public async Task AddPendingMerchantFeeToSettlement_EventReplayHandled()
     {
         Result result = await this.Repository.AddPendingMerchantFeeToSettlement(TestData.DomainEvents.MerchantFeeAddedPendingSettlementEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         result = await this.Repository.AddPendingMerchantFeeToSettlement(TestData.DomainEvents.MerchantFeeAddedPendingSettlementEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
     public async Task AddSettledMerchantFeeToSettlement_MerchantFeeIsAdded()
     {
         Result result = await this.Repository.AddSettledMerchantFeeToSettlement(TestData.SettledMerchantFeeAddedToTransactionEvent(TestData.SettlementDate), TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
         MerchantSettlementFee? merchantSettlementFee = await context.MerchantSettlementFees.SingleOrDefaultAsync(f =>
@@ -114,10 +114,10 @@ public class SettlementEventTests : BaseTest
     public async Task AddSettledMerchantFeeToSettlement_EventReplayHandled()
     {
         Result result = await this.Repository.AddSettledMerchantFeeToSettlement(TestData.SettledMerchantFeeAddedToTransactionEvent(TestData.SettlementDate), TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         result = await this.Repository.AddSettledMerchantFeeToSettlement(TestData.SettledMerchantFeeAddedToTransactionEvent(TestData.SettlementDate), TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
@@ -135,10 +135,10 @@ public class SettlementEventTests : BaseTest
             TestData.TransactionFeeCalculateDateTime);
 
         Result result = await this.Repository.AddPendingMerchantFeeToSettlement(pendingEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         result = await this.Repository.MarkMerchantFeeAsSettled(TestData.DomainEvents.MerchantFeeSettledEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
         MerchantSettlementFee? merchantSettlementFee = await context.MerchantSettlementFees.SingleOrDefaultAsync(f =>

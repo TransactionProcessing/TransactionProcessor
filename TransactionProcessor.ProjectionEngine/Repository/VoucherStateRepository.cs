@@ -93,7 +93,7 @@ public class VoucherStateRepository : IProjectionStateRepository<VoucherState>
                     };
         }
 
-        return Result.Success(state);
+        return Results.Ok(state);
     }
     
     private static VoucherProjectionState CreateVoucherProjectionState(VoucherState state) {
@@ -134,11 +134,11 @@ public class VoucherStateRepository : IProjectionStateRepository<VoucherState>
 
         if (entity == null)
         {
-            return Result.Success(new VoucherState());
+            return Results.Ok(new VoucherState());
         }
 
         // We have located a state record so we need to translate to the Model type
-        return Result.Success(new VoucherState
+        return Results.Ok(new VoucherState
         {
             EstateId = entity.EstateId,
             Version = entity.Timestamp,

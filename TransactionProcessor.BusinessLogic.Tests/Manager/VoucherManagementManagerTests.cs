@@ -68,11 +68,11 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
             }, TestContext.Current.CancellationToken);
             await this.Context.SaveChangesAsync(TestContext.Current.CancellationToken);
             
-            this.AggregateService.Get<VoucherAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientMobile()));
+            this.AggregateService.Get<VoucherAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetVoucherAggregateWithRecipientMobile()));
 
             Result<Voucher> result = await this.VoucherManagementManager.GetVoucherByCode(TestData.EstateId, TestData.VoucherCode, TestContext.Current.CancellationToken);
-            result.IsSuccess.ShouldBeTrue();
-            Models.Voucher voucher = result.GetValueOrThrow();
+            result.IsSuccess().ShouldBeTrue();
+            Models.Voucher voucher = result.Data;
             voucher.ShouldNotBeNull();
         }
 
@@ -80,7 +80,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
         public async Task VoucherManagementManager_GetVoucherByCode_VoucherNotFound_ErrorThrown()
         {
             
-            this.AggregateService.GetLatest<VoucherAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.NotFound("Not found"));
+            this.AggregateService.GetLatest<VoucherAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(new Error(ErrorType.NotFound, "Not found"));
 
             Should.Throw<NotFoundException>(async () =>
             {
@@ -103,18 +103,18 @@ namespace TransactionProcessor.BusinessLogic.Tests.Manager
             }, TestContext.Current.CancellationToken);
             await this.Context.SaveChangesAsync(TestContext.Current.CancellationToken);
 
-            this.AggregateService.Get<VoucherAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetVoucherAggregateWithRecipientMobile()));
+            this.AggregateService.Get<VoucherAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetVoucherAggregateWithRecipientMobile()));
             
             var result = await VoucherManagementManager.GetVoucherByTransactionId(TestData.EstateId, TestData.TransactionId, TestContext.Current.CancellationToken);
-            result.IsSuccess.ShouldBeTrue();
-            Models.Voucher voucher = result.GetValueOrThrow();
+            result.IsSuccess().ShouldBeTrue();
+            Models.Voucher voucher = result.Data;
             voucher.ShouldNotBeNull();
         }
 
         [Fact]
         public async Task VoucherManagementManager_GetVoucherByTransactionId_VoucherNotFound_ErrorThrown()
         {
-            this.AggregateService.GetLatest<VoucherAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.NotFound("Not found"));
+            this.AggregateService.GetLatest<VoucherAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(new Error(ErrorType.NotFound, "Not found"));
 
             Should.Throw<NotFoundException>(async () =>
             {

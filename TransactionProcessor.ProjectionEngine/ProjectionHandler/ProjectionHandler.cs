@@ -27,13 +27,13 @@ public class ProjectionHandler<TState> : IProjectionHandler where TState : Trans
     }
 
     public async Task<Result> Handle(IDomainEvent @event, CancellationToken cancellationToken){
-        if (@event == null) return Result.Success();
+        if (@event == null) return Results.Ok();
 
         Logger.LogInformation($"{@event.EventId}|In ProjectionHandler for {@event.EventType}");
 
         if (this.Projection.ShouldIHandleEvent(@event) == false){
             Logger.LogInformation($"{@event.EventId}|Silent Handle {@event.EventType}");
-            return Result.Success();
+            return Results.Ok();
         }
 
         Stopwatch stopwatch = Stopwatch.StartNew();
@@ -42,11 +42,11 @@ public class ProjectionHandler<TState> : IProjectionHandler where TState : Trans
         //Load the state from persistence
         Result<TState> loadResult = await this.ProjectionStateRepository.Load(@event, cancellationToken);
 
-        if (loadResult.IsFailed) {
+        if (loadResult.IsSuccess() == false) {
             return ResultHelpers.CreateFailure(loadResult);
         }
         Logger.LogInformation($"{@event.EventId}|State loaded for {@event.EventType}");
-        var state = loadResult.GetValueOrThrow();
+        var state = loadResult.Data;
         builder.Append($"{stopwatch.ElapsedMilliseconds}ms After Load|");
 
         builder.Append($"{stopwatch.ElapsedMilliseconds}ms Handling {@event.EventType} Id [{@event.EventId}] for state {state.GetType().Name}|");
@@ -62,7 +62,7 @@ public class ProjectionHandler<TState> : IProjectionHandler where TState : Trans
 
             // save state
             var saveResult = await this.ProjectionStateRepository.Save(newState, @event, cancellationToken);
-            if (saveResult.IsFailed) {
+            if (saveResult.IsSuccess() == false) {
                 return ResultHelpers.CreateFailure(saveResult);
             }
             Logger.LogInformation($"{@event.EventId}|Event changes saved {@event.EventType}");
@@ -72,7 +72,7 @@ public class ProjectionHandler<TState> : IProjectionHandler where TState : Trans
             if (this.StateDispatcher != null){
                 // Send to anyone else interested
                 Result dispatchResult = await this.StateDispatcher.Dispatch(newState, @event, cancellationToken);
-                if (dispatchResult.IsFailed) {
+                if (dispatchResult.IsSuccess() == false) {
                     return ResultHelpers.CreateFailure(dispatchResult);
                 }
 
@@ -92,6 +92,6 @@ public class ProjectionHandler<TState> : IProjectionHandler where TState : Trans
         Logger.LogInformation(builder.ToString());
         Logger.LogInformation($"{@event.EventId}|Event Type {@event.EventType} Id [{@event.EventId}] for state {state.GetType().Name} took {stopwatch.ElapsedMilliseconds}ms to process");
         
-        return Result.Success();
+        return Results.Ok();
     }
 }

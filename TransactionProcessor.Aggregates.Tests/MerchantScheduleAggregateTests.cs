@@ -38,7 +38,7 @@ namespace TransactionProcessor.Aggregates.Tests
                                                  }
                                              ]);
 
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
             aggregate.IsCreated.ShouldBeTrue();
             aggregate.EstateId.ShouldBe(EstateId);
             aggregate.MerchantId.ShouldBe(MerchantId);
@@ -57,9 +57,9 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = aggregate.Create(EstateId, MerchantId, 1899, []);
 
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
-            result.Message.ShouldBe("A valid year must be provided when creating a merchant schedule");
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.GetErrorMessage().ShouldBe("A valid year must be provided when creating a merchant schedule");
         }
 
         [Fact]
@@ -70,7 +70,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = aggregate.SetMonthSchedule(12, [25, 26]);
 
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
 
             List<IDomainEvent> pendingEvents = GetPendingEvents(aggregate);
             pendingEvents.Last().ShouldBeOfType<MerchantScheduleDomainEvents.MerchantScheduleMonthUpdatedEvent>();
@@ -93,7 +93,7 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = aggregate.SetMonthSchedule(5, [2, 1]);
 
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
             pendingEvents.Count.ShouldBe(originalEventCount);
         }
 
@@ -105,9 +105,9 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = aggregate.SetMonthSchedule(2, [29]);
 
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
-            result.Message.ShouldBe("Only days between 1 and 28 can be supplied for 2025-02");
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.GetErrorMessage().ShouldBe("Only days between 1 and 28 can be supplied for 2025-02");
         }
 
         [Fact]
@@ -121,9 +121,9 @@ namespace TransactionProcessor.Aggregates.Tests
                 new MerchantScheduleMonth { Month = 6, ClosedDays = [2] }
             ]);
 
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
-            result.Message.ShouldBe("Each month can only be provided once when updating a merchant schedule");
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.GetErrorMessage().ShouldBe("Each month can only be provided once when updating a merchant schedule");
         }
 
         private static List<IDomainEvent> GetPendingEvents(MerchantScheduleAggregate aggregate)

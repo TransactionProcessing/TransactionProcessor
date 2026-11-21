@@ -59,8 +59,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services {
             // Act
             Result<String> htmlResult = await _builder.GetStatementHtml(merchantStatementAggregate, _merchant, _cancellationToken);
 
-            htmlResult.IsSuccess.ShouldBeTrue();
-            String html = htmlResult.GetValueOrThrow();
+            htmlResult.IsSuccess().ShouldBeTrue();
+            String html = htmlResult.Data;
             // Assert
             html.ShouldContain(this._merchant.MerchantName);
             html.ShouldContain(this._merchant.Addresses.First().AddressLine1);
@@ -88,7 +88,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services {
             // Act
             Result<String> htmlResult = await _builder.GetStatementHtml(merchantStatementAggregate, _merchant, _cancellationToken);
 
-            htmlResult.IsFailed.ShouldBeTrue();
+            htmlResult.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
@@ -105,7 +105,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services {
             // Act
             Result<String> htmlResult = await _builder.GetStatementHtml(merchantStatementAggregate, _merchant, _cancellationToken);
 
-            htmlResult.IsFailed.ShouldBeTrue();
+            htmlResult.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]

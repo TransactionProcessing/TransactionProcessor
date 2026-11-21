@@ -81,11 +81,11 @@ namespace TransactionProcessor.BusinessLogic.Manager
             // Get the aggregate
             Result<VoucherAggregate> result= await this.AggregateService.Get<VoucherAggregate>(voucher.VoucherId, cancellationToken);
 
-            if (result.IsFailed) {
+            if (result.IsSuccess() == false) {
                 return ResultHelpers.CreateFailure(result);
             }
 
-            return Result.Success(result.GetValueOrThrow().GetVoucher());
+            return Results.Ok(result.Data.GetVoucher());
         }
 
         public async Task<Result<Voucher>> GetVoucherByTransactionId(Guid estateId,
@@ -104,12 +104,12 @@ namespace TransactionProcessor.BusinessLogic.Manager
             // Get the aggregate
             Result<VoucherAggregate> result = await this.AggregateService.Get<VoucherAggregate>(voucher.VoucherId, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
             {
                 return ResultHelpers.CreateFailure(result);
             }
 
-            return Result.Success(result.GetValueOrThrow().GetVoucher());
+            return Results.Ok(result.Data.GetVoucher());
         }
 
         #endregion

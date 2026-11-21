@@ -19,7 +19,7 @@ public class MigrationTests : BaseTest {
     public async Task CreateReadModel_EstateDatabaseIsMigrated()
     {
         Result result = await this.Repository.CreateReadModel(TestData.DomainEvents.EstateCreatedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 }
 
@@ -31,7 +31,7 @@ public class EstateEventTests : BaseTest {
     public async Task AddEstate_EstateIsAdded()
     {
         Result result = await this.Repository.AddEstate(TestData.DomainEvents.EstateCreatedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         EstateManagementContext context = this.GetContext();
         var estate = await context.Estates.SingleOrDefaultAsync(f => f.EstateId == TestData.DomainEvents.EstateCreatedEvent.EstateId, TestContext.Current.CancellationToken);
         estate.ShouldNotBeNull();
@@ -42,17 +42,17 @@ public class EstateEventTests : BaseTest {
     public async Task AddEstate_EventReplayHandled()
     {
         Result result = await this.Repository.AddEstate(TestData.DomainEvents.EstateCreatedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         result = await this.Repository.AddEstate(TestData.DomainEvents.EstateCreatedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
     public async Task AddEstateSecurityUser_EstateIsAdded()
     {
         Result result = await this.Repository.AddEstateSecurityUser(TestData.DomainEvents.EstateSecurityUserAddedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         EstateManagementContext context = this.GetContext();
         var estateSecurityUser = await context.EstateSecurityUsers.SingleOrDefaultAsync(f => f.EstateId == TestData.DomainEvents.EstateSecurityUserAddedEvent.EstateId && f.SecurityUserId == TestData.DomainEvents.EstateSecurityUserAddedEvent.SecurityUserId, TestContext.Current.CancellationToken);
         estateSecurityUser.ShouldNotBeNull();
@@ -62,20 +62,20 @@ public class EstateEventTests : BaseTest {
     public async Task AddEstateSecurityUser_EventReplayHandled()
     {
         Result result = await this.Repository.AddEstateSecurityUser(TestData.DomainEvents.EstateSecurityUserAddedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         result = await this.Repository.AddEstateSecurityUser(TestData.DomainEvents.EstateSecurityUserAddedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
     public async Task UpdateEstate_EstateReferenceIsUpdated()
     {
         Result result = await this.Repository.AddEstate(TestData.DomainEvents.EstateCreatedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         result = await this.Repository.UpdateEstate(TestData.DomainEvents.EstateReferenceAllocatedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
         var estate = await context.Estates.SingleOrDefaultAsync(f => f.EstateId == TestData.DomainEvents.EstateReferenceAllocatedEvent.EstateId, TestContext.Current.CancellationToken);

@@ -132,11 +132,11 @@ namespace TransactionProcessor.Aggregates
         {
             if (aggregate.IsCreated == false) {
                 if (statementId == Guid.Empty)
-                    return Result.Invalid("Statement id cannot be an empty guid");
+                    return new Error(ErrorType.Validation, "Statement id cannot be an empty guid");
                 if (estateId == Guid.Empty)
-                    return Result.Invalid("Estate id cannot be an empty guid");
+                    return new Error(ErrorType.Validation, "Estate id cannot be an empty guid");
                 if (merchantId == Guid.Empty)
-                    return Result.Invalid("Merchant id cannot be an empty guid");
+                    return new Error(ErrorType.Validation, "Merchant id cannot be an empty guid");
 
                 StatementCreatedEvent statementCreatedEvent = new(statementId, estateId, merchantId, statementDate);
                 aggregate.ApplyAndAppend(statementCreatedEvent);
@@ -144,13 +144,13 @@ namespace TransactionProcessor.Aggregates
 
             if (aggregate.ActivityDates.SingleOrDefault(a => a.activityDate == activityDate) != default) {
                 // Activity date already exists
-                return Result.Success();
+                return Results.Ok();
             }
 
             ActivityDateAddedToStatementEvent activityDateAddedToStatementEvent = new(statementId, estateId, merchantId, merchantStatementForDateId, activityDate);
             aggregate.ApplyAndAppend(activityDateAddedToStatementEvent);
 
-            return Result.Success();
+            return Results.Ok();
         }
 
         public static MerchantStatement GetStatement(this MerchantStatementAggregate aggregate)
@@ -184,76 +184,76 @@ namespace TransactionProcessor.Aggregates
                                           String statementData)
         {
             if (aggregate.IsBuilt)
-                return Result.Success();
+                return Results.Ok();
             
             Result result = aggregate.EnsureStatementHasBeenGenerated();
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return result;
 
             StatementBuiltEvent statementBuiltEvent = new(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, builtDateTime, statementData);
 
             aggregate.ApplyAndAppend(statementBuiltEvent);
 
-            return Result.Success();
+            return Results.Ok();
         }
 
         public static Result EmailStatement(this MerchantStatementAggregate aggregate,
                                             DateTimeOffset emailedDateTime,
                                           Guid messageId) {
             if (aggregate.HasBeenEmailed) {
-                return Result.Success();
+                return Results.Ok();
             }
 
             Result result = aggregate.EnsureStatementHasBeenBuilt();
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return result;
 
             StatementEmailedEvent statementEmailedEvent = new(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, emailedDateTime, messageId);
 
             aggregate.ApplyAndAppend(statementEmailedEvent);
 
-            return Result.Success();
+            return Results.Ok();
         }
 
         public static Result GenerateStatement(this MerchantStatementAggregate aggregate,
                                                DateTimeOffset generatedDateTime)
         {
             if (aggregate.IsGenerated)
-                return Result.Success();
+                return Results.Ok();
 
             // Validate days have been added
             if (aggregate.MerchantStatementSummaries.Any() == false)
             {
-                return Result.Invalid("Statement has no transactions or settled fees");
+                return new Error(ErrorType.Validation, "Statement has no transactions or settled fees");
             }
 
             StatementGeneratedEvent statementGeneratedEvent = new(aggregate.AggregateId, aggregate.EstateId, aggregate.MerchantId, generatedDateTime);
 
             aggregate.ApplyAndAppend(statementGeneratedEvent);
 
-            return Result.Success();
+            return Results.Ok();
         }
 
         private static Result EnsureStatementHasBeenGenerated(this MerchantStatementAggregate aggregate) {
             if (aggregate.IsGenerated == false) {
-                return Result.Invalid("Statement header has not been generated");
+                return new Error(ErrorType.Validation, "Statement header has not been generated");
             }
-            return Result.Success();
+            return Results.Ok();
         }
 
         private static Result EnsureStatementHasBeenBuilt(this MerchantStatementAggregate aggregate)
         {
             if (aggregate.IsBuilt == false) {
-                return Result.Invalid("Statement header has not been built");
+                return new Error(ErrorType.Validation, "Statement header has not been built");
             }
-            return Result.Success();
+            return Results.Ok();
         }
 
         public static Result AddDailySummaryRecord(this MerchantStatementAggregate aggregate,
                                                    DateTimeOffset activityDate,
                                                    MerchantStatementSummaryTotals summaryTotals) {
             if (aggregate.MerchantStatementSummaries.Any(s => s.ActivityDate == activityDate)) {
-                return Result.Success();
+                return Results.Ok();
             }
 
             MerchantStatementDomainEvents.StatementSummaryForDateEvent statementSummaryForDateEvent = new(aggregate.AggregateId,
@@ -271,7 +271,7 @@ namespace TransactionProcessor.Aggregates
                 summaryTotals.ValueOfWithdrawals);
             aggregate.ApplyAndAppend(statementSummaryForDateEvent);
 
-            return Result.Success();
+            return Results.Ok();
         }
     }
 

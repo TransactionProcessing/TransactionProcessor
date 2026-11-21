@@ -37,7 +37,7 @@ public class MerchantStatementForDateAggregateTests
             TestData.EventId1,
             TestData.EstateId,
             TestData.MerchantId, TestData.Transaction1);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         MerchantStatementForDate merchantStatementForDate = merchantStatementForDateAggregate.GetStatement(true);
         List<MerchantStatementLine>? statementLines = merchantStatementForDate.GetStatementLines();
@@ -61,7 +61,7 @@ public class MerchantStatementForDateAggregateTests
             TestData.EventId1,
             TestData.EstateId,
             TestData.MerchantId, TestData.Transaction1);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         MerchantStatementForDate merchantStatementForDate = merchantStatementForDateAggregate.GetStatement(true);
         List<MerchantStatementLine>? statementLines = merchantStatementForDate.GetStatementLines();
@@ -94,8 +94,8 @@ public class MerchantStatementForDateAggregateTests
             TestData.EventId1,
             estateIdGuid,
             merchantIdGuid, TestData.Transaction1);
-        result.IsFailed.ShouldBeTrue();
-        result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+        result.IsSuccess().ShouldBeFalse();
+        result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
     }
 
     [Fact]
@@ -103,7 +103,7 @@ public class MerchantStatementForDateAggregateTests
     {
         MerchantStatementForDateAggregate merchantStatementForDateAggregate = MerchantStatementForDateAggregate.Create(TestData.MerchantStatementForDateId1);
         Result result = merchantStatementForDateAggregate.AddSettledFeeToStatement(TestData.MerchantStatementId, TestData.StatementDate, TestData.EventId1, TestData.EstateId, TestData.MerchantId, TestData.SettledFee1);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         MerchantStatementForDate merchantStatementForDate = merchantStatementForDateAggregate.GetStatement(true);
         List<MerchantStatementLine>? statementLines = merchantStatementForDate.GetStatementLines();
@@ -118,7 +118,7 @@ public class MerchantStatementForDateAggregateTests
         MerchantStatementForDateAggregate merchantStatementForDateAggregate = MerchantStatementForDateAggregate.Create(TestData.MerchantStatementForDateId1);
         merchantStatementForDateAggregate.AddSettledFeeToStatement(TestData.MerchantStatementId, TestData.StatementDate, TestData.EventId1, TestData.EstateId, TestData.MerchantId, TestData.SettledFee1);
         Result result = merchantStatementForDateAggregate.AddSettledFeeToStatement(TestData.MerchantStatementId, TestData.StatementDate, TestData.EventId1, TestData.EstateId, TestData.MerchantId, TestData.SettledFee1);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         MerchantStatementForDate merchantStatementForDate = merchantStatementForDateAggregate.GetStatement(true);
         List<MerchantStatementLine>? statementLines = merchantStatementForDate.GetStatementLines();
@@ -153,8 +153,8 @@ public class MerchantStatementForDateAggregateTests
         MerchantStatementForDateAggregate merchantStatementForDateAggregate = MerchantStatementForDateAggregate.Create(TestData.MerchantStatementForDateId1);
         Result result = merchantStatementForDateAggregate.AddSettledFeeToStatement(statementIdGuid, TestData.StatementDate, TestData.EventId1, estateIdGuid, merchantIdGuid, TestData.SettledFee1);
 
-        result.IsFailed.ShouldBeTrue();
-        result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+        result.IsSuccess().ShouldBeFalse();
+        result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
     }
 
     [Theory]
@@ -174,7 +174,7 @@ public class MerchantStatementForDateAggregateTests
                 Reference = TestData.DepositReference,
                 Source = source
             });
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         MerchantStatementForDate merchantStatementForDate = merchantStatementForDateAggregate.GetStatement(true);
         List<MerchantStatementLine>? statementLines = merchantStatementForDate.GetStatementLines();
@@ -220,8 +220,8 @@ public class MerchantStatementForDateAggregateTests
                 Source = MerchantDepositSource.Manual
             });
 
-        result.IsFailed.ShouldBeTrue();
-        result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+        result.IsSuccess().ShouldBeFalse();
+        result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
     }
 
     [Fact]
@@ -238,7 +238,7 @@ public class MerchantStatementForDateAggregateTests
                 Amount = TestData.WithdrawalAmount.Value,
                 WithdrawalId = TestData.WithdrawalId
             });
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         MerchantStatementForDate merchantStatementForDate = merchantStatementForDateAggregate.GetStatement(true);
         List<MerchantStatementLine>? statementLines = merchantStatementForDate.GetStatementLines();
@@ -325,7 +325,7 @@ public class MerchantStatementForDateAggregateTests
                 WithdrawalId = TestData.WithdrawalId
             });
 
-        result.IsFailed.ShouldBeTrue();
-        result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+        result.IsSuccess().ShouldBeFalse();
+        result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
     }
 }

@@ -68,4 +68,7 @@
 			<Link>Templates\%(RecursiveDir)%(Filename)%(Extension)</Link>
 		</Content>
 	</ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\TransactionProcessor.ResultHelpers\ResultHelpers.cs" Link="ResultHelpers.cs" />
+  </ItemGroup>
 </Project>

@@ -28,12 +28,12 @@ public sealed class CreateEstateCommandValidationBehaviorTests
         RequestHandlerDelegate<Result<Guid>> next = _ =>
         {
             handlerWasCalled = true;
-            return Task.FromResult(Result.Success(Guid.NewGuid()));
+            return Task.FromResult(Results.Ok(Guid.NewGuid()));
         };
 
         Result<Guid> result = await behavior.Handle(command, next, CancellationToken.None);
 
-        result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+        result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
         handlerWasCalled.ShouldBeFalse();
     }
 
@@ -43,12 +43,12 @@ public sealed class CreateEstateCommandValidationBehaviorTests
         ValidationBehavior<EstateCommands.CreateEstateCommand, Guid> behavior = new(new[] { new CreateEstateCommandValidator() });
         EstateCommands.CreateEstateCommand command = new(new CreateEstateRequest { EstateName = "Example Estate" });
         Guid expectedEstateId = Guid.NewGuid();
-        RequestHandlerDelegate<Result<Guid>> next = _ => Task.FromResult(Result.Success(expectedEstateId));
+        RequestHandlerDelegate<Result<Guid>> next = _ => Task.FromResult(Results.Ok(expectedEstateId));
 
         Result<Guid> result = await behavior.Handle(command, next, CancellationToken.None);
 
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ShouldBe(expectedEstateId);
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ShouldBe(expectedEstateId);
     }
 
     [Fact]
@@ -60,12 +60,12 @@ public sealed class CreateEstateCommandValidationBehaviorTests
         RequestHandlerDelegate<Result<Guid>> next = _ =>
         {
             handlerWasCalled = true;
-            return Task.FromResult(Result.Success(Guid.NewGuid()));
+            return Task.FromResult(Results.Ok(Guid.NewGuid()));
         };
 
         Result<Guid> result = await behavior.Handle(command, next, CancellationToken.None);
 
-        result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+        result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
         handlerWasCalled.ShouldBeFalse();
     }
 
@@ -81,6 +81,6 @@ public sealed class CreateEstateCommandValidationBehaviorTests
             new EstateCommands.CreateEstateCommand(new CreateEstateRequest { EstateName = "   " }),
             TestContext.Current.CancellationToken);
 
-        result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+        result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
     }
 }

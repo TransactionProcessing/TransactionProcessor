@@ -27,4 +27,7 @@
 	  <ProjectReference Include="..\TransactionProcessor.DomainEvents\TransactionProcessor.DomainEvents.csproj" />
 	  <ProjectReference Include="..\TransactionProcessor.Models\TransactionProcessor.Models.csproj" />
 	</ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\TransactionProcessor.ResultHelpers\ResultHelpers.cs" Link="ResultHelpers.cs" />
+  </ItemGroup>
 </Project>

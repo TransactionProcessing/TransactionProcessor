@@ -43,13 +43,13 @@ public class ReadModelDomainEventHandlerTests
                                                                                       TestData.TransactionDateTime);
 
         this.EstateReportingRepository.RecordTransactionAdditionalRequestData(domainEvent, Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
         this.EstateReportingRepository.SetTransactionAmount(domainEvent, Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Success());
+            .ReturnsAsync(Results.Ok());
 
         Result result = await this.DomainEventHandler.Handle(domainEvent, TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         this.EstateReportingRepository.RecordTransactionAdditionalRequestData(domainEvent, Arg<CancellationToken>.Any()).Called(Count.Once());
         this.EstateReportingRepository.SetTransactionAmount(domainEvent, Arg<CancellationToken>.Any()).Called(Count.Once());
     }
@@ -60,11 +60,11 @@ public class ReadModelDomainEventHandlerTests
         MerchantStatementDomainEvents.StatementGeneratedEvent domainEvent = TestData.DomainEvents.StatementGeneratedEvent;
 
         this.EstateReportingRepository.MarkStatementAsGenerated(domainEvent, Arg<CancellationToken>.Any())
-            .ReturnsAsync(Result.Failure("Test failure"));
+            .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
         Result result = await this.DomainEventHandler.Handle(domainEvent, TestContext.Current.CancellationToken);
 
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
         this.EstateReportingRepository.MarkStatementAsGenerated(domainEvent, Arg<CancellationToken>.Any()).Called(Count.Once());
         this.EstateReportingRepository.UpdateMerchant(domainEvent, Arg<CancellationToken>.Any()).Called(Count.Never());
     }
@@ -76,7 +76,7 @@ public class ReadModelDomainEventHandlerTests
 
         Result result = await this.DomainEventHandler.Handle(domainEvent, TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 }
 

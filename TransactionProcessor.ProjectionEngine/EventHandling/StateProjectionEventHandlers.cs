@@ -49,10 +49,10 @@ public class StateProjectionEventHandler<TState> : IDomainEventHandler where TSt
             using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
             await using EstateManagementContext context = resolvedContext.Context;
             await context.MigrateAsync(cancellationToken);
-            return Result.Success();
+            return Results.Ok();
         }
         catch (Exception ex) {
-            return Result.CriticalError(String.Join(Environment.NewLine, ex.GetExceptionMessages()));
+            return new Error(ErrorType.Critical, String.Join(Environment.NewLine, ex.GetExceptionMessages()));
         }
     }
 

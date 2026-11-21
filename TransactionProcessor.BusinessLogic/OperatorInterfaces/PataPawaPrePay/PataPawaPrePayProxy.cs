@@ -36,7 +36,7 @@ public class PataPawaPrePayProxy : IOperatorProxy{
             // Check if we need to do a logon with the operator
             OperatorResponse operatorResponse = this.MemoryCache.Get<OperatorResponse>("PataPawaPrePayLogon");
             if (operatorResponse != null) {
-                return Result.Success(operatorResponse);
+                return Results.Ok(operatorResponse);
             }
 
             HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Post, this.Configuration.Url);
@@ -55,7 +55,7 @@ public class PataPawaPrePayProxy : IOperatorProxy{
             // Check the send was successful
             if (responseMessage.IsSuccessStatusCode == false) {
                 Logger.LogWarning("Error sending logon request to PataPawaPrePay {Url}. Status Code {StatusCode}", requestMessage.RequestUri, responseMessage.StatusCode);
-                return Result.Failure($"Error sending logon request to Patapawa. Status Code [{responseMessage.StatusCode}]");
+                return new Error(ErrorType.Failure, $"Error sending logon request to Patapawa. Status Code [{responseMessage.StatusCode}]");
             }
 
             // Get the response
@@ -67,7 +67,7 @@ public class PataPawaPrePayProxy : IOperatorProxy{
         }
         catch (Exception ex) {
             Logger.LogError(ex, "Error processing logon message for PataPawaPrePay");
-            return Result.Failure($"Error processing logon message for PataPawaPrePay [{ex.Message}]");
+            return new Error(ErrorType.Failure, $"Error processing logon message for PataPawaPrePay [{ex.Message}]");
         }
     }
 
@@ -77,14 +77,14 @@ public class PataPawaPrePayProxy : IOperatorProxy{
         OperatorResponse logonResponse = this.MemoryCache.Get<OperatorResponse>("PataPawaPrePayLogon");
         if (logonResponse == null) {
             Logger.LogWarning("PataPawaPrePay sale request rejected. TransactionId=[{TransactionId}] - logonResponse is null", transactionId);
-            return Result.Invalid("PataPawaPrePayLogon - logonResponse is null");
+            return new Error(ErrorType.Validation, "PataPawaPrePayLogon - logonResponse is null");
         }
 
         String apiKey = logonResponse.AdditionalTransactionResponseMetadata.ExtractFieldFromMetadata<String>("PataPawaPrePaidAPIKey");
 
         if (String.IsNullOrEmpty(apiKey)) {
             Logger.LogWarning("PataPawaPrePay sale request rejected. TransactionId=[{TransactionId}] - APIKey is a required field for this transaction type", transactionId);
-            return Result.Invalid("PataPawaPrePayAPIKey - APIKey is a required field for this transaction type");
+            return new Error(ErrorType.Validation, "PataPawaPrePayAPIKey - APIKey is a required field for this transaction type");
         }
 
         // Check the meta data for the sale message type
@@ -92,7 +92,7 @@ public class PataPawaPrePayProxy : IOperatorProxy{
 
         if (String.IsNullOrEmpty(messageType)) {
             Logger.LogWarning("PataPawaPrePay sale request rejected. TransactionId=[{TransactionId}] - Message Type is a required field for this transaction type", transactionId);
-            return Result.Invalid("PataPawaPrePayMessageType - Message Type is a required field for this transaction type");
+            return new Error(ErrorType.Validation, "PataPawaPrePayMessageType - Message Type is a required field for this transaction type");
         }
 
         String meterNumber = additionalTransactionMetadata.ExtractFieldFromMetadata<String>("MeterNumber");
@@ -100,14 +100,14 @@ public class PataPawaPrePayProxy : IOperatorProxy{
         if (String.IsNullOrEmpty(meterNumber))
         {
             Logger.LogWarning("PataPawaPrePay sale request rejected. TransactionId=[{TransactionId}] - Meter Number is a required field for this transaction type", transactionId);
-            return Result.Invalid("MeterNumber - Meter Number is a required field for this transaction type");
+            return new Error(ErrorType.Validation, "MeterNumber - Meter Number is a required field for this transaction type");
         }
 
         return messageType switch
         {
             "meter" => await this.PerformMeterTransaction(meterNumber, apiKey, cancellationToken),
             "vend" => await this.PerformVendTransaction(transactionId, meterNumber, apiKey, additionalTransactionMetadata, cancellationToken),
-            _ => Result.Invalid($"PataPawaPrePayMessageType - Unsupported Message Type {messageType}")
+            _ => new Error(ErrorType.Validation, $"PataPawaPrePayMessageType - Unsupported Message Type {messageType}")
         };
     }
 
@@ -141,7 +141,7 @@ public class PataPawaPrePayProxy : IOperatorProxy{
         }
         catch (Exception ex) {
             Logger.LogError(ex, "Error processing meter message for PataPawaPrePay");
-            return Result.Failure($"Error performing meter transaction for meter number {meterNumber} [{ex.Message}]");
+            return new Error(ErrorType.Failure, $"Error performing meter transaction for meter number {meterNumber} [{ex.Message}]");
         }
     }
 
@@ -153,7 +153,7 @@ public class PataPawaPrePayProxy : IOperatorProxy{
             if (String.IsNullOrEmpty(customerName))
             {
                 Logger.LogWarning("PataPawaPrePay vend request rejected. TransactionId=[{TransactionId}] - CustomerName is a required field for this transaction type", transactionId);
-                return Result.Invalid("CustomerName - Customer Name is a required field for this transaction type");
+                return new Error(ErrorType.Validation, "CustomerName - Customer Name is a required field for this transaction type");
             }
 
             String amount = additionalTransactionMetadata.ExtractFieldFromMetadata<String>("Amount");
@@ -161,7 +161,7 @@ public class PataPawaPrePayProxy : IOperatorProxy{
             if (String.IsNullOrEmpty(amount))
             {
                 Logger.LogWarning("PataPawaPrePay sale request rejected. TransactionId=[{TransactionId}] - Amount is a required field for this transaction type", transactionId);
-                return Result.Invalid("Amount - Amount is a required field for this transaction type");
+                return new Error(ErrorType.Validation, "Amount - Amount is a required field for this transaction type");
             }
 
             HttpRequestMessage requestMessage = new HttpRequestMessage(HttpMethod.Post, this.Configuration.Url);
@@ -197,7 +197,7 @@ public class PataPawaPrePayProxy : IOperatorProxy{
         }
         catch (Exception ex) {
             Logger.LogError(ex, "Error processing meter message for PataPawaPrePay");
-            return Result.Failure($"Error performing vend transaction for meter number {meterNumber} [{ex.Message}]");
+            return new Error(ErrorType.Failure, $"Error performing vend transaction for meter number {meterNumber} [{ex.Message}]");
         }
     }
 
@@ -205,7 +205,7 @@ public class PataPawaPrePayProxy : IOperatorProxy{
         LogonResponse logonResponse = StringSerialiser.Deserialise<LogonResponse>(responseContent);
 
         if (logonResponse.Status != 0) {
-            return Result.Failure($"Error logging on with PataPawa Pre Paid API, Response is {logonResponse.Status}");
+            return new Error(ErrorType.Failure, $"Error logging on with PataPawa Pre Paid API, Response is {logonResponse.Status}");
         }
 
         OperatorResponse operatorResponse = new OperatorResponse{
@@ -220,7 +220,7 @@ public class PataPawaPrePayProxy : IOperatorProxy{
 
         this.MemoryCache.Set("PataPawaPrePayLogon", operatorResponse, this.MemoryCacheEntryOptions);
 
-        return Result.Success(operatorResponse);
+        return Results.Ok(operatorResponse);
     }
 
     private Result<OperatorResponse> CreateFromMeter(String responseContent)
@@ -229,7 +229,7 @@ public class PataPawaPrePayProxy : IOperatorProxy{
 
         if (meterResponse.Status != 0)
         {
-            return Result.Failure("Error during meter transaction");
+            return new Error(ErrorType.Failure, "Error during meter transaction");
         }
 
         OperatorResponse operatorResponse = new OperatorResponse
@@ -242,7 +242,7 @@ public class PataPawaPrePayProxy : IOperatorProxy{
 
         operatorResponse.AdditionalTransactionResponseMetadata.Add("PataPawaPrePaidCustomerName", meterResponse.CustomerName);
 
-        return Result.Success(operatorResponse);
+        return Results.Ok(operatorResponse);
     }
 
     private Result<OperatorResponse> CreateFromVend(String responseContent)
@@ -251,7 +251,7 @@ public class PataPawaPrePayProxy : IOperatorProxy{
 
         if (vendResponse.Status != 0)
         {
-            return Result.Failure("Error during vend transaction");
+            return new Error(ErrorType.Failure, "Error during vend transaction");
         }
 
         OperatorResponse operatorResponse = new OperatorResponse
@@ -273,7 +273,7 @@ public class PataPawaPrePayProxy : IOperatorProxy{
         operatorResponse.AdditionalTransactionResponseMetadata.Add("TransactionDateTime", vendResponse.Transaction.Date.ToString("yyyy-MM-dd HH:mm:ss"));
         operatorResponse.AdditionalTransactionResponseMetadata.Add("CustomerName", vendResponse.Transaction.CustomerName);
         
-        return Result.Success(operatorResponse);
+        return Results.Ok(operatorResponse);
     }
 
 

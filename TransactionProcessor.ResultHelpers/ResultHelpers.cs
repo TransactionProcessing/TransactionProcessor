@@ -1,32 +1,31 @@
-using System.Reflection;
-using TransactionProcessing.UnionResults;
+#nullable enable
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace TransactionProcessing.UnionResults;
 
-public static class ResultHelpers
-{
-    public static ErrorList CreateFailure(object result)
-    {
-        ArgumentNullException.ThrowIfNull(result);
+internal static class ResultHelpers {
+    internal static ErrorList CreateFailure(Result result) => CreateFailure(result.GetErrors());
 
-        if (result is IResultOutcome unionResult)
-        {
-            return unionResult.GetOutcome() switch
-            {
-                { Kind: ResultKind.Error, Error: not null } outcome => new ErrorList([outcome.Error]),
-                { Kind: ResultKind.ErrorList, Errors: not null } outcome => outcome.Errors,
-                _ => throw new InvalidOperationException("Only a failed result can be propagated as a failure."),
-            };
-        }
+    internal static ErrorList CreateFailure<T>(Result<T> result) => CreateFailure(result.GetErrors());
 
-        Type resultType = result.GetType();
-        bool isFailed = resultType.GetProperty("IsFailed", BindingFlags.Instance | BindingFlags.Public)?.GetValue(result) as bool? ?? false;
-        if (!isFailed)
-        {
-            throw new InvalidOperationException("Only a failed result can be propagated as a failure.");
-        }
+    internal static ErrorList CreateFailure(IEnumerable<string> messages) =>
+        new(messages.Select(message => new Error(ErrorType.Failure, message)));
 
-        string? message = resultType.GetProperty("Message", BindingFlags.Instance | BindingFlags.Public)?.GetValue(result) as string;
-        return new ErrorList([Error.Failure(string.IsNullOrWhiteSpace(message) ? "The operation failed." : message)]);
+    private static ErrorList CreateFailure(IReadOnlyList<Error> errors) => errors switch {
+        ErrorList list => list,
+        { Count: > 0 } => new ErrorList(errors),
+        _ => throw new InvalidOperationException("Only a failed result can be propagated as a failure.")
+    };
+
+    extension<T>(Result<T> result) {
+        public T Data => result.Value switch {
+                             Success<T> success => success.Value,
+
+                             _ => throw new InvalidOperationException(
+                                 "Cannot retrieve Data from an unsuccessful result.")
+                         };
     }
 }

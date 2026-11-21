@@ -8,21 +8,21 @@
     <PackageVersion Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />
     <PackageVersion Include="AspNetCore.HealthChecks.UI.InMemory.Storage" Version="9.0.0" />
     <PackageVersion Include="AspNetCore.HealthChecks.Uris" Version="9.0.0" />
-    <PackageVersion Include="CallbackHandler.DataTransferObjects" Version="2026.10.3.174" />
-    <PackageVersion Include="TransactionProcessing.ClientProxyBase" Version="2026.11.5" />
+    <PackageVersion Include="CallbackHandler.DataTransferObjects" Version="2026.10.3.179" />
+    <PackageVersion Include="TransactionProcessing.ClientProxyBase" Version="2026.11.7" />
     <PackageVersion Include="coverlet.collector" Version="10.1.1" />
     <PackageVersion Include="coverlet.msbuild" Version="10.1.1" />
     <PackageVersion Include="Ductus.FluentDocker" Version="2.85.0" />
     <PackageVersion Include="EventStoreProjections" Version="2023.12.3" />
-    <PackageVersion Include="FileProcessor.File.DomainEvents" Version="2026.10.3.188" />
-    <PackageVersion Include="FileProcessor.FileImportLog.DomainEvents" Version="2026.10.3.188" />
+    <PackageVersion Include="FileProcessor.File.DomainEvents" Version="2026.10.3.193" />
+    <PackageVersion Include="FileProcessor.FileImportLog.DomainEvents" Version="2026.10.3.193" />
     <PackageVersion Include="FluentValidation" Version="12.2.0" />
-    <PackageVersion Include="HealthMonitoring.Client" Version="2026.10.3.69" />
+    <PackageVersion Include="HealthMonitoring.Client" Version="2026.10.3.76" />
     <PackageVersion Include="Lamar" Version="16.0.0" />
     <PackageVersion Include="Lamar.Microsoft.DependencyInjection" Version="16.0.0" />
     <PackageVersion Include="MediatR" Version="15.0.0" />
-    <PackageVersion Include="MessagingService.Client" Version="2026.10.3.162" />
-    <PackageVersion Include="MessagingService.IntegrationTesting.Helpers" Version="2026.10.3.162" />
+    <PackageVersion Include="MessagingService.Client" Version="2026.10.3.167" />
+    <PackageVersion Include="MessagingService.IntegrationTesting.Helpers" Version="2026.10.3.167" />
     <PackageVersion Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="11.0.0" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Testing" Version="11.0.0" />
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="11.0.0" />
@@ -61,15 +61,15 @@
     <PackageVersion Include="Reqnroll.NUnit" Version="3.3.4" />
     <PackageVersion Include="Reqnroll.Tools.MsBuild.Generation" Version="3.3.4" />
     <PackageVersion Include="RichardSzalay.MockHttp" Version="7.1.0" />
-    <PackageVersion Include="SecurityService.Client" Version="2026.10.3.213" />
-    <PackageVersion Include="SecurityService.IntegrationTesting.Helpers" Version="2026.10.3.213" />
+    <PackageVersion Include="SecurityService.Client" Version="2026.10.3.219" />
+    <PackageVersion Include="SecurityService.IntegrationTesting.Helpers" Version="2026.10.3.219" />
     <PackageVersion Include="Sentry.AspNetCore" Version="7.0.1" />
-    <PackageVersion Include="TransactionProcessing.Shared" Version="2026.11.5" />
-    <PackageVersion Include="TransactionProcessing.Shared.DomainDrivenDesign" Version="2026.11.5" />
-    <PackageVersion Include="TransactionProcessing.Shared.EventStore" Version="2026.11.5" />
-    <PackageVersion Include="TransactionProcessing.Shared.IntegrationTesting" Version="2026.11.5" />
-    <PackageVersion Include="TransactionProcessing.UnionResults" Version="2026.11.5" />
-    <PackageVersion Include="TransactionProcessing.UnionResults.AspNetCore" Version="2026.11.5" />
+    <PackageVersion Include="TransactionProcessing.Shared" Version="2026.11.7" />
+    <PackageVersion Include="TransactionProcessing.Shared.DomainDrivenDesign" Version="2026.11.7" />
+    <PackageVersion Include="TransactionProcessing.Shared.EventStore" Version="2026.11.7" />
+    <PackageVersion Include="TransactionProcessing.Shared.IntegrationTesting" Version="2026.11.7" />
+    <PackageVersion Include="TransactionProcessing.UnionResults" Version="2026.11.7" />
+    <PackageVersion Include="TransactionProcessing.UnionResults.AspNetCore" Version="2026.11.7" />
     <PackageVersion Include="SharpCompress" Version="0.50.10" />
     <PackageVersion Include="Shouldly" Version="4.3.0" />
     <PackageVersion Include="SkiaSharp" Version="4.157.0" />
@@ -83,8 +83,8 @@
     <PackageVersion Include="System.ServiceModel.Http" Version="10.1.0" />
     <PackageVersion Include="System.ServiceModel.NetTcp" Version="10.1.0" />
     <PackageVersion Include="System.ServiceModel.Security" Version="6.0.0" />
-    <PackageVersion Include="TestHosts.Clients" Version="2026.10.3.98" />
-    <PackageVersion Include="TransactionProcessing.ApiDefaults" Version="2026.11.5" />
+    <PackageVersion Include="TestHosts.Clients" Version="2026.10.3.104" />
+    <PackageVersion Include="TransactionProcessing.ApiDefaults" Version="2026.11.7" />
     <PackageVersion Include="xunit.v3" Version="4.0.0" />
     <PackageVersion Include="xunit.v3.mtp-v2" Version="4.0.3" />
     <PackageVersion Include="xunit.v3.extensibility.core" Version="4.0.0" />

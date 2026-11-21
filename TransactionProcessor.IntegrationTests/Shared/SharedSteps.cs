@@ -455,7 +455,7 @@ namespace TransactionProcessor.IntegrationTests.Shared {
 
             //this.TestingContext.AccessToken = await this.SecurityServiceSteps.GetClientToken(clientDetails.ClientId, clientDetails.ClientSecret, CancellationToken.None);
             var token = await this.TestingContext.DockerHelper.SecurityServiceClient.GetToken(clientDetails.ClientId, clientDetails.ClientSecret, CancellationToken.None);
-            token.IsSuccess.ShouldBeTrue(token.Message);
+            token.IsSuccess().ShouldBeTrue(token.GetErrorMessage());
             token.Data.ShouldNotBeNull();
             token.Data.AccessToken.ShouldNotBeNullOrWhiteSpace();
             this.TestingContext.AccessToken = token.Data.AccessToken;
@@ -522,7 +522,7 @@ namespace TransactionProcessor.IntegrationTests.Shared {
             //    .GetPasswordToken(clientId, clientDetails.ClientSecret, username, password, CancellationToken.None).ConfigureAwait(false);
             var token = await this.TestingContext.DockerHelper.SecurityServiceClient.GetToken(username, password, clientId, clientDetails.ClientSecret,
                 CancellationToken.None);
-            token.IsSuccess.ShouldBeTrue(token.Message);
+            token.IsSuccess().ShouldBeTrue(token.GetErrorMessage());
             token.Data.ShouldNotBeNull();
             token.Data.AccessToken.ShouldNotBeNullOrWhiteSpace();
             this.TestingContext.AccessToken = token.Data.AccessToken;
@@ -697,7 +697,7 @@ namespace TransactionProcessor.IntegrationTests.Shared {
                 SettlementMode = "NET"
             };
             var result = await this.TestingContext.DockerHelper.AgencyBankingClient.InitializeSystem(request, CancellationToken.None);
-            result.IsSuccess.ShouldBeTrue("Error initializing Agency Banking Host");
+            result.IsSuccess().ShouldBeTrue("Error initializing Agency Banking Host");
 
         }
 
@@ -713,7 +713,7 @@ namespace TransactionProcessor.IntegrationTests.Shared {
                     GlType = ReqnrollTableHelper.GetStringRowValue(dataTableRow, "Type")
                 };
                 var result = await this.TestingContext.DockerHelper.AgencyBankingClient.CreateGlAccount(request, CancellationToken.None);
-                result.IsSuccess.ShouldBeTrue($"Error creating GL account {request.GlCode}");
+                result.IsSuccess().ShouldBeTrue($"Error creating GL account {request.GlCode}");
             }
         }
 
@@ -732,7 +732,7 @@ namespace TransactionProcessor.IntegrationTests.Shared {
                     NationalId = ReqnrollTableHelper.GetStringRowValue(dataTableRow, "NationalId")
                 };
                 var result = await this.TestingContext.DockerHelper.AgencyBankingClient.CreateCustomer(request, CancellationToken.None);
-                result.IsSuccess.ShouldBeTrue($"Error creating customer {request.AccountNumber}");
+                result.IsSuccess().ShouldBeTrue($"Error creating customer {request.AccountNumber}");
             }
         }
 
@@ -749,7 +749,7 @@ namespace TransactionProcessor.IntegrationTests.Shared {
                     Currency = ReqnrollTableHelper.GetStringRowValue(dataTableRow, "Currency")
                 };
                 var result = await this.TestingContext.DockerHelper.AgencyBankingClient.CreateSettlementAccount(request, CancellationToken.None);
-                result.IsSuccess.ShouldBeTrue($"Error creating settlement account {request.AccountNumber}");
+                result.IsSuccess().ShouldBeTrue($"Error creating settlement account {request.AccountNumber}");
             }
         }
 

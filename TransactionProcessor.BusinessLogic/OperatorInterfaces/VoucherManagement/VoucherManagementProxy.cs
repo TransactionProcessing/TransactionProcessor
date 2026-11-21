@@ -27,7 +27,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.VoucherManagemen
 
         public async Task<Result<OperatorResponse>> ProcessLogonMessage(CancellationToken cancellationToken)
         {
-            return Result.Success(new OperatorResponse { IsSuccessful = true, ResponseCode = "0000", ResponseMessage = "SUCCESS" });
+            return Results.Ok(new OperatorResponse { IsSuccessful = true, ResponseCode = "0000", ResponseMessage = "SUCCESS" });
         }
 
         public async Task<Result<OperatorResponse>> ProcessSaleMessage(Guid transactionId,
@@ -48,13 +48,13 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.VoucherManagemen
                 if (Decimal.TryParse(transactionAmount, out Decimal amountAsDecimal) == false)
                 {
                     Logger.LogWarning("Voucher sale request rejected. TransactionId=[{TransactionId}] - Transaction Amount is not a valid decimal value", transactionId);
-                    return Result.Invalid("Transaction Amount is not a valid decimal value");
+                    return new Error(ErrorType.Validation, "Transaction Amount is not a valid decimal value");
                 }
 
                 if (String.IsNullOrEmpty(recipientEmail) && String.IsNullOrEmpty(recipientMobile))
                 {
                     Logger.LogWarning("Voucher sale request rejected. TransactionId=[{TransactionId}] - Recipient details (either email or mobile) is a required field for this transaction type", transactionId);
-                    return Result.Invalid("Recipient details (either email or mobile) is a required field for this transaction type");
+                    return new Error(ErrorType.Validation, "Recipient details (either email or mobile) is a required field for this transaction type");
                 }
 
                 VoucherCommands.IssueVoucherCommand command = new(operatorId,
@@ -67,18 +67,18 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.VoucherManagemen
 
                 Result<IssueVoucherResponse> result= await this.Mediator.Send(command, cancellationToken);
 
-                if (result.IsFailed) {
-                    Logger.LogWarning($"Error issuing voucher {result.Message}");
+                if (result.IsSuccess() == false) {
+                    Logger.LogWarning($"Error issuing voucher {result.GetErrorMessage()}");
                     return ResultHelpers.CreateFailure(result);
                 }
 
                 // Build the response metadata
                 Dictionary<String, String> additionalTransactionResponseMetadata = new Dictionary<String, String>();
-                additionalTransactionResponseMetadata.Add("VoucherCode", result.GetValueOrThrow().VoucherCode);
-                additionalTransactionResponseMetadata.Add("VoucherMessage", result.GetValueOrThrow().Message);
-                additionalTransactionResponseMetadata.Add("VoucherExpiryDate", result.GetValueOrThrow().ExpiryDate.ToString("yyyy-MM-dd"));
+                additionalTransactionResponseMetadata.Add("VoucherCode", result.Data.VoucherCode);
+                additionalTransactionResponseMetadata.Add("VoucherMessage", result.Data.Message);
+                additionalTransactionResponseMetadata.Add("VoucherExpiryDate", result.Data.ExpiryDate.ToString("yyyy-MM-dd"));
 
-                return Result.Success(new OperatorResponse
+                return Results.Ok(new OperatorResponse
                 {
                     TransactionId = transactionId.ToString("N"),
                     ResponseCode = "0000",
@@ -94,7 +94,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.VoucherManagemen
             }
             catch (Exception ex) {
                 Logger.LogWarning($"Error issuing voucher [{ex.Message}]");
-                return Result.Failure($"Error issuing voucher [{ex.Message}]");
+                return new Error(ErrorType.Failure, $"Error issuing voucher [{ex.Message}]");
             }
         }
     }

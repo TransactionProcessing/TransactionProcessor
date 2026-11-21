@@ -18,17 +18,17 @@ namespace TransactionProcessor.Aggregates{
                                                 Decimal value,
                                                 ProductType productType){
             if (productId == Guid.Empty)
-                return Result.Invalid("Product Id must not be an empty Guid");
+                return new Error(ErrorType.Validation, "Product Id must not be an empty Guid");
             if (String.IsNullOrEmpty(productName))
-                return Result.Invalid("Product Name must not be null or empty");
+                return new Error(ErrorType.Validation, "Product Name must not be null or empty");
             if (String.IsNullOrEmpty(displayText))
-                return Result.Invalid("Product Display Text must not be null or empty");
+                return new Error(ErrorType.Validation, "Product Display Text must not be null or empty");
             if (value <= 0)
-                return Result.Invalid("Product value must not be zero or negative");
+                return new Error(ErrorType.Validation, "Product value must not be zero or negative");
             
             // Check product not already added
             if (aggregate.Products.Any(p => p.Name == productName)){
-                return Result.Success();
+                return Results.Ok();
             }
 
             ContractDomainEvents.FixedValueProductAddedToContractEvent fixedValueProductAddedToContractEvent =
@@ -36,7 +36,7 @@ namespace TransactionProcessor.Aggregates{
 
             aggregate.ApplyAndAppend(fixedValueProductAddedToContractEvent);
 
-            return Result.Success();
+            return Results.Ok();
         }
 
         public static Result AddTransactionFee(this ContractAggregate aggregate,
@@ -47,28 +47,28 @@ namespace TransactionProcessor.Aggregates{
                                              FeeType feeType,
                                              Decimal value){
             if (transactionFeeId == Guid.Empty)
-                return Result.Invalid("Transaction Fee Id cannot be an empty Guid");
+                return new Error(ErrorType.Validation, "Transaction Fee Id cannot be an empty Guid");
             if (product == null)
-                return Result.Invalid("Product to add fee for cannot be null");
+                return new Error(ErrorType.Validation, "Product to add fee for cannot be null");
             if (String.IsNullOrEmpty(description))
-                return Result.Invalid("Transaction Fee description must not be null or empty");
+                return new Error(ErrorType.Validation, "Transaction Fee description must not be null or empty");
             if (value <= 0)
-                return Result.Invalid("Transaction Fee value must not be zero or negative");
+                return new Error(ErrorType.Validation, "Transaction Fee value must not be zero or negative");
             
             if (aggregate.Products.Any(p => p.ContractProductId == product.ContractProductId) == false){
-                return Result.Invalid($"Product Id {product.ContractProductId} is not a valid product on this contract");
+                return new Error(ErrorType.Validation, $"Product Id {product.ContractProductId} is not a valid product on this contract");
             }
             if (Enum.IsDefined(typeof(CalculationType), calculationType) == false)
-                return Result.Invalid("Calculation Type not valid");
+                return new Error(ErrorType.Validation, "Calculation Type not valid");
             if (Enum.IsDefined(typeof(FeeType), feeType) == false)
-                return Result.Invalid("Fee Type not valid");
+                return new Error(ErrorType.Validation, "Fee Type not valid");
             
             ContractDomainEvents.TransactionFeeForProductAddedToContractEvent transactionFeeForProductAddedToContractEvent =
                 new(aggregate.AggregateId, aggregate.EstateId, product.ContractProductId, transactionFeeId, description, (Int32)calculationType, (Int32)feeType, value);
 
             aggregate.ApplyAndAppend(transactionFeeForProductAddedToContractEvent);
 
-            return Result.Success();
+            return Results.Ok();
         }
 
         public static Result AddVariableValueProduct(this ContractAggregate aggregate,
@@ -77,15 +77,15 @@ namespace TransactionProcessor.Aggregates{
                                                    String displayText,
                                                    ProductType productType){
             if (productId == Guid.Empty)
-                return Result.Invalid("Product Id must not be an empty Guid");
+                return new Error(ErrorType.Validation, "Product Id must not be an empty Guid");
             if (String.IsNullOrEmpty(productName))
-                return Result.Invalid("Product Name must not be null or empty");
+                return new Error(ErrorType.Validation, "Product Name must not be null or empty");
             if (String.IsNullOrEmpty(displayText))
-                return Result.Invalid("Product Display Text must not be null or empty");
+                return new Error(ErrorType.Validation, "Product Display Text must not be null or empty");
 
             // Check product not already added
             if (aggregate.Products.Any(p => p.Name == productName)){
-                return Result.Success();
+                return Results.Ok();
             }
 
             ContractDomainEvents.VariableValueProductAddedToContractEvent variableValueProductAddedToContractEvent =
@@ -93,7 +93,7 @@ namespace TransactionProcessor.Aggregates{
 
             aggregate.ApplyAndAppend(variableValueProductAddedToContractEvent);
             
-            return Result.Success();
+            return Results.Ok();
         }
 
         public static Result Create(this ContractAggregate aggregate,
@@ -102,29 +102,29 @@ namespace TransactionProcessor.Aggregates{
                                   String description){
             
             if(estateId == Guid.Empty) 
-                return Result.Invalid("Estate Id must not be an empty Guid");
+                return new Error(ErrorType.Validation, "Estate Id must not be an empty Guid");
             if (operatorId == Guid.Empty)
-                return Result.Invalid("Operator Id must not be an empty Guid");
+                return new Error(ErrorType.Validation, "Operator Id must not be an empty Guid");
             if (String.IsNullOrEmpty(description))
-                return Result.Invalid("Contract description must not be null or empty");
+                return new Error(ErrorType.Validation, "Contract description must not be null or empty");
 
             ContractDomainEvents.ContractCreatedEvent contractCreatedEvent = new(aggregate.AggregateId, estateId, operatorId, description);
             aggregate.ApplyAndAppend(contractCreatedEvent);
 
-            return Result.Success();
+            return Results.Ok();
         }
 
         public static Result DisableTransactionFee(this ContractAggregate aggregate,
                                                  Guid productId,
                                                  Guid transactionFeeId){
             if (aggregate.Products.Any(p => p.ContractProductId == productId) == false){
-                return Result.Invalid($"Product Id {productId} is not a valid product on this contract");
+                return new Error(ErrorType.Validation, $"Product Id {productId} is not a valid product on this contract");
             }
 
             Product product = aggregate.Products.Single(p => p.ContractProductId == productId);
 
             if (product.TransactionFees.Any(f => f.TransactionFeeId == transactionFeeId) == false){
-                return Result.Invalid($"Transaction Fee Id {transactionFeeId} is not a valid for product {product.Name} on this contract");
+                return new Error(ErrorType.Validation, $"Transaction Fee Id {transactionFeeId} is not a valid for product {product.Name} on this contract");
             }
 
             ContractDomainEvents.TransactionFeeForProductDisabledEvent transactionFeeForProductDisabledEvent = new(aggregate.AggregateId,
@@ -134,7 +134,7 @@ namespace TransactionProcessor.Aggregates{
 
             aggregate.ApplyAndAppend(transactionFeeForProductDisabledEvent);
 
-            return Result.Success();
+            return Results.Ok();
         }
 
         /// <summary>

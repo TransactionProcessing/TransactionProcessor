@@ -34,7 +34,7 @@ namespace TransactionProcessor.Endpoints
             // Update 
             operatorGroup.MapPost("/{operatorId:guid}", OperatorHandlers.UpdateOperator)
                 .WithName("UpdateOperator").WithSummary("Update an operator")
-                .WithDescription("Updates the selected operator's name and custom merchant or terminal number requirements.");
+                .WithDescription("Updates the selected operator's name and custom merchant or terminal number requirements.").ProducesUnionResult();
 
             // Read endpoints 
             operatorGroup.MapGet("/{operatorId:guid}", OperatorHandlers.GetOperator)

@@ -42,15 +42,15 @@ namespace TransactionProcessor.Endpoints
 
             estateGroup.MapPatch("/{estateId:guid}/users", EstateHandlers.CreateEstateUser)
                 .WithName("CreateEstateUser").WithSummary("Create an estate user")
-                .WithDescription("Creates a security user in the specified estate from the supplied identity details.");
+                .WithDescription("Creates a security user in the specified estate from the supplied identity details.").ProducesUnionResult();
 
             estateGroup.MapPatch("/{estateId:guid}/operators", EstateHandlers.AssignOperator)
                 .WithName("AssignEstateOperator").WithSummary("Assign an operator to an estate")
-                .WithDescription("Associates the operator ID in the request body with the specified estate.");
+                .WithDescription("Associates the operator ID in the request body with the specified estate.").ProducesUnionResult();
 
             estateGroup.MapDelete("/{estateId:guid}/operators/{operatorId:guid}", EstateHandlers.RemoveOperator)
                 .WithName("RemoveEstateOperator").WithSummary("Remove an operator from an estate")
-                .WithDescription("Removes the specified operator association from the estate.");
+                .WithDescription("Removes the specified operator association from the estate.").ProducesUnionResult();
 
             return endpoints;
         }

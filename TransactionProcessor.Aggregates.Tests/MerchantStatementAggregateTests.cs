@@ -63,8 +63,8 @@ namespace TransactionProcessor.Aggregates.Tests
             Result result = merchantStatementAggregate.RecordActivityDateOnStatement(Guid.Empty,
                 TestData.StatementDate, TestData.EstateId, TestData.MerchantId, TestData.MerchantStatementForDateId1,
                 TestData.ActivityDate1);
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -74,8 +74,8 @@ namespace TransactionProcessor.Aggregates.Tests
             Result result = merchantStatementAggregate.RecordActivityDateOnStatement(TestData.MerchantStatementId,
                 TestData.StatementDate, Guid.Empty, TestData.MerchantId, TestData.MerchantStatementForDateId1,
                 TestData.ActivityDate1);
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -85,8 +85,8 @@ namespace TransactionProcessor.Aggregates.Tests
             Result result = merchantStatementAggregate.RecordActivityDateOnStatement(TestData.MerchantStatementId,
                 TestData.StatementDate, TestData.EstateId, Guid.Empty,  TestData.MerchantStatementForDateId1,
                 TestData.ActivityDate1);
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -95,7 +95,7 @@ namespace TransactionProcessor.Aggregates.Tests
             MerchantStatementAggregate merchantStatementAggregate = MerchantStatementAggregate.Create(TestData.MerchantStatementId);
             Result result = merchantStatementAggregate.AddDailySummaryRecord(TestData.TransactionDateTime.Date,
                 new MerchantStatementSummaryTotals(1, 100.00m, 1, 0.10m, 1, 1000, 1, 200));
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
         }
 
         [Fact]
@@ -106,7 +106,7 @@ namespace TransactionProcessor.Aggregates.Tests
                 new MerchantStatementSummaryTotals(1, 100.00m, 1, 0.10m, 1, 1000, 1, 200));
             Result result = merchantStatementAggregate.AddDailySummaryRecord(TestData.TransactionDateTime.Date,
                 new MerchantStatementSummaryTotals(1, 100.00m, 1, 0.10m, 1, 1000, 1, 200));
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
         }
 
 
@@ -117,7 +117,7 @@ namespace TransactionProcessor.Aggregates.Tests
             merchantStatementAggregate.AddDailySummaryRecord(TestData.TransactionDateTime.Date,
                 new MerchantStatementSummaryTotals(1, 100.00m, 1, 0.10m, 1, 1000, 1, 200));
             Result result = merchantStatementAggregate.GenerateStatement(TestData.StatementGeneratedDate);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
 
             MerchantStatement merchantStatement = merchantStatementAggregate.GetStatement();
             merchantStatement.IsGenerated.ShouldBeTrue();
@@ -132,7 +132,7 @@ namespace TransactionProcessor.Aggregates.Tests
             merchantStatementAggregate.GenerateStatement(TestData.StatementGeneratedDate);
 
             Result result = merchantStatementAggregate.GenerateStatement(TestData.StatementGeneratedDate);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
         }
 
         [Fact]
@@ -141,8 +141,8 @@ namespace TransactionProcessor.Aggregates.Tests
             MerchantStatementAggregate merchantStatementAggregate = MerchantStatementAggregate.Create(TestData.MerchantStatementId);
 
             Result result = merchantStatementAggregate.GenerateStatement(TestData.StatementGeneratedDate);
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -153,7 +153,7 @@ namespace TransactionProcessor.Aggregates.Tests
                 new MerchantStatementSummaryTotals(1, 100.00m, 1, 0.10m, 1, 1000, 1, 200));
             merchantStatementAggregate.GenerateStatement(TestData.StatementGeneratedDate);
             Result result = merchantStatementAggregate.BuildStatement(TestData.StatementBuiltDate, TestData.StatementData);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
 
             MerchantStatement merchantStatement = merchantStatementAggregate.GetStatement();
             merchantStatement.BuiltDateTime.ShouldBe(TestData.StatementBuiltDate);
@@ -169,7 +169,7 @@ namespace TransactionProcessor.Aggregates.Tests
             merchantStatementAggregate.BuildStatement(TestData.StatementBuiltDate, TestData.StatementData);
 
             Result result = merchantStatementAggregate.BuildStatement(TestData.StatementBuiltDate, TestData.StatementData);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
         }
 
         [Fact]
@@ -180,8 +180,8 @@ namespace TransactionProcessor.Aggregates.Tests
                 new MerchantStatementSummaryTotals(1, 100.00m, 1, 0.10m, 1, 1000, 1, 200));
 
             Result result = merchantStatementAggregate.BuildStatement(TestData.StatementBuiltDate, TestData.StatementData);
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
 
         [Fact]
@@ -194,7 +194,7 @@ namespace TransactionProcessor.Aggregates.Tests
             merchantStatementAggregate.BuildStatement(TestData.StatementBuiltDate, TestData.StatementData);
 
             Result result = merchantStatementAggregate.EmailStatement(TestData.StatementEmailedDate, TestData.MessageId);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
 
             MerchantStatement merchantStatement = merchantStatementAggregate.GetStatement();
             merchantStatement.HasBeenEmailed.ShouldBeTrue();
@@ -211,7 +211,7 @@ namespace TransactionProcessor.Aggregates.Tests
             merchantStatementAggregate.EmailStatement(TestData.StatementEmailedDate, TestData.MessageId);
 
             Result result = merchantStatementAggregate.EmailStatement(TestData.StatementEmailedDate, TestData.MessageId);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
         }
 
         [Fact]
@@ -223,8 +223,8 @@ namespace TransactionProcessor.Aggregates.Tests
             merchantStatementAggregate.GenerateStatement(TestData.StatementGeneratedDate);
 
             var result = merchantStatementAggregate.EmailStatement(TestData.StatementEmailedDate, TestData.MessageId);
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
         }
     }
 }

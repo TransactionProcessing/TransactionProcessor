@@ -1,3 +1,4 @@
+using TransactionProcessing.UnionResults;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -54,9 +55,9 @@ public class MerchantBalanceStateRepositoryTests
 
         var result = await repository.Load(estateId, merchantId, CancellationToken.None);
 
-        result.IsFailed.ShouldBeTrue();
-        result.Message.ShouldContain("Error getting merchant balance state");
-        result.Message.ShouldContain("Simulated transient SQL failure");
+        result.IsSuccess().ShouldBeFalse();
+        result.GetErrorMessage().ShouldContain("Error getting merchant balance state");
+        result.GetErrorMessage().ShouldContain("Simulated transient SQL failure");
     }
 
     private sealed class ThrowingDbCommandInterceptor : DbCommandInterceptor

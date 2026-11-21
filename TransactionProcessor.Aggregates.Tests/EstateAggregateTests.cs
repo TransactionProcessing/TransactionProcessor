@@ -40,10 +40,10 @@ namespace TransactionProcessor.Aggregates.Tests
             EstateAggregate aggregate = EstateAggregate.Create(TestData.EstateId);
             Result result = aggregate.Create(estateName);
             
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
 
-            result.Message.ShouldContain("Estate name must be provided when registering a new estate");
+            result.GetErrorMessage().ShouldContain("Estate name must be provided when registering a new estate");
         }
 
         [Fact]
@@ -53,7 +53,7 @@ namespace TransactionProcessor.Aggregates.Tests
             aggregate.Create(TestData.EstateName);
 
             var result = aggregate.Create(TestData.EstateName);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
         }
         
         [Fact]
@@ -141,10 +141,10 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = aggregate.AddOperator(TestData.OperatorId);
             
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
 
-            result.Message.ShouldContain("Estate has not been created");
+            result.GetErrorMessage().ShouldContain("Estate has not been created");
         }
         
         [Fact]
@@ -155,10 +155,10 @@ namespace TransactionProcessor.Aggregates.Tests
             aggregate.AddOperator(TestData.OperatorId);
 
             var result = aggregate.AddOperator(TestData.OperatorId);
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
 
-            result.Message.ShouldContain($"Duplicate operator details are not allowed, an operator already exists on this estate with Id [{TestData.OperatorId}]");
+            result.GetErrorMessage().ShouldContain($"Duplicate operator details are not allowed, an operator already exists on this estate with Id [{TestData.OperatorId}]");
         }
 
         [Fact]
@@ -180,10 +180,10 @@ namespace TransactionProcessor.Aggregates.Tests
 
             Result result = aggregate.AddSecurityUser(TestData.SecurityUserId, TestData.EstateUserEmailAddress);
 
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
 
-            result.Message.ShouldContain("Estate has not been created");
+            result.GetErrorMessage().ShouldContain("Estate has not been created");
         }
 
         [Fact]
@@ -206,10 +206,10 @@ namespace TransactionProcessor.Aggregates.Tests
             EstateAggregate aggregate = EstateAggregate.Create(TestData.EstateId);
 
             Result result = aggregate.RemoveOperator(TestData.OperatorId);
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
 
-            result.Message.ShouldContain("Estate has not been created");
+            result.GetErrorMessage().ShouldContain("Estate has not been created");
         }
 
         [Fact]
@@ -219,10 +219,10 @@ namespace TransactionProcessor.Aggregates.Tests
             aggregate.Create(TestData.EstateName);
             
             var result = aggregate.RemoveOperator(TestData.OperatorId);
-            result.IsFailed.ShouldBeTrue();
-            result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
 
-            result.Message.ShouldContain($"Operator not added to this Estate with Id [{TestData.OperatorId}]");
+            result.GetErrorMessage().ShouldContain($"Operator not added to this Estate with Id [{TestData.OperatorId}]");
         }
 
         [Fact]

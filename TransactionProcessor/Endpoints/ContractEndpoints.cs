@@ -37,15 +37,15 @@ namespace TransactionProcessor.Endpoints
             // Write / Modify - require client credentials only
             contractGroup.MapPatch("/{contractId:guid}/products", ContractHandlers.AddProductToContract)
                 .WithName("AddProductToContract").WithSummary("Add a product to a contract")
-                .WithDescription("Adds the supplied product definition to the contract. The service generates the product ID.");
+                .WithDescription("Adds the supplied product definition to the contract. The service generates the product ID.").ProducesUnionResult();
 
             contractGroup.MapPatch("/{contractId:guid}/products/{productId:guid}/transactionFees", ContractHandlers.AddTransactionFeeForProductToContract)
                 .WithName("AddTransactionFeeForProductToContract").WithSummary("Add a transaction fee")
-                .WithDescription("Adds a fee definition to the specified contract product. The service generates the transaction fee ID.");
+                .WithDescription("Adds a fee definition to the specified contract product. The service generates the transaction fee ID.").ProducesUnionResult();
 
             contractGroup.MapDelete("/{contractId:guid}/products/{productId:guid}/transactionFees/{transactionFeeId:guid}", ContractHandlers.DisableTransactionFeeForProduct)
                 .WithName("DisableTransactionFeeForProduct").WithSummary("Disable a transaction fee")
-                .WithDescription("Disables the selected transaction fee on the specified contract product.");
+                .WithDescription("Disables the selected transaction fee on the specified contract product.").ProducesUnionResult();
 
             contractGroup.MapPost("/", ContractHandlers.CreateContract)
                 .WithName("CreateContract").WithSummary("Create a contract")

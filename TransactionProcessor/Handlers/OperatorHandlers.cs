@@ -5,46 +5,46 @@ using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using TransactionProcessing.UnionResults;
-using TransactionProcessing.UnionResults.AspNetCore;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.DataTransferObjects.Requests.Operator;
 using TransactionProcessor.Factories;
 using TransactionProcessor.Models.Operator;
+using TransactionProcessor.DataTransferObjects.Responses.Operator;
 
 namespace TransactionProcessor.Handlers
 {
     public static class OperatorHandlers
     {
-        public static async Task<IResultOutcome> CreateOperator(IMediator mediator, HttpContext ctx, Guid estateId, CreateOperatorRequest createOperatorRequest, CancellationToken cancellationToken)
+        public static async Task<Result<Guid>> CreateOperator(IMediator mediator, HttpContext ctx, Guid estateId, CreateOperatorRequest createOperatorRequest, CancellationToken cancellationToken)
         {
             OperatorCommands.CreateOperatorCommand command = new(estateId, createOperatorRequest);
             Result<Guid> result = await mediator.Send(command, cancellationToken);
 
-            return ResponseFactory.FromResult<Guid>(result, (operatorId) => result.GetValueOrThrow());
+            return result;
         }
 
-        public static async Task<IResultOutcome> UpdateOperator(IMediator mediator, HttpContext ctx, Guid estateId, Guid operatorId, UpdateOperatorRequest updateOperatorRequest, CancellationToken cancellationToken)
+        public static async Task<Result> UpdateOperator(IMediator mediator, HttpContext ctx, Guid estateId, Guid operatorId, UpdateOperatorRequest updateOperatorRequest, CancellationToken cancellationToken)
         {
             OperatorCommands.UpdateOperatorCommand command = new(estateId, operatorId, updateOperatorRequest);
             Result result = await mediator.Send(command, cancellationToken);
 
-            return ResponseFactory.FromResult(result);
+            return result;
         }
 
-        public static async Task<IResultOutcome> GetOperator(IMediator mediator, HttpContext ctx, Guid estateId, Guid operatorId, CancellationToken cancellationToken)
+        public static async Task<Result<OperatorResponse>> GetOperator(IMediator mediator, HttpContext ctx, Guid estateId, Guid operatorId, CancellationToken cancellationToken)
         {
             OperatorQueries.GetOperatorQuery query = new(estateId, operatorId);
             Result<Operator> result = await mediator.Send(query, cancellationToken);
 
-            return ResponseFactory.FromResult(result, ModelFactory.ConvertFrom);
+            return result.Map(ModelFactory.ConvertFrom);
         }
 
-        public static async Task<IResultOutcome> GetOperators(IMediator mediator, HttpContext ctx, Guid estateId, CancellationToken cancellationToken)
+        public static async Task<Result<List<OperatorResponse>>> GetOperators(IMediator mediator, HttpContext ctx, Guid estateId, CancellationToken cancellationToken)
         {
             OperatorQueries.GetOperatorsQuery query = new(estateId);
             Result<List<Operator>> result = await mediator.Send(query, cancellationToken);
 
-            return ResponseFactory.FromResult(result, ModelFactory.ConvertFrom);
+            return result.Map(ModelFactory.ConvertFrom);
         }
     }
 }

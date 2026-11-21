@@ -22,7 +22,10 @@ public sealed class ValidationBehavior<TRequest>(IEnumerable<IValidator<TRequest
         FluentValidation.Results.ValidationResult validationResult =
             await validator.ValidateAsync(request, cancellationToken);
         if (validationResult.IsValid == false)
-            return Result.Fail(Result.Invalid("Validation failed.", validationResult.Errors.Select(error => error.ErrorMessage)));
+            return new ErrorList([
+                new Error(ErrorType.Validation, "Validation failed."),
+                ..validationResult.Errors.Select(error => new Error(ErrorType.Validation, error.ErrorMessage))
+            ]);
 
         return await next(cancellationToken);
     }
@@ -42,7 +45,10 @@ public sealed class ValidationBehavior<TRequest, TValue>(IEnumerable<IValidator<
         FluentValidation.Results.ValidationResult validationResult =
             await validator.ValidateAsync(request, cancellationToken);
         if (validationResult.IsValid == false)
-            return Result<TValue>.Fail(Result.Invalid("Validation failed.", validationResult.Errors.Select(error => error.ErrorMessage)));
+            return new ErrorList([
+                new Error(ErrorType.Validation, "Validation failed."),
+                ..validationResult.Errors.Select(error => new Error(ErrorType.Validation, error.ErrorMessage))
+            ]);
 
         return await next(cancellationToken);
     }

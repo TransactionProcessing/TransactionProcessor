@@ -46,9 +46,9 @@ public class PataPawaPrePayProxyTests {
         this.MockHttpMessageHandler.When("http://localhost").Respond("application/json", StringSerialiser.Serialise(logonResponse));
             
         var result = await this.PataPawaPrePayProxy.ProcessLogonMessage(TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe("0000");
-        result.GetValueOrThrow().IsSuccessful.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe("0000");
+        result.Data.IsSuccessful.ShouldBeTrue();
     }
 
     [Fact]
@@ -59,8 +59,8 @@ public class PataPawaPrePayProxyTests {
         LogonResponse logonResponse = new LogonResponse { Balance = "0", Key = "Key", Msg = "Success", Status = 0 };
 
         var result = await this.PataPawaPrePayProxy.ProcessLogonMessage(TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().TransactionId.ShouldBe(operatorResponse.TransactionId);
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.TransactionId.ShouldBe(operatorResponse.TransactionId);
     }
 
     [Fact]
@@ -71,7 +71,7 @@ public class PataPawaPrePayProxyTests {
         this.MockHttpMessageHandler.When("http://localhost").Respond("application/json", StringSerialiser.Serialise(logonResponse));
 
         var result = await this.PataPawaPrePayProxy.ProcessLogonMessage(TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
@@ -82,7 +82,7 @@ public class PataPawaPrePayProxyTests {
         this.MockHttpMessageHandler.When("http://localhost").Respond(req => new HttpResponseMessage(HttpStatusCode.BadRequest));
 
         var result = await this.PataPawaPrePayProxy.ProcessLogonMessage(TestContext.Current.CancellationToken);
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
@@ -110,9 +110,9 @@ public class PataPawaPrePayProxyTests {
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
             metaDataDictionary, TestContext.Current.CancellationToken);
             
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe("0000");
-        result.GetValueOrThrow().IsSuccessful.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe("0000");
+        result.Data.IsSuccessful.ShouldBeTrue();
     }
 
     [Fact]
@@ -140,7 +140,7 @@ public class PataPawaPrePayProxyTests {
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
             metaDataDictionary, TestContext.Current.CancellationToken);
 
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
@@ -167,10 +167,10 @@ public class PataPawaPrePayProxyTests {
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
             metaDataDictionary, TestContext.Current.CancellationToken);
 
-        result.IsFailed.ShouldBeTrue();
-        result.Errors[0].ErrorType.ShouldBe(ErrorType.Failure);
-        result.Message.ShouldContain("Error performing meter transaction for meter number 123456");
-        result.Message.ShouldContain("Execution Timeout Expired");
+        result.IsSuccess().ShouldBeFalse();
+        result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Failure);
+        result.GetErrorMessage().ShouldContain("Error performing meter transaction for meter number 123456");
+        result.GetErrorMessage().ShouldContain("Execution Timeout Expired");
     }
 
     [Fact]
@@ -203,9 +203,9 @@ public class PataPawaPrePayProxyTests {
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
             metaDataDictionary, TestContext.Current.CancellationToken);
 
-        result.IsSuccess.ShouldBeTrue();
-        result.GetValueOrThrow().ResponseCode.ShouldBe("0000");
-        result.GetValueOrThrow().IsSuccessful.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
+        result.Data.ResponseCode.ShouldBe("0000");
+        result.Data.IsSuccessful.ShouldBeTrue();
     }
 
     [Fact]
@@ -243,7 +243,7 @@ public class PataPawaPrePayProxyTests {
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
             metaDataDictionary, TestContext.Current.CancellationToken);
 
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
@@ -272,10 +272,10 @@ public class PataPawaPrePayProxyTests {
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
             metaDataDictionary, TestContext.Current.CancellationToken);
 
-        result.IsFailed.ShouldBeTrue();
-        result.Errors[0].ErrorType.ShouldBe(ErrorType.Failure);
-        result.Message.ShouldContain("Error performing vend transaction for meter number 123456");
-        result.Message.ShouldContain("Execution Timeout Expired");
+        result.IsSuccess().ShouldBeFalse();
+        result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Failure);
+        result.GetErrorMessage().ShouldContain("Error performing vend transaction for meter number 123456");
+        result.GetErrorMessage().ShouldContain("Execution Timeout Expired");
     }
 
     [Theory]
@@ -315,7 +315,7 @@ public class PataPawaPrePayProxyTests {
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
             metaDataDictionary, TestContext.Current.CancellationToken);
 
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Theory]
@@ -355,7 +355,7 @@ public class PataPawaPrePayProxyTests {
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
             metaDataDictionary, TestContext.Current.CancellationToken);
 
-        result.IsFailed.ShouldBeTrue();
+        result.IsSuccess().ShouldBeFalse();
     }
 
     [Fact]
@@ -393,8 +393,8 @@ public class PataPawaPrePayProxyTests {
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
             metaDataDictionary, TestContext.Current.CancellationToken);
 
-        result.IsFailed.ShouldBeTrue();
-        result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+        result.IsSuccess().ShouldBeFalse();
+        result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
     }
 
     [Fact]
@@ -422,8 +422,8 @@ public class PataPawaPrePayProxyTests {
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
             metaDataDictionary, TestContext.Current.CancellationToken);
 
-        result.IsFailed.ShouldBeTrue();
-        result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+        result.IsSuccess().ShouldBeFalse();
+        result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
     }
 
     [Theory]
@@ -453,8 +453,8 @@ public class PataPawaPrePayProxyTests {
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
             metaDataDictionary, TestContext.Current.CancellationToken);
 
-        result.IsFailed.ShouldBeTrue();
-        result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+        result.IsSuccess().ShouldBeFalse();
+        result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
     }
 
     [Theory]
@@ -484,8 +484,8 @@ public class PataPawaPrePayProxyTests {
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
             metaDataDictionary, TestContext.Current.CancellationToken);
 
-        result.IsFailed.ShouldBeTrue();
-        result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+        result.IsSuccess().ShouldBeFalse();
+        result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
     }
 
     [Theory]
@@ -515,8 +515,8 @@ public class PataPawaPrePayProxyTests {
             TestData.OperatorId, TestData.Merchant, TestData.TransactionDateTime, TestData.TransactionReference,
             metaDataDictionary, TestContext.Current.CancellationToken);
 
-        result.IsFailed.ShouldBeTrue();
-        result.Errors[0].ErrorType.ShouldBe(ErrorType.Validation);
+        result.IsSuccess().ShouldBeFalse();
+        result.GetErrors()[0].ErrorType.ShouldBe(ErrorType.Validation);
     }
 
 }

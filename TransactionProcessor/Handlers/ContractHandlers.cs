@@ -5,33 +5,33 @@ using System.Threading.Tasks;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using TransactionProcessing.UnionResults;
-using TransactionProcessing.UnionResults.AspNetCore;
 using TransactionProcessor.BusinessLogic.Requests;
 using TransactionProcessor.DataTransferObjects.Requests.Contract;
 using TransactionProcessor.Factories;
 using TransactionProcessor.Models.Contract;
+using TransactionProcessor.DataTransferObjects.Responses.Contract;
 
 namespace TransactionProcessor.Handlers
 {
     public static class ContractHandlers
     {
-        public static async Task<IResultOutcome> GetContract(IMediator mediator, HttpContext ctx, Guid estateId, Guid contractId, CancellationToken cancellationToken)
+        public static async Task<Result<ContractResponse>> GetContract(IMediator mediator, HttpContext ctx, Guid estateId, Guid contractId, CancellationToken cancellationToken)
         {
             ContractQueries.GetContractQuery query = new(estateId, contractId);
             Result<Contract> result = await mediator.Send(query, cancellationToken);
 
-            return ResponseFactory.FromResult(result, ModelFactory.ConvertFrom);
+            return result.Map(ModelFactory.ConvertFrom);
         }
 
-        public static async Task<IResultOutcome> GetContracts(IMediator mediator, HttpContext ctx, Guid estateId, CancellationToken cancellationToken)
+        public static async Task<Result<List<ContractResponse>>> GetContracts(IMediator mediator, HttpContext ctx, Guid estateId, CancellationToken cancellationToken)
         {
             ContractQueries.GetContractsQuery query = new(estateId);
             Result<List<Contract>> result = await mediator.Send(query, cancellationToken);
 
-            return ResponseFactory.FromResult(result, ModelFactory.ConvertFrom);
+            return result.Map(ModelFactory.ConvertFrom);
         }
 
-        public static async Task<IResultOutcome> AddProductToContract(IMediator mediator, HttpContext ctx, Guid estateId, Guid contractId, AddProductToContractRequest addProductToContractRequest, CancellationToken cancellationToken)
+        public static async Task<Result> AddProductToContract(IMediator mediator, HttpContext ctx, Guid estateId, Guid contractId, AddProductToContractRequest addProductToContractRequest, CancellationToken cancellationToken)
         {
             Guid productId = Guid.NewGuid();
 
@@ -39,10 +39,10 @@ namespace TransactionProcessor.Handlers
                 new(estateId, contractId, productId, addProductToContractRequest);
 
             Result result = await mediator.Send(command, cancellationToken);
-            return ResponseFactory.FromResult(result);
+            return result;
         }
 
-        public static async Task<IResultOutcome> AddTransactionFeeForProductToContract(IMediator mediator, HttpContext ctx, Guid estateId, Guid contractId, Guid productId, AddTransactionFeeForProductToContractRequest addTransactionFeeForProductToContractRequest, CancellationToken cancellationToken)
+        public static async Task<Result> AddTransactionFeeForProductToContract(IMediator mediator, HttpContext ctx, Guid estateId, Guid contractId, Guid productId, AddTransactionFeeForProductToContractRequest addTransactionFeeForProductToContractRequest, CancellationToken cancellationToken)
         {
             Guid transactionFeeId = Guid.NewGuid();
 
@@ -50,23 +50,23 @@ namespace TransactionProcessor.Handlers
                 new(estateId, contractId, productId, transactionFeeId, addTransactionFeeForProductToContractRequest);
 
             Result result = await mediator.Send(command, cancellationToken);
-            return ResponseFactory.FromResult(result);
+            return result;
         }
 
-        public static async Task<IResultOutcome> DisableTransactionFeeForProduct(IMediator mediator, HttpContext ctx, Guid estateId, Guid contractId, Guid productId, Guid transactionFeeId, CancellationToken cancellationToken)
+        public static async Task<Result> DisableTransactionFeeForProduct(IMediator mediator, HttpContext ctx, Guid estateId, Guid contractId, Guid productId, Guid transactionFeeId, CancellationToken cancellationToken)
         {
             ContractCommands.DisableTransactionFeeForProductCommand command = new(estateId, contractId, productId, transactionFeeId);
 
             Result result = await mediator.Send(command, cancellationToken);
-            return ResponseFactory.FromResult(result);
+            return result;
         }
 
-        public static async Task<IResultOutcome> CreateContract(IMediator mediator, HttpContext ctx, Guid estateId, CreateContractRequest createContractRequest, CancellationToken cancellationToken)
+        public static async Task<Result<Guid>> CreateContract(IMediator mediator, HttpContext ctx, Guid estateId, CreateContractRequest createContractRequest, CancellationToken cancellationToken)
         {
             ContractCommands.CreateContractCommand command = new(estateId, createContractRequest);
 
             Result<Guid> result = await mediator.Send(command, cancellationToken);
-            return ResponseFactory.FromResult<Guid>(result, (contractId) => result.GetValueOrThrow());
+            return result;
         }
     }
 }

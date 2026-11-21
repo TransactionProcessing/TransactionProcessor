@@ -1,3 +1,4 @@
+using TransactionProcessing.UnionResults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Data.Sqlite;
@@ -66,7 +67,7 @@ namespace TransactionProcessor.Tests.RepositoryTests
 
                 var result = await repository.GetEstate(estateId, CancellationToken.None);
 
-                result.IsSuccess.ShouldBeTrue();
+                result.IsSuccess().ShouldBeTrue();
                 trackingDisposable.Disposed.ShouldBeTrue();
             }
         }

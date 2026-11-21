@@ -14,12 +14,12 @@ public class DummyVoucherDomainService : IVoucherDomainService
 {
     public async Task<Result<IssueVoucherResponse>> IssueVoucher(VoucherCommands.IssueVoucherCommand command,
                                                                  CancellationToken cancellationToken) {
-        return Result.Success(new IssueVoucherResponse());
+        return Results.Ok(new IssueVoucherResponse());
     }
 
     public async Task<Result<RedeemVoucherResponse>> RedeemVoucher(VoucherCommands.RedeemVoucherCommand command,
                                                                    CancellationToken cancellationToken) {
-        return Result.Success(new RedeemVoucherResponse());
+        return Results.Ok(new RedeemVoucherResponse());
     }
 }
 
@@ -27,7 +27,7 @@ public class DummyVoucherManagementManager : IVoucherManagementManager {
     public async Task<Result<Voucher>> GetVoucherByCode(Guid estateId,
                                                         String voucherCode,
                                                         CancellationToken cancellationToken) {
-        return Result.Success(new Voucher
+        return Results.Ok(new Voucher
         {
             ExpiryDate = DateTime.UtcNow.AddDays(30),
             VoucherCode = voucherCode,
@@ -37,7 +37,7 @@ public class DummyVoucherManagementManager : IVoucherManagementManager {
     public async Task<Result<Voucher>> GetVoucherByTransactionId(Guid estateId,
                                                                  Guid transactionId,
                                                                  CancellationToken cancellationToken) {
-        return Result.Success(new Voucher
+        return Results.Ok(new Voucher
         {
             ExpiryDate = DateTime.UtcNow.AddDays(30),
             VoucherCode = "TEST-VOUCHER-CODE",

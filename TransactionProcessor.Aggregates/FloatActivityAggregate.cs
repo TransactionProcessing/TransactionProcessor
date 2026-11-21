@@ -31,12 +31,12 @@ namespace TransactionProcessor.Aggregates
         {
 
             if (aggregate.Credits.Any(c => c == creditId))
-                return Result.Success();
+                return Results.Ok();
 
             FloatActivityDomainEvents.FloatAggregateCreditedEvent floatAggregateCreditedEvent = new(aggregate.AggregateId, estateId, activityDateTime, creditAmount, creditId);
             aggregate.ApplyAndAppend(floatAggregateCreditedEvent);
 
-            return Result.Success();
+            return Results.Ok();
         }
 
         public static Result RecordTransactionAgainstFloat(this FloatActivityAggregate aggregate,
@@ -46,12 +46,12 @@ namespace TransactionProcessor.Aggregates
                                                            Guid transactionId)
         {
             if (aggregate.Debits.Any(c => c == transactionId))
-                return Result.Success();
+                return Results.Ok();
 
             FloatActivityDomainEvents.FloatAggregateDebitedEvent floatAggregateCreditedEvent = new(aggregate.AggregateId, estateId, activityDateTime, transactionAmount, transactionId);
             aggregate.ApplyAndAppend(floatAggregateCreditedEvent);
 
-            return Result.Success();
+            return Results.Ok();
         }
     }
 

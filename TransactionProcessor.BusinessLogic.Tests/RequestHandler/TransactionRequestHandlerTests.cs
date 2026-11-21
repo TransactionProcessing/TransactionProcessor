@@ -25,11 +25,11 @@ namespace TransactionProcessor.BusinessLogic.Tests.RequestHandler
             ITransactionDomainServiceImposter transactionDomainService = new ITransactionDomainServiceImposter();
             TransactionRequestHandler handler = new TransactionRequestHandler(transactionDomainService.Instance());
             transactionDomainService.ProcessLogonTransaction(Arg<TransactionCommands.ProcessLogonTransactionCommand>.Any(),
-                Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new TransactionProcessor.Models.ProcessLogonTransactionResponse()));
+                Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(new TransactionProcessor.Models.ProcessLogonTransactionResponse()));
             TransactionCommands.ProcessLogonTransactionCommand command = TestData.Commands.ProcessLogonTransactionCommand;
 
             var result = await handler.Handle(command, TestContext.Current.CancellationToken);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
 
         }
 
@@ -39,11 +39,11 @@ namespace TransactionProcessor.BusinessLogic.Tests.RequestHandler
             ITransactionDomainServiceImposter transactionDomainService = new ITransactionDomainServiceImposter();
             TransactionRequestHandler handler = new TransactionRequestHandler(transactionDomainService.Instance());
             transactionDomainService.ProcessSaleTransaction(Arg<TransactionCommands.ProcessSaleTransactionCommand>.Any(),
-                Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new TransactionProcessor.Models.ProcessSaleTransactionResponse()));
+                Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(new TransactionProcessor.Models.ProcessSaleTransactionResponse()));
             TransactionCommands.ProcessSaleTransactionCommand command = TestData.Commands.ProcessSaleTransactionCommand;
 
             var result = await handler.Handle(command, TestContext.Current.CancellationToken);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
 
         }
 
@@ -53,11 +53,11 @@ namespace TransactionProcessor.BusinessLogic.Tests.RequestHandler
             ITransactionDomainServiceImposter transactionDomainService = new ITransactionDomainServiceImposter();
             TransactionRequestHandler handler = new TransactionRequestHandler(transactionDomainService.Instance());
             transactionDomainService.ProcessReconciliationTransaction(Arg<TransactionCommands.ProcessReconciliationCommand>.Any(),
-                Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new TransactionProcessor.Models.ProcessReconciliationTransactionResponse()));
+                Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(new TransactionProcessor.Models.ProcessReconciliationTransactionResponse()));
             TransactionCommands.ProcessReconciliationCommand command = TestData.Commands.ProcessReconciliationCommand;
 
             var result = await handler.Handle(command, TestContext.Current.CancellationToken);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
 
         }
 
@@ -67,11 +67,11 @@ namespace TransactionProcessor.BusinessLogic.Tests.RequestHandler
             ITransactionDomainServiceImposter transactionDomainService = new ITransactionDomainServiceImposter();
             TransactionRequestHandler handler = new TransactionRequestHandler(transactionDomainService.Instance());
             transactionDomainService.ResendTransactionReceipt(Arg<TransactionCommands.ResendTransactionReceiptCommand>.Any(),
-                    Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
+                    Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok());
             TransactionCommands.ResendTransactionReceiptCommand command = TestData.Commands.ResendTransactionReceiptCommand;
 
             var result = await handler.Handle(command, TestContext.Current.CancellationToken);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
         }
     }
 }

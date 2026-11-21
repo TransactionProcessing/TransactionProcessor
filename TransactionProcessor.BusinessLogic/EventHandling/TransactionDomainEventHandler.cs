@@ -65,7 +65,7 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
                 _ => null
             };
 
-            Result result = Result.Success();
+            Result result = Results.Ok();
             if (t != null)
                 result = await t;
             sw.Stop();

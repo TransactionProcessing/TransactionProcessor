@@ -101,4 +101,7 @@
   <ItemGroup>
     <Folder Include="Controllers\" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\TransactionProcessor.ResultHelpers\ResultHelpers.cs" Link="ResultHelpers.cs" />
+  </ItemGroup>
 </Project>

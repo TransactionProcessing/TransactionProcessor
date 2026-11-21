@@ -46,13 +46,13 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.PataPawaPostPay
                 // Check if we need to do a logon with the operator
                 OperatorResponse operatorResponse = this.MemoryCache.Get<OperatorResponse>("PataPawaPostPayLogon");
                 if (operatorResponse != null) {
-                    return Result.Success(operatorResponse);
+                    return Results.Ok(operatorResponse);
                 }
 
                 IPataPawaPostPayService channel = this.ChannelResolver(this.ServiceClient, "PataPawaPostPay", this.Configuration.Url);
                 login logonResponse = await channel.getLoginRequestAsync(this.Configuration.Username, this.Configuration.Password);
                 if (logonResponse.status != 0) {
-                    return Result.Failure($"Error logging on with PataPawa Post Paid API, Response is {logonResponse.status}");
+                    return new Error(ErrorType.Failure, $"Error logging on with PataPawa Post Paid API, Response is {logonResponse.status}");
                 }
 
                 operatorResponse = new OperatorResponse { IsSuccessful = true, ResponseCode = "0000", ResponseMessage = logonResponse.message, AdditionalTransactionResponseMetadata = new Dictionary<String, String>() };
@@ -62,10 +62,10 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.PataPawaPostPay
 
                 this.MemoryCache.Set("PataPawaPostPayLogon", operatorResponse, MemoryCacheEntryOptions);
 
-                return Result.Success(operatorResponse);
+                return Results.Ok(operatorResponse);
             }
             catch (Exception ex) {
-                return Result.Failure($"Error processing logon message for PataPawaPostPay [{ex.Message}]");
+                return new Error(ErrorType.Failure, $"Error processing logon message for PataPawaPostPay [{ex.Message}]");
             }
         }
 
@@ -93,31 +93,31 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.PataPawaPostPay
             // Get the logon response for the operator
             OperatorResponse logonResponse = this.MemoryCache.Get<OperatorResponse>("PataPawaPostPayLogon");
             if (logonResponse == null) {
-                return Result.Invalid($"PataPawaPostPaidAPIKey - logonResponse is null");
+                return new Error(ErrorType.Validation, $"PataPawaPostPaidAPIKey - logonResponse is null");
             }
             String apiKey = logonResponse.AdditionalTransactionResponseMetadata.ExtractFieldFromMetadata<String>("PataPawaPostPaidAPIKey");
 
             if (String.IsNullOrEmpty(apiKey)) {
-                return Result.Invalid($"PataPawaPostPaidAPIKey - APIKey is a required field for this transaction type");
+                return new Error(ErrorType.Validation, $"PataPawaPostPaidAPIKey - APIKey is a required field for this transaction type");
             }
 
             // Check the meta data for the sale message type
             String messageType = additionalTransactionMetadata.ExtractFieldFromMetadata<String>("PataPawaPostPaidMessageType");
 
             if (String.IsNullOrEmpty(messageType)) {
-                return Result.Invalid("PataPawaPostPaidMessageType - Message Type is a required field for this transaction type");
+                return new Error(ErrorType.Validation, "PataPawaPostPaidMessageType - Message Type is a required field for this transaction type");
             }
 
             String accountNumber = additionalTransactionMetadata.ExtractFieldFromMetadata<String>("CustomerAccountNumber");
 
             if (String.IsNullOrEmpty(accountNumber)) {
-                return Result.Invalid("CustomerAccountNumber - Customer Account Number is a required field for this transaction type");
+                return new Error(ErrorType.Validation, "CustomerAccountNumber - Customer Account Number is a required field for this transaction type");
             }
 
             return messageType switch {
                 "VerifyAccount" => await this.PerformVerifyAccountTransaction(accountNumber, apiKey, cancellationToken),
                 "ProcessBill" => await this.PerformProcessBillTransaction(accountNumber, apiKey, additionalTransactionMetadata, cancellationToken),
-                _ => Result.Invalid($"PataPawaPostPaidMessageType - Unsupported Message Type {messageType}")
+                _ => new Error(ErrorType.Validation, $"PataPawaPostPaidMessageType - Unsupported Message Type {messageType}")
             };
         }
 
@@ -133,21 +133,21 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.PataPawaPostPay
                 String transactionAmount = additionalTransactionMetadata.ExtractFieldFromMetadata<String>("Amount");
 
                 if (String.IsNullOrEmpty(mobileNumber)) {
-                    return Result.Invalid("MobileNumber - MobileNumber is a required field for this transaction type");
+                    return new Error(ErrorType.Validation, "MobileNumber - MobileNumber is a required field for this transaction type");
                 }
 
                 if (String.IsNullOrEmpty(customerName)) {
-                    return Result.Invalid("CustomerName - CustomerName is a required field for this transaction type");
+                    return new Error(ErrorType.Validation, "CustomerName - CustomerName is a required field for this transaction type");
                 }
 
                 if (String.IsNullOrEmpty(transactionAmount)) {
-                    return Result.Invalid("Amount - Amount is a required field for this transaction type");
+                    return new Error(ErrorType.Validation, "Amount - Amount is a required field for this transaction type");
                 }
 
                 // Multiply amount before sending
                 // Covert the transaction amount to Decimal and remove decimal places
                 if (Decimal.TryParse(transactionAmount, out Decimal amountAsDecimal) == false) {
-                    return Result.Invalid("Amount - Transaction Amount is not a valid decimal value");
+                    return new Error(ErrorType.Validation, "Amount - Transaction Amount is not a valid decimal value");
                 }
 
                 Decimal operatorTransactionAmount = amountAsDecimal * 100;
@@ -160,10 +160,10 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.PataPawaPostPay
                                                                                operatorTransactionAmount);
 
                 if (payBillResponse.status != 0) {
-                    return Result.Failure($"Error paying bill for account number {accountNumber} api status {payBillResponse.status}");
+                    return new Error(ErrorType.Failure, $"Error paying bill for account number {accountNumber} api status {payBillResponse.status}");
                 }
 
-                return  Result.Success(new OperatorResponse {
+                return  Results.Ok(new OperatorResponse {
                                                 ResponseMessage = payBillResponse.msg,
                                                 IsSuccessful = true,
                                                 ResponseCode = payBillResponse.rescode,
@@ -174,7 +174,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.PataPawaPostPay
                 throw;
             }
             catch (Exception ex) {
-                return Result.Failure($"Error paying bill for account number {accountNumber} [{ex.Message}]");
+                return new Error(ErrorType.Failure, $"Error paying bill for account number {accountNumber} [{ex.Message}]");
             }
         }
 
@@ -188,7 +188,7 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.PataPawaPostPay
                 verify verifyResponse = await channel.getVerifyRequestAsync(this.Configuration.Username, apiKey, accountNumber);
 
                 if (String.IsNullOrEmpty(verifyResponse.account_name)) {
-                    return Result.NotFound($"Error verifying account number {accountNumber}");
+                    return new Error(ErrorType.NotFound, $"Error verifying account number {accountNumber}");
                 }
 
                 OperatorResponse operatorResponse = new OperatorResponse {
@@ -202,13 +202,13 @@ namespace TransactionProcessor.BusinessLogic.OperatorInterfaces.PataPawaPostPay
                 operatorResponse.AdditionalTransactionResponseMetadata.Add("CustomerAccountName", verifyResponse.account_name);
                 operatorResponse.AdditionalTransactionResponseMetadata.Add("CustomerBillDueDate", verifyResponse.due_date.ToString("yyyy-MM-dd"));
 
-                return Result.Success(operatorResponse);
+                return Results.Ok(operatorResponse);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested) {
                 throw;
             }
             catch (Exception ex) {
-                return Result.Failure($"Error verifying account number {accountNumber} [{ex.Message}]");
+                return new Error(ErrorType.Failure, $"Error verifying account number {accountNumber} [{ex.Message}]");
             }
         }
 

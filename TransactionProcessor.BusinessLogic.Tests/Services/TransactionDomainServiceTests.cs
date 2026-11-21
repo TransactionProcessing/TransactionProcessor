@@ -80,14 +80,14 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
         [Fact]
         public async Task TransactionDomainService_ProcessLogonTransaction_DeviceNeedsAdded_TransactionIsProcessed(){
             this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(TestData.GetEmptyTransactionAggregate()));
+                .ReturnsAsync(Results.Ok(TestData.GetEmptyTransactionAggregate()));
             this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success());
+                .ReturnsAsync(Results.Ok());
             this.AggregateService.GetLatest<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(TestData.Aggregates.CreatedMerchantAggregate()));
+                .ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedMerchantAggregate()));
             
             this.TransactionValidationService.ValidateLogonTransaction(Arg<TransactionValidationIdentifiers>.Any(),
-                                                                                    Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new TransactionValidationResult(TransactionResponseCode.SuccessNeedToAddDevice, "SUCCESS")));
+                                                                                    Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(new TransactionValidationResult(TransactionResponseCode.SuccessNeedToAddDevice, "SUCCESS")));
 
             TransactionCommands.ProcessLogonTransactionCommand command = new(TestData.EstateId,
                 TestData.MerchantId,
@@ -98,11 +98,11 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             
             var result = await this.TransactionDomainService.ProcessLogonTransaction(command, TestContext.Current.CancellationToken);
             
-            result.IsSuccess.ShouldBeTrue();
-            result.GetValueOrThrow().EstateId.ShouldBe(TestData.EstateId);
-            result.GetValueOrThrow().MerchantId.ShouldBe(TestData.MerchantId);
-            result.GetValueOrThrow().ResponseCode.ShouldBe("0001");
-            result.GetValueOrThrow().TransactionId.ShouldBe(TestData.TransactionId);
+            result.IsSuccess().ShouldBeTrue();
+            result.Data.EstateId.ShouldBe(TestData.EstateId);
+            result.Data.MerchantId.ShouldBe(TestData.MerchantId);
+            result.Data.ResponseCode.ShouldBe("0001");
+            result.Data.TransactionId.ShouldBe(TestData.TransactionId);
             this.AggregateService.GetLatest<MerchantAggregate>(TestData.MerchantId, Arg<CancellationToken>.Any()).Called(Count.Once());
             this.AggregateService.Save(Arg<MerchantAggregate>.Any(), Arg<CancellationToken>.Any()).Called(Count.Once());
         }
@@ -110,12 +110,12 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
         [Fact]
         public async Task TransactionDomainService_ProcessLogonTransaction_TransactionIsProcessed(){
             this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(TestData.GetEmptyTransactionAggregate()));
+                .ReturnsAsync(Results.Ok(TestData.GetEmptyTransactionAggregate()));
             this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success());
+                .ReturnsAsync(Results.Ok());
 
             this.TransactionValidationService.ValidateLogonTransaction(Arg<TransactionValidationIdentifiers>.Any(),
-                                                                                    Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS")));
+                                                                                    Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS")));
 
             TransactionCommands.ProcessLogonTransactionCommand command = new(TestData.EstateId,
                 TestData.MerchantId,
@@ -126,18 +126,18 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
 
             var result = await this.TransactionDomainService.ProcessLogonTransaction(command, TestContext.Current.CancellationToken);
 
-            result.IsSuccess.ShouldBeTrue();
-            result.GetValueOrThrow().EstateId.ShouldBe(TestData.EstateId);
-            result.GetValueOrThrow().MerchantId.ShouldBe(TestData.MerchantId);
-            result.GetValueOrThrow().ResponseCode.ShouldBe("0000");
-            result.GetValueOrThrow().TransactionId.ShouldBe(TestData.TransactionId);
+            result.IsSuccess().ShouldBeTrue();
+            result.Data.EstateId.ShouldBe(TestData.EstateId);
+            result.Data.MerchantId.ShouldBe(TestData.MerchantId);
+            result.Data.ResponseCode.ShouldBe("0000");
+            result.Data.TransactionId.ShouldBe(TestData.TransactionId);
         }
 
         [Fact]
         public async Task TransactionDomainService_ProcessLogonTransaction_CompletedDuplicate_ReturnsStoredResponse(){
             TransactionAggregate transactionAggregate = CreateCompletedLogonAggregate();
             this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(transactionAggregate));
+                .ReturnsAsync(Results.Ok(transactionAggregate));
 
             TransactionCommands.ProcessLogonTransactionCommand command = new(TestData.EstateId,
                 TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionTypeLogon.ToString(),
@@ -145,10 +145,10 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
 
             Result<ProcessLogonTransactionResponse> result = await this.TransactionDomainService.ProcessLogonTransaction(command, TestContext.Current.CancellationToken);
 
-            result.IsSuccess.ShouldBeTrue();
-            result.GetValueOrThrow().ResponseCode.ShouldBe(transactionAggregate.ResponseCode);
-            result.GetValueOrThrow().ResponseMessage.ShouldBe(transactionAggregate.ResponseMessage);
-            result.GetValueOrThrow().TransactionId.ShouldBe(transactionAggregate.AggregateId);
+            result.IsSuccess().ShouldBeTrue();
+            result.Data.ResponseCode.ShouldBe(transactionAggregate.ResponseCode);
+            result.Data.ResponseMessage.ShouldBe(transactionAggregate.ResponseMessage);
+            result.Data.TransactionId.ShouldBe(transactionAggregate.AggregateId);
             this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
             this.TransactionValidationService.ValidateLogonTransaction(Arg<TransactionValidationIdentifiers>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
         }
@@ -157,7 +157,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
         public async Task TransactionDomainService_ProcessLogonTransaction_CompletedDuplicateWithDifferentType_Fails(){
             TransactionAggregate transactionAggregate = CreateCompletedLogonAggregate();
             this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(transactionAggregate));
+                .ReturnsAsync(Results.Ok(transactionAggregate));
 
             TransactionCommands.ProcessLogonTransactionCommand command = new(TestData.EstateId,
                 TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionTypeSale.ToString(),
@@ -165,8 +165,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
 
             Result<ProcessLogonTransactionResponse> result = await this.TransactionDomainService.ProcessLogonTransaction(command, TestContext.Current.CancellationToken);
 
-            result.IsFailed.ShouldBeTrue();
-            result.Message.ShouldContain("already been completed with different request details");
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrorMessage().ShouldContain("already been completed with different request details");
             this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
             this.TransactionValidationService.ValidateLogonTransaction(Arg<TransactionValidationIdentifiers>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
         }
@@ -177,11 +177,11 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
         [InlineData(TransactionResponseCode.InvalidDeviceIdentifier)]
         public async Task TransactionDomainService_ProcessLogonTransaction_ValidationFailed_TransactionIsProcessed(TransactionResponseCode responseCode){
             this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(TestData.GetEmptyTransactionAggregate()));
+                .ReturnsAsync(Results.Ok(TestData.GetEmptyTransactionAggregate()));
             this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success());
+                .ReturnsAsync(Results.Ok());
             this.TransactionValidationService.ValidateLogonTransaction(Arg<TransactionValidationIdentifiers>.Any(),
-                                                                                    Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new TransactionValidationResult(responseCode, responseCode.ToString())));
+                                                                                    Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(new TransactionValidationResult(responseCode, responseCode.ToString())));
 
             TransactionCommands.ProcessLogonTransactionCommand command = new(TestData.EstateId,
                 TestData.MerchantId,
@@ -192,22 +192,22 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
 
             Result<ProcessLogonTransactionResponse> result = await this.TransactionDomainService.ProcessLogonTransaction(command, TestContext.Current.CancellationToken);
 
-            result.IsSuccess.ShouldBeTrue();
-            result.GetValueOrThrow().EstateId.ShouldBe(TestData.EstateId);
-            result.GetValueOrThrow().MerchantId.ShouldBe(TestData.MerchantId);
-            result.GetValueOrThrow().ResponseCode.ShouldBe(((Int32)responseCode).ToString().PadLeft(4, '0'));
-            result.GetValueOrThrow().TransactionId.ShouldBe(TestData.TransactionId);
+            result.IsSuccess().ShouldBeTrue();
+            result.Data.EstateId.ShouldBe(TestData.EstateId);
+            result.Data.MerchantId.ShouldBe(TestData.MerchantId);
+            result.Data.ResponseCode.ShouldBe(((Int32)responseCode).ToString().PadLeft(4, '0'));
+            result.Data.TransactionId.ShouldBe(TestData.TransactionId);
         }
 
         [Fact]
         public async Task TransactionDomainService_ProcessReconciliationTransaction_ReconciliationIsProcessed(){
             this.AggregateService.GetLatest<ReconciliationAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(new ReconciliationAggregate()));
+                .ReturnsAsync(Results.Ok(new ReconciliationAggregate()));
             this.AggregateService.Save(Arg<ReconciliationAggregate>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success());
+                .ReturnsAsync(Results.Ok());
             this.TransactionValidationService.ValidateReconciliationTransaction(Arg<TransactionValidationIdentifiers>.Any(),
                 TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue, Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS")));
+                .ReturnsAsync(Results.Ok(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS")));
 
             TransactionCommands.ProcessReconciliationCommand command =
                 new(TestData.EstateId,
@@ -216,8 +216,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                     TestData.HostDateTime);
 
             var result  = await this.TransactionDomainService.ProcessReconciliationTransaction(command, TestContext.Current.CancellationToken);
-            result.IsSuccess.ShouldBeTrue();
-            ProcessReconciliationTransactionResponse response = result.GetValueOrThrow();
+            result.IsSuccess().ShouldBeTrue();
+            ProcessReconciliationTransactionResponse response = result.Data;
 
             response.EstateId.ShouldBe(TestData.EstateId);
             response.MerchantId.ShouldBe(TestData.MerchantId);
@@ -229,18 +229,18 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
         public async Task TransactionDomainService_ProcessReconciliationTransaction_InvalidTotals_ReturnsValidationFailureWithoutSaving(){
             ReconciliationAggregate reconciliationAggregate = new();
             this.AggregateService.GetLatest<ReconciliationAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(reconciliationAggregate));
+                .ReturnsAsync(Results.Ok(reconciliationAggregate));
             this.TransactionValidationService.ValidateReconciliationTransaction(Arg<TransactionValidationIdentifiers>.Any(),
                 0, 25m, Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Invalid("Transaction Count is 0 but Value is 25"));
+                .ReturnsAsync(new Error(ErrorType.Validation, "Transaction Count is 0 but Value is 25"));
             TransactionCommands.ProcessReconciliationCommand command = new(TestData.EstateId,
                 TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionDateTime, 0, 25m, TestData.HostDateTime);
 
             Result<ProcessReconciliationTransactionResponse> result = await this.TransactionDomainService.ProcessReconciliationTransaction(command, TestContext.Current.CancellationToken);
 
-            result.IsFailed.ShouldBeTrue();
-            result.Errors.ShouldHaveSingleItem().ErrorType.ShouldBe(ErrorType.Validation);
-            result.Message.ShouldBe("Transaction Count is 0 but Value is 25");
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrors().ShouldHaveSingleItem().ErrorType.ShouldBe(ErrorType.Validation);
+            result.GetErrorMessage().ShouldBe("Transaction Count is 0 but Value is 25");
             reconciliationAggregate.HasBeenStarted.ShouldBeFalse();
             this.AggregateService.Save(Arg<ReconciliationAggregate>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
         }
@@ -250,7 +250,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             ReconciliationAggregate reconciliationAggregate = CreateCompletedReconciliationAggregate(TestData.ReconciliationTransactionCount,
                                                                                                     TestData.ReconciliationTransactionValue);
             this.AggregateService.GetLatest<ReconciliationAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(reconciliationAggregate));
+                .ReturnsAsync(Results.Ok(reconciliationAggregate));
 
             TransactionCommands.ProcessReconciliationCommand command = new(TestData.EstateId,
                 TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionDateTime,
@@ -259,12 +259,12 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
 
             Result<ProcessReconciliationTransactionResponse> result = await this.TransactionDomainService.ProcessReconciliationTransaction(command, TestContext.Current.CancellationToken);
 
-            result.IsSuccess.ShouldBeTrue();
-            result.GetValueOrThrow().EstateId.ShouldBe(TestData.EstateId);
-            result.GetValueOrThrow().MerchantId.ShouldBe(TestData.MerchantId);
-            result.GetValueOrThrow().ResponseCode.ShouldBe("0000");
-            result.GetValueOrThrow().ResponseMessage.ShouldBe("SUCCESS");
-            result.GetValueOrThrow().TransactionId.ShouldBe(reconciliationAggregate.AggregateId);
+            result.IsSuccess().ShouldBeTrue();
+            result.Data.EstateId.ShouldBe(TestData.EstateId);
+            result.Data.MerchantId.ShouldBe(TestData.MerchantId);
+            result.Data.ResponseCode.ShouldBe("0000");
+            result.Data.ResponseMessage.ShouldBe("SUCCESS");
+            result.Data.TransactionId.ShouldBe(reconciliationAggregate.AggregateId);
             this.AggregateService.Save(Arg<ReconciliationAggregate>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
             this.TransactionValidationService.ValidateReconciliationTransaction(Arg<TransactionValidationIdentifiers>.Any(),
                 Arg<Int32>.Any(), Arg<Decimal>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
@@ -278,7 +278,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             ReconciliationAggregate reconciliationAggregate = CreateCompletedReconciliationAggregate(TestData.ReconciliationTransactionCount,
                                                                                                     TestData.ReconciliationTransactionValue);
             this.AggregateService.GetLatest<ReconciliationAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(reconciliationAggregate));
+                .ReturnsAsync(Results.Ok(reconciliationAggregate));
 
             TransactionCommands.ProcessReconciliationCommand command = new(TestData.EstateId,
                 TestData.MerchantId, TestData.DeviceIdentifier, TestData.TransactionDateTime,
@@ -286,8 +286,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
 
             Result<ProcessReconciliationTransactionResponse> result = await this.TransactionDomainService.ProcessReconciliationTransaction(command, TestContext.Current.CancellationToken);
 
-            result.IsFailed.ShouldBeTrue();
-            result.Message.ShouldContain("already been completed with different request details");
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrorMessage().ShouldContain("already been completed with different request details");
             this.AggregateService.Save(Arg<ReconciliationAggregate>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
             this.TransactionValidationService.ValidateReconciliationTransaction(Arg<TransactionValidationIdentifiers>.Any(),
                 Arg<Int32>.Any(), Arg<Decimal>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
@@ -311,12 +311,12 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
         [InlineData(TransactionResponseCode.InvalidDeviceIdentifier)]
         public async Task TransactionDomainService_ProcessReconciliationTransaction_ValidationFailed_ReconciliationIsProcessed(TransactionResponseCode responseCode){
             this.AggregateService.GetLatest<ReconciliationAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(new ReconciliationAggregate()));
+                .ReturnsAsync(Results.Ok(new ReconciliationAggregate()));
             this.AggregateService.Save(Arg<ReconciliationAggregate>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success());
+                .ReturnsAsync(Results.Ok());
             this.TransactionValidationService.ValidateReconciliationTransaction(Arg<TransactionValidationIdentifiers>.Any(),
                 TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue, Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(new TransactionValidationResult(responseCode, responseCode.ToString())));
+                .ReturnsAsync(Results.Ok(new TransactionValidationResult(responseCode, responseCode.ToString())));
 
             TransactionCommands.ProcessReconciliationCommand command =
                 new(TestData.EstateId,
@@ -325,8 +325,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                     TestData.HostDateTime);
 
             var result = await this.TransactionDomainService.ProcessReconciliationTransaction(command, TestContext.Current.CancellationToken);
-            result.IsSuccess.ShouldBeTrue();
-            var response = result.GetValueOrThrow();
+            result.IsSuccess().ShouldBeTrue();
+            var response = result.Data;
 
             response.EstateId.ShouldBe(TestData.EstateId);
             response.MerchantId.ShouldBe(TestData.MerchantId);
@@ -337,15 +337,15 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
         [Fact]
         public async Task TransactionDomainService_ProcessSaleTransaction_DeclinedByOperator_TransactionIsProcessed(){
             this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithOperator()));
-            this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
-            this.AggregateService.Get<OperatorAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedOperatorAggregate()));
+                .ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithOperator()));
+            this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
+            this.AggregateService.Get<OperatorAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedOperatorAggregate()));
             this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(TestData.GetEmptyTransactionAggregate()));
+                .ReturnsAsync(Results.Ok(TestData.GetEmptyTransactionAggregate()));
             this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success());
+                .ReturnsAsync(Results.Ok());
 
-            this.AggregateService.GetLatest<FloatAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetEmptyFloatAggregate()));
+            this.AggregateService.GetLatest<FloatAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetEmptyFloatAggregate()));
 
             this.TransactionValidationService.ValidateSaleTransaction(Arg<TransactionValidationIdentifiers>.Any(),
                                                                                    Arg<Guid>.Any(),
@@ -353,7 +353,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                                                                                    Arg<Guid>.Any(),
                                                                                    Arg<Decimal?>.Any(),
                                                                                    Arg<TransactionSource>.Any(),
-                                                                                   Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS")));
+                                                                                   Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS")));
 
             this.OperatorProxy.ProcessSaleMessage(Arg<Guid>.Any(),
                                                                Arg<Guid>.Any(),
@@ -361,7 +361,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                                                                Arg<DateTimeOffset>.Any(),
                                                                Arg<String>.Any(),
                                                                Arg<Dictionary<String, String>>.Any(),
-                                                               Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new OperatorResponse{
+                                                               Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(new OperatorResponse{
                                                                                                                                     ResponseMessage = TestData.OperatorResponseMessage,
                                                                                                                                     IsSuccessful = false,
                                                                                                                                     AuthorisationCode =
@@ -378,8 +378,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                     TestData.ContractId, TestData.ProductId, TestData.TransactionSource, TestData.TransactionReceivedDateTime);
             
             var result = await this.TransactionDomainService.ProcessSaleTransaction(command, TestContext.Current.CancellationToken);
-            result.IsSuccess.ShouldBeTrue();
-            var response = result.GetValueOrThrow();
+            result.IsSuccess().ShouldBeTrue();
+            var response = result.Data;
 
             response.EstateId.ShouldBe(TestData.EstateId);
             response.MerchantId.ShouldBe(TestData.MerchantId);
@@ -392,16 +392,16 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             TransactionCommands.ProcessSaleTransactionCommand command = CreateSaleCommand();
             TransactionAggregate transactionAggregate = CreateCompletedSaleAggregate(command);
             this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(transactionAggregate));
+                .ReturnsAsync(Results.Ok(transactionAggregate));
 
             Result<ProcessSaleTransactionResponse> result = await this.TransactionDomainService.ProcessSaleTransaction(command, TestContext.Current.CancellationToken);
 
-            result.IsSuccess.ShouldBeTrue();
-            result.GetValueOrThrow().ResponseCode.ShouldBe(transactionAggregate.ResponseCode);
-            result.GetValueOrThrow().ResponseMessage.ShouldBe(transactionAggregate.ResponseMessage);
-            result.GetValueOrThrow().TransactionId.ShouldBe(transactionAggregate.AggregateId);
-            result.GetValueOrThrow().AdditionalTransactionMetadata.ShouldBe(transactionAggregate.GetTransaction().AdditionalResponseMetadata);
-            result.GetValueOrThrow().TransactionIsComplete.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
+            result.Data.ResponseCode.ShouldBe(transactionAggregate.ResponseCode);
+            result.Data.ResponseMessage.ShouldBe(transactionAggregate.ResponseMessage);
+            result.Data.TransactionId.ShouldBe(transactionAggregate.AggregateId);
+            result.Data.AdditionalTransactionMetadata.ShouldBe(transactionAggregate.GetTransaction().AdditionalResponseMetadata);
+            result.Data.TransactionIsComplete.ShouldBeTrue();
             this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
             this.TransactionValidationService.ValidateSaleTransaction(Arg<TransactionValidationIdentifiers>.Any(), Arg<Guid>.Any(), Arg<Guid>.Any(), Arg<Guid>.Any(), Arg<Decimal?>.Any(), Arg<TransactionSource>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
         }
@@ -411,14 +411,14 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             TransactionCommands.ProcessSaleTransactionCommand command = CreateSaleCommand();
             TransactionAggregate transactionAggregate = CreateCompletedLocallyDeclinedSaleAggregate(command);
             this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(transactionAggregate));
+                .ReturnsAsync(Results.Ok(transactionAggregate));
 
             Result<ProcessSaleTransactionResponse> result = await this.TransactionDomainService.ProcessSaleTransaction(command, TestContext.Current.CancellationToken);
 
-            result.IsSuccess.ShouldBeTrue();
-            result.GetValueOrThrow().ResponseCode.ShouldBe(transactionAggregate.ResponseCode);
-            result.GetValueOrThrow().ResponseMessage.ShouldBe(transactionAggregate.ResponseMessage);
-            result.GetValueOrThrow().TransactionId.ShouldBe(transactionAggregate.AggregateId);
+            result.IsSuccess().ShouldBeTrue();
+            result.Data.ResponseCode.ShouldBe(transactionAggregate.ResponseCode);
+            result.Data.ResponseMessage.ShouldBe(transactionAggregate.ResponseMessage);
+            result.Data.TransactionId.ShouldBe(transactionAggregate.AggregateId);
             this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
             this.TransactionValidationService.ValidateSaleTransaction(Arg<TransactionValidationIdentifiers>.Any(), Arg<Guid>.Any(), Arg<Guid>.Any(), Arg<Guid>.Any(), Arg<Decimal?>.Any(), Arg<TransactionSource>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
         }
@@ -428,14 +428,14 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             TransactionCommands.ProcessSaleTransactionCommand originalCommand = CreateSaleCommand();
             TransactionAggregate transactionAggregate = CreateCompletedSaleAggregate(originalCommand);
             this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(transactionAggregate));
+                .ReturnsAsync(Results.Ok(transactionAggregate));
             Dictionary<String, String> changedMetadata = TestData.AdditionalTransactionMetaDataForMobileTopup(customerAccountNumber: "different-account");
             TransactionCommands.ProcessSaleTransactionCommand changedCommand = originalCommand with { AdditionalTransactionMetadata = changedMetadata };
 
             Result<ProcessSaleTransactionResponse> result = await this.TransactionDomainService.ProcessSaleTransaction(changedCommand, TestContext.Current.CancellationToken);
 
-            result.IsFailed.ShouldBeTrue();
-            result.Message.ShouldContain("already been completed with different request details");
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrorMessage().ShouldContain("already been completed with different request details");
             this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
             this.TransactionValidationService.ValidateSaleTransaction(Arg<TransactionValidationIdentifiers>.Any(), Arg<Guid>.Any(), Arg<Guid>.Any(), Arg<Guid>.Any(), Arg<Decimal?>.Any(), Arg<TransactionSource>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
         }
@@ -445,13 +445,13 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
             TransactionCommands.ProcessSaleTransactionCommand originalCommand = CreateSaleCommand();
             TransactionAggregate transactionAggregate = CreateCompletedSaleAggregate(originalCommand);
             this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(transactionAggregate));
+                .ReturnsAsync(Results.Ok(transactionAggregate));
             TransactionCommands.ProcessSaleTransactionCommand changedCommand = originalCommand with { ContractId = TestData.ContractId1 };
 
             Result<ProcessSaleTransactionResponse> result = await this.TransactionDomainService.ProcessSaleTransaction(changedCommand, TestContext.Current.CancellationToken);
 
-            result.IsFailed.ShouldBeTrue();
-            result.Message.ShouldContain("already been completed with different request details");
+            result.IsSuccess().ShouldBeFalse();
+            result.GetErrorMessage().ShouldContain("already been completed with different request details");
             this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
             this.TransactionValidationService.ValidateSaleTransaction(Arg<TransactionValidationIdentifiers>.Any(), Arg<Guid>.Any(), Arg<Guid>.Any(), Arg<Guid>.Any(), Arg<Decimal?>.Any(), Arg<TransactionSource>.Any(), Arg<CancellationToken>.Any()).Called(Count.Never());
         }
@@ -509,18 +509,18 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
         [Fact]
         public async Task TransactionDomainService_ProcessSaleTransaction_OperatorProxyThrowsException_TransactionIsProcessed()
         {
-            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
+            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
 
             this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithOperator()));
-            this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
-            this.AggregateService.Get<OperatorAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedOperatorAggregate()));
+                .ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithOperator()));
+            this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
+            this.AggregateService.Get<OperatorAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedOperatorAggregate()));
             this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(TestData.GetEmptyTransactionAggregate()));
+                .ReturnsAsync(Results.Ok(TestData.GetEmptyTransactionAggregate()));
             this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success());
+                .ReturnsAsync(Results.Ok());
 
-            this.AggregateService.GetLatest<FloatAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetEmptyFloatAggregate()));
+            this.AggregateService.GetLatest<FloatAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetEmptyFloatAggregate()));
 
             this.TransactionValidationService.ValidateSaleTransaction(Arg<TransactionValidationIdentifiers>.Any(),
                                                                                    Arg<Guid>.Any(),
@@ -528,7 +528,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                                                                                    Arg<Guid>.Any(),
                                                                                    Arg<Decimal?>.Any(),
                                                                                    Arg<TransactionSource>.Any(),
-                                                                                   Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS")));
+                                                                                   Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS")));
 
             this.OperatorProxy.ProcessSaleMessage(Arg<Guid>.Any(), Arg<Guid>.Any(), Arg<Models.Merchant.Merchant>.Any(), Arg<DateTimeOffset>.Any(), Arg<String>.Any(), Arg<Dictionary<String, String>>.Any(), Arg<CancellationToken>.Any()).Throws(new Exception());
             TransactionCommands.ProcessSaleTransactionCommand command =
@@ -539,8 +539,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                     TestData.ContractId, TestData.ProductId, TestData.TransactionSource, TestData.TransactionReceivedDateTime);
 
             var result = await this.TransactionDomainService.ProcessSaleTransaction(command, TestContext.Current.CancellationToken);
-            result.IsSuccess.ShouldBeTrue();
-            var response = result.GetValueOrThrow();
+            result.IsSuccess().ShouldBeTrue();
+            var response = result.Data;
 
             response.EstateId.ShouldBe(TestData.EstateId);
             response.MerchantId.ShouldBe(TestData.MerchantId);
@@ -550,22 +550,22 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
 
         [Fact]
         public async Task TransactionDomainService_ProcessSaleTransaction_TransactionIsProcessed(){
-            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
+            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
 
             this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithOperator()));
-            this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
-            this.AggregateService.Get<OperatorAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedOperatorAggregate()));
+                .ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithOperator()));
+            this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
+            this.AggregateService.Get<OperatorAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedOperatorAggregate()));
 
             TransactionAggregate transactionAggregate = TestData.GetEmptyTransactionAggregate();
             FloatAggregate floatAggregate = TestData.GetFloatAggregateWithCostValues();
 
             this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(transactionAggregate));
+                .ReturnsAsync(Results.Ok(transactionAggregate));
             this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success());
+                .ReturnsAsync(Results.Ok());
 
-            this.AggregateService.GetLatest<FloatAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(floatAggregate));
+            this.AggregateService.GetLatest<FloatAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(floatAggregate));
 
             this.TransactionValidationService.ValidateSaleTransaction(Arg<TransactionValidationIdentifiers>.Any(),
                                                                                    Arg<Guid>.Any(),
@@ -573,7 +573,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                                                                                    Arg<Guid>.Any(),
                                                                                    Arg<Decimal?>.Any(),
                                                                                    Arg<TransactionSource>.Any(),
-                                                                                   Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS")));
+                                                                                   Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS")));
 
             this.OperatorProxy.ProcessSaleMessage(Arg<Guid>.Any(),
                                                                Arg<Guid>.Any(),
@@ -581,7 +581,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                                                                Arg<DateTimeOffset>.Any(),
                                                                Arg<String>.Any(),
                                                                Arg<Dictionary<String, String>>.Any(),
-                                                               Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new OperatorResponse{
+                                                               Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(new OperatorResponse{
                                                                                                                                     ResponseMessage = TestData.OperatorResponseMessage,
                                                                                                                                     IsSuccessful = true,
                                                                                                                                     AuthorisationCode =
@@ -598,8 +598,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                     TestData.ContractId, TestData.ProductId, TestData.TransactionSource, TestData.TransactionReceivedDateTime);
 
             var result = await this.TransactionDomainService.ProcessSaleTransaction(command, TestContext.Current.CancellationToken);
-            result.IsSuccess.ShouldBeTrue();
-            var response = result.GetValueOrThrow();
+            result.IsSuccess().ShouldBeTrue();
+            var response = result.Data;
 
             response.EstateId.ShouldBe(TestData.EstateId);
             response.MerchantId.ShouldBe(TestData.MerchantId);
@@ -614,20 +614,20 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
         [Fact]
         public async Task TransactionDomainService_ProcessSaleTransaction_NoFloatFound_TransactionIsProcessed()
         {
-            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
+            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
 
             this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithOperator()));
-            this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
-            this.AggregateService.Get<OperatorAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedOperatorAggregate()));
+                .ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithOperator()));
+            this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
+            this.AggregateService.Get<OperatorAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedOperatorAggregate()));
             TransactionAggregate transactionAggregate = TestData.GetEmptyTransactionAggregate();
 
             this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(transactionAggregate));
+                .ReturnsAsync(Results.Ok(transactionAggregate));
             this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success());
+                .ReturnsAsync(Results.Ok());
 
-            this.AggregateService.GetLatest<FloatAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.NotFound("Not found"));
+            this.AggregateService.GetLatest<FloatAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(new Error(ErrorType.NotFound, "Not found"));
 
             this.TransactionValidationService.ValidateSaleTransaction(Arg<TransactionValidationIdentifiers>.Any(),
                                                                                    Arg<Guid>.Any(),
@@ -635,7 +635,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                                                                                    Arg<Guid>.Any(),
                                                                                    Arg<Decimal?>.Any(),
                                                                                    Arg<TransactionSource>.Any(),
-                                                                                   Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS")));
+                                                                                   Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS")));
 
             this.OperatorProxy.ProcessSaleMessage(Arg<Guid>.Any(),
                                                                Arg<Guid>.Any(),
@@ -643,7 +643,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                                                                Arg<DateTimeOffset>.Any(),
                                                                Arg<String>.Any(),
                                                                Arg<Dictionary<String, String>>.Any(),
-                                                               Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new OperatorResponse
+                                                               Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(new OperatorResponse
                                                                {
                                                                    ResponseMessage = TestData.OperatorResponseMessage,
                                                                    IsSuccessful = true,
@@ -661,8 +661,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                     TestData.ContractId, TestData.ProductId, TestData.TransactionSource, TestData.TransactionReceivedDateTime);
 
             var result = await this.TransactionDomainService.ProcessSaleTransaction(command, TestContext.Current.CancellationToken);
-            result.IsSuccess.ShouldBeTrue();
-            var response = result.GetValueOrThrow();
+            result.IsSuccess().ShouldBeTrue();
+            var response = result.Data;
 
             response.EstateId.ShouldBe(TestData.EstateId);
             response.MerchantId.ShouldBe(TestData.MerchantId);
@@ -682,9 +682,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
         [InlineData(TransactionResponseCode.ProductNotValidForMerchant)]
         public async Task TransactionDomainService_ProcessSaleTransaction_ValidationFailed_TransactionIsProcessed(TransactionResponseCode responseCode){
             this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(TestData.GetEmptyTransactionAggregate()));
+                .ReturnsAsync(Results.Ok(TestData.GetEmptyTransactionAggregate()));
             this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success());
+                .ReturnsAsync(Results.Ok());
 
             this.TransactionValidationService.ValidateSaleTransaction(Arg<TransactionValidationIdentifiers>.Any(),
                                                                                    Arg<Guid>.Any(),
@@ -692,9 +692,9 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                                                                                    Arg<Guid>.Any(),
                                                                                    Arg<Decimal?>.Any(),
                                                                                    Arg<TransactionSource>.Any(),
-                                                                                   Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new TransactionValidationResult(responseCode, responseCode.ToString())));
+                                                                                   Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(new TransactionValidationResult(responseCode, responseCode.ToString())));
 
-            this.AggregateService.GetLatest<FloatAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetEmptyFloatAggregate()));
+            this.AggregateService.GetLatest<FloatAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetEmptyFloatAggregate()));
 
             TransactionCommands.ProcessSaleTransactionCommand command =
                 new TransactionCommands.ProcessSaleTransactionCommand(TestData.EstateId,
@@ -704,8 +704,8 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                     TestData.ContractId, TestData.ProductId, TestData.TransactionSource, TestData.TransactionReceivedDateTime);
 
             var result = await this.TransactionDomainService.ProcessSaleTransaction(command, TestContext.Current.CancellationToken);
-            result.IsSuccess.ShouldBeTrue();
-            var response = result.GetValueOrThrow();
+            result.IsSuccess().ShouldBeTrue();
+            var response = result.Data;
 
             response.EstateId.ShouldBe(TestData.EstateId);
             response.MerchantId.ShouldBe(TestData.MerchantId);
@@ -716,12 +716,12 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
         [Fact]
         public async Task TransactionDomainService_ResendTransactionReceipt_TransactionReceiptResendIsRequested(){
             this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionWithReceiptRequestedAggregate()));
+                .ReturnsAsync(Results.Ok(TestData.GetCompletedAuthorisedSaleTransactionWithReceiptRequestedAggregate()));
             this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success());
+                .ReturnsAsync(Results.Ok());
             TransactionCommands.ResendTransactionReceiptCommand command = new(TestData.TransactionId, TestData.EstateId);
             var result = await this.TransactionDomainService.ResendTransactionReceipt(command, TestContext.Current.CancellationToken);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
         }
 
         [Fact]
@@ -815,164 +815,164 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
 
         [Fact]
         public async Task TransactionDomainService_CalculateFeesForTransaction_FeesCalculated() {
-            this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregate()));
-            this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
+            this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetCompletedAuthorisedSaleTransactionAggregate()));
+            this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok());
             this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithOperator()));
-            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
-            this.AggregateService.Get<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed, FeeType.Merchant)));
+                .ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithOperator()));
+            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
+            this.AggregateService.Get<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed, FeeType.Merchant)));
             this.FeeCalculationManager.CalculateFees(Arg<List<TransactionFeeToCalculate>>.Any(), Arg<Decimal>.Any(), Arg<DateTimeOffset>.Any()).Returns(TestData.CalculatedMerchantFees);
 
             TransactionCommands.CalculateFeesForTransactionCommand command = new(TestData.TransactionId, TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
 
             var result = await this.TransactionDomainService.CalculateFeesForTransaction(command, TestContext.Current.CancellationToken);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
         }
 
         [Fact]
         public async Task TransactionDomainService_CalculateFeesForTransaction_MerchantWithImmediateSettlement_FeesCalculated()
         {
-            this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregate()));
-            this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
-            this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
-            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
-            this.AggregateService.Get<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed, FeeType.Merchant)));
+            this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetCompletedAuthorisedSaleTransactionAggregate()));
+            this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok());
+            this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithEverything(SettlementSchedule.Immediate)));
+            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
+            this.AggregateService.Get<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed, FeeType.Merchant)));
             this.FeeCalculationManager.CalculateFees(Arg<List<TransactionFeeToCalculate>>.Any(), Arg<Decimal>.Any(), Arg<DateTimeOffset>.Any()).Returns(TestData.CalculatedMerchantFees);
 
             TransactionCommands.CalculateFeesForTransactionCommand command = new(TestData.TransactionId, TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
 
             var result = await this.TransactionDomainService.CalculateFeesForTransaction(command, TestContext.Current.CancellationToken);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
         }
 
         [Fact]
         public async Task TransactionDomainService_CalculateFeesForTransaction_NonMerchantFees_FeesCalculated()
         {
-            this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregate()));
-            this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
+            this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetCompletedAuthorisedSaleTransactionAggregate()));
+            this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok());
             this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithOperator()));
-            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
-            this.AggregateService.Get<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed, FeeType.ServiceProvider)));
+                .ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithOperator()));
+            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
+            this.AggregateService.Get<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed, FeeType.ServiceProvider)));
             this.FeeCalculationManager.CalculateFees(Arg<List<TransactionFeeToCalculate>>.Any(), Arg<Decimal>.Any(), Arg<DateTimeOffset>.Any()).Returns(TestData.CalculatedServiceProviderFees);
 
             TransactionCommands.CalculateFeesForTransactionCommand command = new(TestData.TransactionId, TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
 
             var result = await this.TransactionDomainService.CalculateFeesForTransaction(command, TestContext.Current.CancellationToken);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
         }
 
         [Fact]
         public async Task TransactionDomainService_CalculateFeesForTransaction_TransactionNotNeedingFeeCaclulation_FeesCalculated()
         {
-            this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetCompletedLogonTransactionAggregate()));
-            this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
-            this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithOperator()));
-            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
+            this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetCompletedLogonTransactionAggregate()));
+            this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok());
+            this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithOperator()));
+            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
 
             this.FeeCalculationManager.CalculateFees(Arg<List<TransactionFeeToCalculate>>.Any(), Arg<Decimal>.Any(), Arg<DateTimeOffset>.Any()).Returns(TestData.CalculatedServiceProviderFees);
 
             TransactionCommands.CalculateFeesForTransactionCommand command = new(TestData.TransactionId, TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
 
             var result = await this.TransactionDomainService.CalculateFeesForTransaction(command, TestContext.Current.CancellationToken);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
         }
 
         [Fact]
         public async Task TransactionDomainService_CalculateFeesForTransaction_NoFeesReturned_FeesCalculated()
         {
-            this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregate()));
-            this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
+            this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetCompletedAuthorisedSaleTransactionAggregate()));
+            this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok());
 
-            //this.EstateClient.GetTransactionFeesForProduct(Arg<String>.Any(), Arg<Guid>.Any(), Arg<Guid>.Any(), Arg<Guid>.Any(), Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure("Test failure"));
+            //this.EstateClient.GetTransactionFeesForProduct(Arg<String>.Any(), Arg<Guid>.Any(), Arg<Guid>.Any(), Arg<Guid>.Any(), Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
             this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithOperator()));
-            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
+                .ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithOperator()));
+            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
 
             this.FeeCalculationManager.CalculateFees(Arg<List<TransactionFeeToCalculate>>.Any(), Arg<Decimal>.Any(), Arg<DateTimeOffset>.Any()).Returns(TestData.CalculatedServiceProviderFees);
 
             TransactionCommands.CalculateFeesForTransactionCommand command = new(TestData.TransactionId, TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
 
             var result = await this.TransactionDomainService.CalculateFeesForTransaction(command, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task TransactionDomainService_AddSettledMerchantFee_FeeAdded() {
-            this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregateWithPendingFee(TestData.TransactionFeeId)));
-            this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
+            this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetCompletedAuthorisedSaleTransactionAggregateWithPendingFee(TestData.TransactionFeeId)));
+            this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok());
 
             TransactionCommands.AddSettledMerchantFeeCommand command = new(TestData.TransactionId, TestData.CalculatedFeeValue, TestData.TransactionFeeCalculateDateTime, CalculationType.Fixed, TestData.TransactionFeeId, TestData.CalculatedFeeValue, TestData.SettlementDate, TestData.SettlementAggregateId);
 
             var result = await this.TransactionDomainService.AddSettledMerchantFee(command, TestContext.Current.CancellationToken);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
         }
 
         [Fact]
         public async Task TransactionDomainService_AddSettledMerchantFee_SaveFailed_ResultFailed()
         {
-            this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregate()));
-            this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure("Test failure"));
+            this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetCompletedAuthorisedSaleTransactionAggregate()));
+            this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
             TransactionCommands.AddSettledMerchantFeeCommand command = new(TestData.TransactionId, TestData.CalculatedFeeValue, TestData.TransactionFeeCalculateDateTime, CalculationType.Fixed, TestData.TransactionFeeId, TestData.CalculatedFeeValue, TestData.SettlementDate, TestData.SettlementAggregateId);
 
             var result = await this.TransactionDomainService.AddSettledMerchantFee(command, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task TransactionDomainService_SendCustomerEmailReceipt_ReceiptSent() {
-            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
-            this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregate()));
-            this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.EstateAggregateWithOperator()));
+            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
+            this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetCompletedAuthorisedSaleTransactionAggregate()));
+            this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
             this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithOperator()));
+                .ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithOperator()));
             this.TransactionReceiptBuilder.GetEmailReceiptMessage(Arg<Models.Transaction>.Any(), Arg<Merchant>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync("EmailMessage");
-            this.MessagingServiceClient.SendEmail(Arg<String>.Any(), Arg<SendEmailRequest>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
+            this.MessagingServiceClient.SendEmail(Arg<String>.Any(), Arg<SendEmailRequest>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok());
             TransactionCommands.SendCustomerEmailReceiptCommand command = new(TestData.EstateId, TestData.TransactionId, Guid.NewGuid(), TestData.CustomerEmailAddress);
             var result = await this.TransactionDomainService.SendCustomerEmailReceipt(command, TestContext.Current.CancellationToken);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
         }
 
         [Fact] 
         public async Task TransactionDomainService_SendCustomerEmailReceipt_GetTransactionFailed_ResultFailed()
         {
-            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
-            this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure("Test failure"));
+            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
+            this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
             
             TransactionCommands.SendCustomerEmailReceiptCommand command = new(TestData.EstateId, TestData.TransactionId, Guid.NewGuid(), TestData.CustomerEmailAddress);
             var result = await this.TransactionDomainService.SendCustomerEmailReceipt(command, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task TransactionDomainService_ResendCustomerEmailReceipt_ReceiptSent()
         {
-            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
-            this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregate()));
+            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
+            this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetCompletedAuthorisedSaleTransactionAggregate()));
             
-            this.MessagingServiceClient.ResendEmail(Arg<String>.Any(), Arg<ResendEmailRequest>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
+            this.MessagingServiceClient.ResendEmail(Arg<String>.Any(), Arg<ResendEmailRequest>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok());
             TransactionCommands.ResendCustomerEmailReceiptCommand command = new(TestData.EstateId, TestData.TransactionId);
             var result = await this.TransactionDomainService.ResendCustomerEmailReceipt(command, TestContext.Current.CancellationToken);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
         }
 
         [Fact]
         public async Task TransactionDomainService_ResendCustomerEmailReceipt_GetTransactionFailed_ResultFailed()
         {
-            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
-            this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure("Test failure"));
+            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
+            this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
             TransactionCommands.ResendCustomerEmailReceiptCommand command = new(TestData.EstateId, TestData.TransactionId);
             var result = await this.TransactionDomainService.ResendCustomerEmailReceipt(command, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task TransactionDomainService_ProcessLogonTransaction_GetAggregateFailed_ResultFailed()
         {
             this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure("Test failure"));
+                .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
             TransactionCommands.ProcessLogonTransactionCommand command = new(TestData.EstateId,
                 TestData.MerchantId,
@@ -982,18 +982,18 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                 TestData.TransactionNumber, TestData.TransactionReceivedDateTime);
 
             var result = await this.TransactionDomainService.ProcessLogonTransaction(command, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task TransactionDomainService_ProcessLogonTransaction_SaveFailed_ResultFailed()
         {
             this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(TestData.GetEmptyTransactionAggregate()));
+                .ReturnsAsync(Results.Ok(TestData.GetEmptyTransactionAggregate()));
             this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure("Test failure"));
+                .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
             this.TransactionValidationService.ValidateLogonTransaction(Arg<TransactionValidationIdentifiers>.Any(),
-                                                                                    Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS")));
+                                                                                    Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS")));
 
             TransactionCommands.ProcessLogonTransactionCommand command = new(TestData.EstateId,
                 TestData.MerchantId,
@@ -1003,14 +1003,14 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                 TestData.TransactionNumber, TestData.TransactionReceivedDateTime);
 
             var result = await this.TransactionDomainService.ProcessLogonTransaction(command, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task TransactionDomainService_ProcessReconciliationTransaction_GetAggregateFailed_ResultFailed()
         {
             this.AggregateService.GetLatest<ReconciliationAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure("Test failure"));
+                .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
             TransactionCommands.ProcessReconciliationCommand command =
                 new(TestData.EstateId,
@@ -1019,19 +1019,19 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                     TestData.HostDateTime);
 
             var result = await this.TransactionDomainService.ProcessReconciliationTransaction(command, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task TransactionDomainService_ProcessReconciliationTransaction_SaveFailed_ResultFailed()
         {
             this.AggregateService.GetLatest<ReconciliationAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(new ReconciliationAggregate()));
+                .ReturnsAsync(Results.Ok(new ReconciliationAggregate()));
             this.AggregateService.Save(Arg<ReconciliationAggregate>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure("Test failure"));
+                .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
             this.TransactionValidationService.ValidateReconciliationTransaction(Arg<TransactionValidationIdentifiers>.Any(),
                 TestData.ReconciliationTransactionCount, TestData.ReconciliationTransactionValue, Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS")));
+                .ReturnsAsync(Results.Ok(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS")));
 
             TransactionCommands.ProcessReconciliationCommand command =
                 new(TestData.EstateId,
@@ -1040,38 +1040,38 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                     TestData.HostDateTime);
 
             var result = await this.TransactionDomainService.ProcessReconciliationTransaction(command, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task TransactionDomainService_ResendTransactionReceipt_GetAggregateFailed_ResultFailed()
         {
             this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure("Test failure"));
+                .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
             TransactionCommands.ResendTransactionReceiptCommand command = new(TestData.TransactionId, TestData.EstateId);
             var result = await this.TransactionDomainService.ResendTransactionReceipt(command, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task TransactionDomainService_ResendTransactionReceipt_SaveFailed_ResultFailed()
         {
             this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionWithReceiptRequestedAggregate()));
+                .ReturnsAsync(Results.Ok(TestData.GetCompletedAuthorisedSaleTransactionWithReceiptRequestedAggregate()));
             this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure("Test failure"));
+                .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
             TransactionCommands.ResendTransactionReceiptCommand command = new(TestData.TransactionId, TestData.EstateId);
             var result = await this.TransactionDomainService.ResendTransactionReceipt(command, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task TransactionDomainService_ProcessSaleTransaction_GetAggregateFailed_ResultFailed()
         {
             this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure("Test failure"));
+                .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
             TransactionCommands.ProcessSaleTransactionCommand command =
                 new TransactionCommands.ProcessSaleTransactionCommand(TestData.EstateId,
@@ -1081,34 +1081,34 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                     TestData.ContractId, TestData.ProductId, TestData.TransactionSource, TestData.TransactionReceivedDateTime);
 
             var result = await this.TransactionDomainService.ProcessSaleTransaction(command, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task TransactionDomainService_ProcessSaleTransaction_SaveFailed_ResultFailed()
         {
             this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithOperator()));
-            this.AggregateService.Get<OperatorAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedOperatorAggregate()));
+                .ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithOperator()));
+            this.AggregateService.Get<OperatorAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedOperatorAggregate()));
             this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(TestData.GetEmptyTransactionAggregate()));
+                .ReturnsAsync(Results.Ok(TestData.GetEmptyTransactionAggregate()));
             this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure("Test failure"));
-            this.AggregateService.GetLatest<FloatAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.NotFound("Not found"));
+                .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
+            this.AggregateService.GetLatest<FloatAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(new Error(ErrorType.NotFound, "Not found"));
             this.TransactionValidationService.ValidateSaleTransaction(Arg<TransactionValidationIdentifiers>.Any(),
                                                                                    Arg<Guid>.Any(),
                                                                                    Arg<Guid>.Any(),
                                                                                    Arg<Guid>.Any(),
                                                                                    Arg<Decimal?>.Any(),
                                                                                    Arg<TransactionSource>.Any(),
-                                                                                   Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS")));
+                                                                                   Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(new TransactionValidationResult(TransactionResponseCode.Success, "SUCCESS")));
             this.OperatorProxy.ProcessSaleMessage(Arg<Guid>.Any(),
                                                                Arg<Guid>.Any(),
                                                                Arg<Models.Merchant.Merchant>.Any(),
                                                                Arg<DateTimeOffset>.Any(),
                                                                Arg<String>.Any(),
                                                                Arg<Dictionary<String, String>>.Any(),
-                                                               Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(new OperatorResponse {
+                                                               Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(new OperatorResponse {
                                                                    ResponseMessage = TestData.OperatorResponseMessage,
                                                                    IsSuccessful = true,
                                                                    AuthorisationCode = TestData.OperatorAuthorisationCode,
@@ -1124,110 +1124,110 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services{
                     TestData.ContractId, TestData.ProductId, TestData.TransactionSource, TestData.TransactionReceivedDateTime);
 
             var result = await this.TransactionDomainService.ProcessSaleTransaction(command, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task TransactionDomainService_CalculateFeesForTransaction_GetAggregateFailed_ResultFailed()
         {
             this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure("Test failure"));
+                .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
             TransactionCommands.CalculateFeesForTransactionCommand command = new(TestData.TransactionId, TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
 
             var result = await this.TransactionDomainService.CalculateFeesForTransaction(command, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task TransactionDomainService_CalculateFeesForTransaction_MerchantSettlementScheduleNotSet_ResultFailed()
         {
-            this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregate()));
-            this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
+            this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetCompletedAuthorisedSaleTransactionAggregate()));
+            this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok());
             this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(TestData.Aggregates.EmptyMerchantAggregate()));
-            this.AggregateService.Get<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed, FeeType.Merchant)));
+                .ReturnsAsync(Results.Ok(TestData.Aggregates.EmptyMerchantAggregate()));
+            this.AggregateService.Get<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed, FeeType.Merchant)));
             this.FeeCalculationManager.CalculateFees(Arg<List<TransactionFeeToCalculate>>.Any(), Arg<Decimal>.Any(), Arg<DateTimeOffset>.Any()).Returns(TestData.CalculatedMerchantFees);
 
             TransactionCommands.CalculateFeesForTransactionCommand command = new(TestData.TransactionId, TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
 
             var result = await this.TransactionDomainService.CalculateFeesForTransaction(command, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task TransactionDomainService_CalculateFeesForTransaction_SaveFailed_ResultFailed()
         {
-            this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregate()));
-            this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure("Test failure"));
+            this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetCompletedAuthorisedSaleTransactionAggregate()));
+            this.AggregateService.Save(Arg<TransactionAggregate>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
             this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithOperator()));
-            this.AggregateService.Get<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed, FeeType.Merchant)));
+                .ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithOperator()));
+            this.AggregateService.Get<ContractAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedContractAggregateWithAProductAndTransactionFee(CalculationType.Fixed, FeeType.Merchant)));
             this.FeeCalculationManager.CalculateFees(Arg<List<TransactionFeeToCalculate>>.Any(), Arg<Decimal>.Any(), Arg<DateTimeOffset>.Any()).Returns(TestData.CalculatedMerchantFees);
 
             TransactionCommands.CalculateFeesForTransactionCommand command = new(TestData.TransactionId, TestData.TransactionDateTime, TestData.EstateId, TestData.MerchantId);
 
             var result = await this.TransactionDomainService.CalculateFeesForTransaction(command, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task TransactionDomainService_AddSettledMerchantFee_GetAggregateFailed_ResultFailed()
         {
             this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure("Test failure"));
+                .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
             TransactionCommands.AddSettledMerchantFeeCommand command = new(TestData.TransactionId, TestData.CalculatedFeeValue, TestData.TransactionFeeCalculateDateTime, CalculationType.Fixed, TestData.TransactionFeeId, TestData.CalculatedFeeValue, TestData.SettlementDate, TestData.SettlementAggregateId);
 
             var result = await this.TransactionDomainService.AddSettledMerchantFee(command, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task TransactionDomainService_SendCustomerEmailReceipt_GetTokenFailed_ResultFailed()
         {
-            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure("Test failure"));
+            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
             TransactionCommands.SendCustomerEmailReceiptCommand command = new(TestData.EstateId, TestData.TransactionId, Guid.NewGuid(), TestData.CustomerEmailAddress);
             var result = await this.TransactionDomainService.SendCustomerEmailReceipt(command, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task TransactionDomainService_SendCustomerEmailReceipt_GetMerchantFailed_ResultFailed()
         {
-            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
-            this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregate()));
+            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
+            this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetCompletedAuthorisedSaleTransactionAggregate()));
             this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Failure("Test failure"));
+                .ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
             TransactionCommands.SendCustomerEmailReceiptCommand command = new(TestData.EstateId, TestData.TransactionId, Guid.NewGuid(), TestData.CustomerEmailAddress);
             var result = await this.TransactionDomainService.SendCustomerEmailReceipt(command, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task TransactionDomainService_SendCustomerEmailReceipt_GetEstateFailed_ResultFailed()
         {
-            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetTokenResponse()));
-            this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success(TestData.GetCompletedAuthorisedSaleTransactionAggregate()));
+            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetTokenResponse()));
+            this.AggregateService.GetLatest<TransactionAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.GetCompletedAuthorisedSaleTransactionAggregate()));
             this.AggregateService.Get<MerchantAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
-                .ReturnsAsync(Result.Success(TestData.Aggregates.MerchantAggregateWithOperator()));
-            this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure("Test failure"));
+                .ReturnsAsync(Results.Ok(TestData.Aggregates.MerchantAggregateWithOperator()));
+            this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
             TransactionCommands.SendCustomerEmailReceiptCommand command = new(TestData.EstateId, TestData.TransactionId, Guid.NewGuid(), TestData.CustomerEmailAddress);
             var result = await this.TransactionDomainService.SendCustomerEmailReceipt(command, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         [Fact]
         public async Task TransactionDomainService_ResendCustomerEmailReceipt_GetTokenFailed_ResultFailed()
         {
-            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Failure("Test failure"));
+            this.SecurityServiceClient.GetToken(Arg<String>.Any(), Arg<String>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(new Error(ErrorType.Failure, "Test failure"));
 
             TransactionCommands.ResendCustomerEmailReceiptCommand command = new(TestData.EstateId, TestData.TransactionId);
             var result = await this.TransactionDomainService.ResendCustomerEmailReceipt(command, TestContext.Current.CancellationToken);
-            result.IsFailed.ShouldBeTrue();
+            result.IsSuccess().ShouldBeFalse();
         }
 
         #endregion

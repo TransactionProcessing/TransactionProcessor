@@ -9,7 +9,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Mediator;
 
 public class DummyOperatorDomainService : IOperatorDomainService
 {
-    public async Task<Result<Guid>> CreateOperator(OperatorCommands.CreateOperatorCommand command, CancellationToken cancellationToken) => Result.Success(Guid.NewGuid());
+    public async Task<Result<Guid>> CreateOperator(OperatorCommands.CreateOperatorCommand command, CancellationToken cancellationToken) => Results.Ok(Guid.NewGuid());
 
-    public async Task<Result> UpdateOperator(OperatorCommands.UpdateOperatorCommand command, CancellationToken cancellationToken) => Result.Success();
+    public async Task<Result> UpdateOperator(OperatorCommands.UpdateOperatorCommand command, CancellationToken cancellationToken) => Results.Ok();
 }

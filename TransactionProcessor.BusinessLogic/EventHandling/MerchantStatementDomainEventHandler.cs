@@ -70,7 +70,7 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
                 _ => null
             };
 
-            Result result = Result.Success();
+            Result result = Results.Ok();
             if (t != null)
                 result = await t;
             sw.Stop();
@@ -86,7 +86,7 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
             // Convert the byte array to a string
             string statementDataHtml = System.Text.Encoding.UTF8.GetString(data);
             await File.WriteAllTextAsync($"C:\\Temp\\statements\\inbound\\{domainEvent.MerchantStatementId}.html", statementDataHtml, cancellationToken);
-            return Result.Success();
+            return Results.Ok();
         }
 
         private async Task<Result> HandleSpecificDomainEvent(MerchantStatementForDateDomainEvents.StatementCreatedForDateEvent domainEvent,
@@ -110,7 +110,7 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
 
         private async Task<Result> HandleSpecificDomainEvent(TransactionDomainEvents.TransactionHasBeenCompletedEvent domainEvent,
                                                              CancellationToken cancellationToken) {
-            IAsyncPolicy<Result> retryPolicy = PolicyFactory.CreatePolicy<Result>(policyTag: "MerchantStatementDomainEventHandler - HandleSpecificDomainEvent<SettlementDomainEvents.TransactionHasBeenCompletedEvent>");
+            IAsyncPolicy<Result> retryPolicy = PolicyFactory.CreatePolicy(policyTag: "MerchantStatementDomainEventHandler - HandleSpecificDomainEvent<SettlementDomainEvents.TransactionHasBeenCompletedEvent>");
 
             try
             {
@@ -126,7 +126,7 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
             }
             catch (Exception ex)
             {
-                return Result.Failure(ex.GetExceptionMessages());
+                return ResultHelpers.CreateFailure(ex.GetExceptionMessages());
             }
         }
 
@@ -159,7 +159,7 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
         private async Task<Result> HandleSpecificDomainEvent(SettlementDomainEvents.MerchantFeeSettledEvent domainEvent,
                                                              CancellationToken cancellationToken)
         {
-            IAsyncPolicy<Result> retryPolicy = PolicyFactory.CreatePolicy<Result>(policyTag: "MerchantStatementDomainEventHandler - HandleSpecificDomainEvent<SettlementDomainEvents.MerchantFeeSettledEvent>");
+            IAsyncPolicy<Result> retryPolicy = PolicyFactory.CreatePolicy(policyTag: "MerchantStatementDomainEventHandler - HandleSpecificDomainEvent<SettlementDomainEvents.MerchantFeeSettledEvent>");
 
             try
             {
@@ -175,7 +175,7 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
             }
             catch (Exception ex)
             {
-                return Result.Failure(ex.GetExceptionMessages());
+                return ResultHelpers.CreateFailure(ex.GetExceptionMessages());
             }
         }
 

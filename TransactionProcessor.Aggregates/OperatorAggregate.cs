@@ -48,15 +48,15 @@ namespace TransactionProcessor.Aggregates
                                   Boolean requireCustomTerminalNumber)
         {
             if (estateId == Guid.Empty)
-                return Result.Invalid("Estate Id must not be an empty Guid");
+                return new Error(ErrorType.Validation, "Estate Id must not be an empty Guid");
             if (String.IsNullOrEmpty(name))
-                return Result.Invalid("Operator name must not be null or empty");
+                return new Error(ErrorType.Validation, "Operator name must not be null or empty");
 
             OperatorDomainEvents.OperatorCreatedEvent operatorCreatedEvent = new(aggregate.AggregateId, estateId, name, requireCustomMerchantNumber, requireCustomTerminalNumber);
 
             aggregate.ApplyAndAppend(operatorCreatedEvent);
 
-            return Result.Success();
+            return Results.Ok();
         }
 
         [Pure]
@@ -66,7 +66,7 @@ namespace TransactionProcessor.Aggregates
                                           Boolean requireCustomTerminalNumber)
         {
             if (aggregate.IsCreated == false)
-                return Result.Invalid("Operator has not been created");
+                return new Error(ErrorType.Validation, "Operator has not been created");
 
             if (String.Compare(name, aggregate.Name, StringComparison.InvariantCultureIgnoreCase) != 0 &&
                 String.IsNullOrEmpty(name) == false)
@@ -87,7 +87,7 @@ namespace TransactionProcessor.Aggregates
                 aggregate.ApplyAndAppend(operatorRequireCustomTerminalNumberChangedEvent);
             }
 
-            return Result.Success();
+            return Results.Ok();
         }
     }
 

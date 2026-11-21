@@ -14,7 +14,7 @@ public class FileImportLogEventTests : BaseTest {
     private async Task CreateFileImportLogAsync()
     {
         Result result = await this.Repository.AddFileImportLog(TestData.DomainEvents.ImportLogCreatedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     private async Task CreateFileAsync()
@@ -22,7 +22,7 @@ public class FileImportLogEventTests : BaseTest {
         await this.CreateFileImportLogAsync();
 
         Result result = await this.Repository.AddFile(TestData.DomainEvents.FileCreatedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     private async Task CreateFileLineAsync()
@@ -30,14 +30,14 @@ public class FileImportLogEventTests : BaseTest {
         await this.CreateFileAsync();
 
         Result result = await this.Repository.AddFileLineToFile(TestData.DomainEvents.FileLineAddedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
     public async Task AddFileImportLog_FileImportLogIsAdded()
     {
         Result result = await this.Repository.AddFileImportLog(TestData.DomainEvents.ImportLogCreatedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         EstateManagementContext context = this.GetContext();
         var fileImportLog = await context.FileImportLogs.SingleOrDefaultAsync(f => f.FileImportLogId == TestData.DomainEvents.ImportLogCreatedEvent.FileImportLogId, TestContext.Current.CancellationToken);
         fileImportLog.ShouldNotBeNull();
@@ -49,17 +49,17 @@ public class FileImportLogEventTests : BaseTest {
     public async Task AddFileImportLog_EventReplayHandled()
     {
         Result result = await this.Repository.AddFileImportLog(TestData.DomainEvents.ImportLogCreatedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         result = await this.Repository.AddFileImportLog(TestData.DomainEvents.ImportLogCreatedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
     public async Task AddFileImportLogFile_FileImportLogIsAdded()
     {
         Result result = await this.Repository.AddFileToImportLog(TestData.DomainEvents.FileAddedToImportLogEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         EstateManagementContext context = this.GetContext();
         var fileImportLogFile = await context.FileImportLogFiles.SingleOrDefaultAsync(f => f.FileImportLogId == TestData.DomainEvents.FileAddedToImportLogEvent.FileImportLogId && f.FileId == TestData.DomainEvents.FileAddedToImportLogEvent.FileId, TestContext.Current.CancellationToken);
         fileImportLogFile.ShouldNotBeNull();
@@ -71,10 +71,10 @@ public class FileImportLogEventTests : BaseTest {
     public async Task AddFileImportLogFile_EventReplayHandled()
     {
         Result result = await this.Repository.AddFileToImportLog(TestData.DomainEvents.FileAddedToImportLogEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         result = await this.Repository.AddFileToImportLog(TestData.DomainEvents.FileAddedToImportLogEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
@@ -83,7 +83,7 @@ public class FileImportLogEventTests : BaseTest {
         await this.CreateFileImportLogAsync();
 
         Result result = await this.Repository.AddFile(TestData.DomainEvents.FileCreatedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
         TransactionProcessor.Database.Entities.File? file = await context.Files.SingleOrDefaultAsync(f => f.FileId == TestData.DomainEvents.FileCreatedEvent.FileId, TestContext.Current.CancellationToken);
@@ -101,9 +101,9 @@ public class FileImportLogEventTests : BaseTest {
         await this.CreateFileImportLogAsync();
 
         Result result = await this.Repository.AddFile(TestData.DomainEvents.FileCreatedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         result = await this.Repository.AddFile(TestData.DomainEvents.FileCreatedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
@@ -112,7 +112,7 @@ public class FileImportLogEventTests : BaseTest {
         await this.CreateFileAsync();
 
         Result result = await this.Repository.AddFileLineToFile(TestData.DomainEvents.FileLineAddedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
         FileLine? fileLine = await context.FileLines.SingleOrDefaultAsync(f => f.FileId == TestData.DomainEvents.FileLineAddedEvent.FileId && f.LineNumber == TestData.DomainEvents.FileLineAddedEvent.LineNumber, TestContext.Current.CancellationToken);
@@ -127,9 +127,9 @@ public class FileImportLogEventTests : BaseTest {
         await this.CreateFileAsync();
 
         Result result = await this.Repository.AddFileLineToFile(TestData.DomainEvents.FileLineAddedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
         result = await this.Repository.AddFileLineToFile(TestData.DomainEvents.FileLineAddedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
     }
 
     [Fact]
@@ -138,7 +138,7 @@ public class FileImportLogEventTests : BaseTest {
         await this.CreateFileAsync();
 
         Result result = await this.Repository.UpdateFileAsComplete(TestData.DomainEvents.FileProcessingCompletedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
         TransactionProcessor.Database.Entities.File? file = await context.Files.SingleOrDefaultAsync(f => f.FileId == TestData.DomainEvents.FileProcessingCompletedEvent.FileId, TestContext.Current.CancellationToken);
@@ -152,7 +152,7 @@ public class FileImportLogEventTests : BaseTest {
         await this.CreateFileLineAsync();
 
         Result result = await this.Repository.UpdateFileLine(TestData.DomainEvents.FileLineProcessingSuccessfulEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
         FileLine? fileLine = await context.FileLines.SingleOrDefaultAsync(f => f.FileId == TestData.DomainEvents.FileLineProcessingSuccessfulEvent.FileId && f.LineNumber == TestData.DomainEvents.FileLineProcessingSuccessfulEvent.LineNumber, TestContext.Current.CancellationToken);
@@ -167,7 +167,7 @@ public class FileImportLogEventTests : BaseTest {
         await this.CreateFileLineAsync();
 
         Result result = await this.Repository.UpdateFileLine(TestData.DomainEvents.FileLineProcessingFailedEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
         FileLine? fileLine = await context.FileLines.SingleOrDefaultAsync(f => f.FileId == TestData.DomainEvents.FileLineProcessingFailedEvent.FileId && f.LineNumber == TestData.DomainEvents.FileLineProcessingFailedEvent.LineNumber, TestContext.Current.CancellationToken);
@@ -182,7 +182,7 @@ public class FileImportLogEventTests : BaseTest {
         await this.CreateFileLineAsync();
 
         Result result = await this.Repository.UpdateFileLine(TestData.DomainEvents.FileLineProcessingIgnoredEvent, TestContext.Current.CancellationToken);
-        result.IsSuccess.ShouldBeTrue();
+        result.IsSuccess().ShouldBeTrue();
 
         EstateManagementContext context = this.GetContext();
         FileLine? fileLine = await context.FileLines.SingleOrDefaultAsync(f => f.FileId == TestData.DomainEvents.FileLineProcessingIgnoredEvent.FileId && f.LineNumber == TestData.DomainEvents.FileLineProcessingIgnoredEvent.LineNumber, TestContext.Current.CancellationToken);

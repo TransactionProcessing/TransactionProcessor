@@ -33,12 +33,20 @@ public class DomainEventEndpointTests
     public async Task PostEvent_WhenAllHandlersSucceed_ReturnsOk()
     {
         DomainEvent domainEvent = CreateDomainEvent();
-        await using WebApplication app = await CreateApplication(new ResultDomainEventHandler(Result.Success()));
+        await using WebApplication app = await CreateApplication(new ResultDomainEventHandler(Results.Ok()));
         using HttpClient client = app.GetTestClient();
 
         using HttpResponseMessage response = await PostDomainEvent(client, domainEvent);
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
+        (await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken)).ShouldBeEmpty();
+
+        String document = await client.GetStringAsync("/openapi/v1.json", TestContext.Current.CancellationToken);
+        using JsonDocument openApi = JsonDocument.Parse(document);
+        JsonElement ok = openApi.RootElement.GetProperty("paths").GetProperty("/api/domainevents")
+            .GetProperty("post").GetProperty("responses").GetProperty("200");
+        if (ok.TryGetProperty("content", out JsonElement content))
+            content.EnumerateObject().ShouldBeEmpty();
     }
 
     [Fact]
@@ -69,7 +77,7 @@ public class DomainEventEndpointTests
     public async Task PostEvent_WhenHandlerReturnsFailure_ReturnsCriticalProblemDetails()
     {
         DomainEvent domainEvent = CreateDomainEvent();
-        await using WebApplication app = await CreateApplication(new ResultDomainEventHandler(Result.Failure("Transaction was not found")));
+        await using WebApplication app = await CreateApplication(new ResultDomainEventHandler(new Error(ErrorType.Failure, "Transaction was not found")));
         using HttpClient client = app.GetTestClient();
 
         using HttpResponseMessage response = await PostDomainEvent(client, domainEvent);
@@ -87,7 +95,7 @@ public class DomainEventEndpointTests
     {
         DomainEvent domainEvent = CreateDomainEvent();
         await using WebApplication app = await CreateApplication(
-            new ResultDomainEventHandler(Result.Failure("First failure")),
+            new ResultDomainEventHandler(new Error(ErrorType.Failure, "First failure")),
             new ThrowingDomainEventHandler("Second failure"));
         using HttpClient client = app.GetTestClient();
 
@@ -105,14 +113,16 @@ public class DomainEventEndpointTests
         InitialiseDependencies();
         IDomainEventHandlerResolverImposter resolver = new();
         resolver.GetDomainEventHandlers(Arg<IDomainEvent>.Any())
-            .Returns(Result.Success(handlers.ToList()));
+            .Returns(Results.Ok(handlers.ToList()));
 
         WebApplicationBuilder builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
+        builder.Services.AddOpenApi();
         builder.Services.AddSingleton<IDomainEventHandlerResolver>(resolver.Instance());
         builder.Services.AddSingleton<IContainer>(new Container(new ServiceRegistry()));
 
         WebApplication app = builder.Build();
+        app.MapOpenApi();
         app.MapDomainEventEndpoints();
         await app.StartAsync();
         return app;

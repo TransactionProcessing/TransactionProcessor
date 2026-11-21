@@ -32,7 +32,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers
             StringSerialiser.Initialise(new SystemTextJsonSerializer(new JsonSerializerOptions()));
             IConfigurationRoot configurationRoot = new ConfigurationBuilder().AddInMemoryCollection(TestData.DefaultAppSettings).Build();
             ConfigurationReader.Initialise(configurationRoot);
-            this.Mediator.Send<Result>(Arg<IRequest<Result>>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Result.Success());
+            this.Mediator.Send<Result>(Arg<IRequest<Result>>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok());
         }
     }
 
@@ -69,7 +69,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.DomainEventHandlers
             };
 
             var result = await this.TransactionDomainEventHandler.Handle(domainEvent, TestContext.Current.CancellationToken);
-            result.IsSuccess.ShouldBeTrue();
+            result.IsSuccess().ShouldBeTrue();
         }
     }
 }

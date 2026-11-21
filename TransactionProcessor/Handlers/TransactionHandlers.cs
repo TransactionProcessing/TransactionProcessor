@@ -1,6 +1,6 @@
+using Results = TransactionProcessing.UnionResults.Results;
 using MediatR;
 using Microsoft.AspNetCore.Http;
-using TransactionProcessing.UnionResults.AspNetCore;
 using TransactionProcessing.UnionResults;
 using System;
 using System.Threading;
@@ -16,36 +16,24 @@ namespace TransactionProcessor.Handlers
 {
     public static class TransactionHandlers
     {
-        public static async Task<IResultOutcome> PerformSaleTransaction(IMediator mediator, HttpContext ctx, SaleTransactionRequest transactionRequest, CancellationToken cancellationToken)
-        {
-            Result<SaleTransactionResponse> transactionResult = await ProcessSpecificMessage(mediator, transactionRequest, cancellationToken);
+        public static Task<Result<SaleTransactionResponse>> PerformSaleTransaction(IMediator mediator, HttpContext ctx, SaleTransactionRequest transactionRequest, CancellationToken cancellationToken) =>
+            ProcessSpecificMessage(mediator, transactionRequest, cancellationToken);
 
-            return ResponseFactory.FromResult(transactionResult, message => message);
-        }
+        public static Task<Result<LogonTransactionResponse>> PerformLogonTransaction(IMediator mediator, HttpContext ctx, LogonTransactionRequest transactionRequest, CancellationToken cancellationToken) =>
+            ProcessSpecificMessage(mediator, transactionRequest, cancellationToken);
 
-        public static async Task<IResultOutcome> PerformLogonTransaction(IMediator mediator, HttpContext ctx, LogonTransactionRequest transactionRequest, CancellationToken cancellationToken)
-        {
-            Result<LogonTransactionResponse> transactionResult = await ProcessSpecificMessage(mediator, transactionRequest, cancellationToken);
-
-            return ResponseFactory.FromResult(transactionResult, message => message);
-        }
-
-        public static async Task<IResultOutcome> PerformReconciliationTransaction(IMediator mediator, HttpContext ctx, ReconciliationRequest transactionRequest, CancellationToken cancellationToken)
-        {
-            Result<ReconciliationResponse> transactionResult = await ProcessSpecificMessage(mediator, transactionRequest, cancellationToken);
-
-            return ResponseFactory.FromResult(transactionResult, message => message);
-        }
+        public static Task<Result<ReconciliationResponse>> PerformReconciliationTransaction(IMediator mediator, HttpContext ctx, ReconciliationRequest transactionRequest, CancellationToken cancellationToken) =>
+            ProcessSpecificMessage(mediator, transactionRequest, cancellationToken);
         
         /// <summary>Resends the receipt for a transaction.</summary>
         /// <param name="estateId" example="00000000-0000-0000-0000-000000000023">Estate owning the transaction. On the short route this is bound from the query string.</param>
         /// <param name="transactionId">Transaction identifier from the route.</param>
-        public static async Task<IResultOutcome> ResendTransactionReceipt(IMediator mediator, HttpContext ctx, Guid estateId, Guid transactionId, CancellationToken cancellationToken)
+        public static async Task<Result> ResendTransactionReceipt(IMediator mediator, HttpContext ctx, Guid estateId, Guid transactionId, CancellationToken cancellationToken)
         {
             TransactionCommands.ResendTransactionReceiptCommand command = new(transactionId, estateId);
             var result = await mediator.Send(command, cancellationToken);
 
-            return ResponseFactory.FromResult(result);
+            return result;
         }
 
         // Helpers copied from controller logic
@@ -61,10 +49,10 @@ namespace TransactionProcessor.Handlers
                 logon.HostDateTime);
 
             Result<ProcessLogonTransactionResponse> result = await mediator.Send(command, cancellationToken);
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success(ModelFactory.ConvertFrom(result.GetValueOrThrow()));
+            return Results.Ok(ModelFactory.ConvertFrom(result.Data));
         }
 
         private static async Task<Result<SaleTransactionResponse>> ProcessSpecificMessage(IMediator mediator, SaleTransactionRequest sale, CancellationToken cancellationToken)
@@ -86,10 +74,10 @@ namespace TransactionProcessor.Handlers
                 sale.HostDateTime);
 
             Result<ProcessSaleTransactionResponse> result = await mediator.Send(command, cancellationToken);
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success(ModelFactory.ConvertFrom(result.GetValueOrThrow()));
+            return Results.Ok(ModelFactory.ConvertFrom(result.Data));
         }
 
         private static async Task<Result<ReconciliationResponse>> ProcessSpecificMessage(IMediator mediator, ReconciliationRequest reconciliation, CancellationToken cancellationToken)
@@ -105,10 +93,10 @@ namespace TransactionProcessor.Handlers
 
             Result<ProcessReconciliationTransactionResponse> result = await mediator.Send(command, cancellationToken);
 
-            if (result.IsFailed)
+            if (result.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(result);
 
-            return Result.Success(ModelFactory.ConvertFrom(result.GetValueOrThrow()));
+            return Results.Ok(ModelFactory.ConvertFrom(result.Data));
         }
     }
 }
