@@ -65,10 +65,6 @@ public class VoucherDomainService : IVoucherDomainService
 
             VoucherAggregate voucherAggregate = voucherResult.Data;
 
-            Result stateResult = voucherAggregate.Generate(command.OperatorId, command.EstateId, command.TransactionId, command.IssuedDateTime, command.Value);
-            if (stateResult.IsSuccess() == false)
-                return ResultHelpers.CreateFailure(stateResult);
-
             Models.Voucher voucherModel = voucherAggregate.GetVoucher();
 
             if (voucherModel.IsGenerated)
@@ -79,6 +75,12 @@ public class VoucherDomainService : IVoucherDomainService
                                                                VoucherCode = voucherModel.VoucherCode,
                                                                VoucherId = voucherId
                                                            });
+
+            Result stateResult = voucherAggregate.Generate(command.OperatorId, command.EstateId, command.TransactionId, command.IssuedDateTime, command.Value);
+            if (stateResult.IsSuccess() == false)
+                return ResultHelpers.CreateFailure(stateResult);
+
+            voucherModel = voucherAggregate.GetVoucher();
 
             // Generate the barcode
             String barcode = VoucherBarcodeGenerator.GenerateBase64Png(voucherModel.VoucherCode);

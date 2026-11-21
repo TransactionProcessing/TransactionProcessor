@@ -78,7 +78,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         [Fact]
         public async Task VoucherDomainService_IssueVoucher_OperatorNotSupportedByEstate_ErrorThrown() {
             this.AggregateService.GetLatest<VoucherAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(new VoucherAggregate()));
-            this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
+            this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
             Result<IssueVoucherResponse> result = await this.VoucherDomainService.IssueVoucher(TestData.IssueVoucherCommand,
                                                                                  TestContext.Current.CancellationToken);
