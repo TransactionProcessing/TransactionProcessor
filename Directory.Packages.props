@@ -83,7 +83,7 @@
     <PackageVersion Include="System.ServiceModel.Http" Version="10.1.0" />
     <PackageVersion Include="System.ServiceModel.NetTcp" Version="10.1.0" />
     <PackageVersion Include="System.ServiceModel.Security" Version="6.0.0" />
-    <PackageVersion Include="TestHosts.Clients" Version="2026.10.3.103" />
+    <PackageVersion Include="TestHosts.Clients" Version="2026.10.3.104" />
     <PackageVersion Include="TransactionProcessing.ApiDefaults" Version="2026.11.7" />
     <PackageVersion Include="xunit.v3" Version="4.0.0" />
     <PackageVersion Include="xunit.v3.mtp-v2" Version="4.0.3" />
