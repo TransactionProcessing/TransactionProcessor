@@ -78,7 +78,7 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
         [Fact]
         public async Task VoucherDomainService_IssueVoucher_OperatorNotSupportedByEstate_ErrorThrown() {
             this.AggregateService.GetLatest<VoucherAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(new VoucherAggregate()));
-            this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
+            this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any()).ReturnsAsync(Results.Ok(TestData.Aggregates.CreatedEstateAggregate()));
 
             Result<IssueVoucherResponse> result = await this.VoucherDomainService.IssueVoucher(TestData.IssueVoucherCommand,
                                                                                  TestContext.Current.CancellationToken);
@@ -97,6 +97,26 @@ namespace TransactionProcessor.BusinessLogic.Tests.Services
 
             result.IsSuccess().ShouldBeTrue();
             result.Data.ShouldNotBeNull();
+        }
+
+        [Fact]
+        public async Task VoucherDomainService_IssueVoucher_SameVoucherIssuedTwice_ReturnsSameVoucher() {
+            this.AggregateService.GetLatest<VoucherAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
+                .ReturnsAsync(Results.Ok(new VoucherAggregate()));
+            this.AggregateService.Save(Arg<VoucherAggregate>.Any(), Arg<CancellationToken>.Any())
+                .ReturnsAsync(Results.Ok());
+            this.AggregateService.Get<EstateAggregate>(Arg<Guid>.Any(), Arg<CancellationToken>.Any())
+                .ReturnsAsync(Results.Ok(TestData.Aggregates.EstateAggregateWithOperator()));
+
+            Result<IssueVoucherResponse> firstResult = await this.VoucherDomainService.IssueVoucher(
+                TestData.IssueVoucherCommand, TestContext.Current.CancellationToken);
+            Result<IssueVoucherResponse> secondResult = await this.VoucherDomainService.IssueVoucher(
+                TestData.IssueVoucherCommand, TestContext.Current.CancellationToken);
+
+            firstResult.IsSuccess().ShouldBeTrue();
+            secondResult.IsSuccess().ShouldBeTrue();
+            secondResult.Data.VoucherId.ShouldBe(firstResult.Data.VoucherId);
+            secondResult.Data.VoucherCode.ShouldBe(firstResult.Data.VoucherCode);
         }
 
         [Fact]
