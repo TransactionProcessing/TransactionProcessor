@@ -58,8 +58,7 @@ public class VoucherDomainService : IVoucherDomainService
                 return ResultHelpers.CreateFailure(validateResult);
 
             Guid voucherId = IdGenerationService.GenerateVoucherId(command.EstateId, command.OperatorId, command.TransactionId);
-
-
+            
             Result<VoucherAggregate> voucherResult = await DomainServiceHelper.GetAggregateOrFailure(ct => this.AggregateService.GetLatest<VoucherAggregate>(voucherId, ct), voucherId, cancellationToken, false);
             if (voucherResult.IsSuccess() == false)
                 return ResultHelpers.CreateFailure(voucherResult);
@@ -71,6 +70,15 @@ public class VoucherDomainService : IVoucherDomainService
                 return ResultHelpers.CreateFailure(stateResult);
 
             Models.Voucher voucherModel = voucherAggregate.GetVoucher();
+
+            if (voucherModel.IsGenerated)
+                // return the current voucher as its already generated
+                return Results.Ok(new IssueVoucherResponse {
+                                                               ExpiryDate = voucherModel.ExpiryDate,
+                                                               Message = voucherModel.Message,
+                                                               VoucherCode = voucherModel.VoucherCode,
+                                                               VoucherId = voucherId
+                                                           });
 
             // Generate the barcode
             String barcode = VoucherBarcodeGenerator.GenerateBase64Png(voucherModel.VoucherCode);
