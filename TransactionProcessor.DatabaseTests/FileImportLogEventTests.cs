@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Shouldly;
+using FileProcessor.File.DomainEvents;
 using TransactionProcessing.UnionResults;
 using TransactionProcessor.Database.Contexts;
 using TransactionProcessor.Database.Entities;
@@ -188,6 +189,57 @@ public class FileImportLogEventTests : BaseTest {
         FileLine? fileLine = await context.FileLines.SingleOrDefaultAsync(f => f.FileId == TestData.DomainEvents.FileLineProcessingIgnoredEvent.FileId && f.LineNumber == TestData.DomainEvents.FileLineProcessingIgnoredEvent.LineNumber, TestContext.Current.CancellationToken);
         fileLine.ShouldNotBeNull();
         fileLine.Status.ShouldBe("I");
+        fileLine.TransactionId.ShouldBe(Guid.Empty);
+    }
+
+    [Fact]
+    public async Task UpdateFileLineDuplicate_FileLineIsMarkedAsDuplicate()
+    {
+        await this.CreateFileLineAsync();
+
+        DuplicateFileLineAddedEvent duplicateEvent = new(
+            TestData.FileId,
+            TestData.EstateId,
+            TestData.MerchantId,
+            TestData.DomainEvents.FileLineAddedEvent.LineNumber,
+            TestData.DomainEvents.FileLineAddedEvent.FileLine);
+
+        Result result = await this.Repository.UpdateFileLine(duplicateEvent, TestContext.Current.CancellationToken);
+        result.IsSuccess().ShouldBeTrue();
+
+        EstateManagementContext context = this.GetContext();
+        FileLine? fileLine = await context.FileLines.SingleOrDefaultAsync(
+            f => f.FileId == duplicateEvent.FileId && f.LineNumber == duplicateEvent.LineNumber,
+            TestContext.Current.CancellationToken);
+        fileLine.ShouldNotBeNull();
+        fileLine.Status.ShouldBe("D");
+        fileLine.TransactionId.ShouldBe(Guid.Empty);
+    }
+
+    [Fact]
+    public async Task UpdateFileLineDuplicate_EventReplayHandled()
+    {
+        await this.CreateFileLineAsync();
+
+        DuplicateFileLineAddedEvent duplicateEvent = new(
+            TestData.FileId,
+            TestData.EstateId,
+            TestData.MerchantId,
+            TestData.DomainEvents.FileLineAddedEvent.LineNumber,
+            TestData.DomainEvents.FileLineAddedEvent.FileLine);
+
+        Result result = await this.Repository.UpdateFileLine(duplicateEvent, TestContext.Current.CancellationToken);
+        result.IsSuccess().ShouldBeTrue();
+
+        result = await this.Repository.UpdateFileLine(duplicateEvent, TestContext.Current.CancellationToken);
+        result.IsSuccess().ShouldBeTrue();
+
+        EstateManagementContext context = this.GetContext();
+        FileLine? fileLine = await context.FileLines.SingleOrDefaultAsync(
+            f => f.FileId == duplicateEvent.FileId && f.LineNumber == duplicateEvent.LineNumber,
+            TestContext.Current.CancellationToken);
+        fileLine.ShouldNotBeNull();
+        fileLine.Status.ShouldBe("D");
         fileLine.TransactionId.ShouldBe(Guid.Empty);
     }
 }

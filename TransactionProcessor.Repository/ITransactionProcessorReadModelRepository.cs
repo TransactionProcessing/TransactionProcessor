@@ -192,6 +192,9 @@ namespace TransactionProcessor.Repository {
         Task<Result> UpdateFileLine(FileLineProcessingIgnoredEvent domainEvent,
                                     CancellationToken cancellationToken);
 
+        Task<Result> UpdateFileLine(DuplicateFileLineAddedEvent domainEvent,
+                                    CancellationToken cancellationToken);
+
         Task<Result> UpdateMerchant(MerchantDomainEvents.MerchantReferenceAllocatedEvent domainEvent,
                                     CancellationToken cancellationToken);
 
@@ -850,6 +853,19 @@ namespace TransactionProcessor.Repository {
             await context.MerchantContracts.AddAsync(merchantContract, cancellationToken);
             return await context.SaveChangesWithDuplicateHandling(cancellationToken);
         }
+
+        public async Task<Result> UpdateFileLine(DuplicateFileLineAddedEvent domainEvent, CancellationToken cancellationToken) {
+            using ResolvedDbContext<EstateManagementContext>? resolvedContext = this.Resolver.Resolve(EstateManagementDatabaseName, domainEvent.EstateId.ToString());
+            await using EstateManagementContext context = resolvedContext.Context;
+
+            return await this.UpdateFileLineStatus(context,
+                domainEvent.FileId,
+                domainEvent.LineNumber,
+                Guid.Empty,
+                "D",
+                cancellationToken);
+        }
+
         public async Task<Result> UpdateMerchant(MerchantReferenceAllocatedEvent domainEvent,
                                                  CancellationToken cancellationToken)
         {

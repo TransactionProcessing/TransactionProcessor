@@ -161,6 +161,7 @@ namespace TransactionProcessor.BusinessLogic.EventHandling
             FileProcessor.File.DomainEvents.FileLineProcessingIgnoredEvent de => this.EstateReportingRepository.UpdateFileLine(de, cancellationToken),
             FileProcessor.File.DomainEvents.FileLineTransactionDispatchFailedEvent de => this.EstateReportingRepository.UpdateFileLine(de, cancellationToken),
             FileProcessor.File.DomainEvents.FileProcessingCompletedEvent de => this.EstateReportingRepository.UpdateFileAsComplete(de, cancellationToken),
+            FileProcessor.File.DomainEvents.DuplicateFileLineAddedEvent dup => this.EstateReportingRepository.UpdateFileLine(dup, cancellationToken),
             _ => null
         };
 
