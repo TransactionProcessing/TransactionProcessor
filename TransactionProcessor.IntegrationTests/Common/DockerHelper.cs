@@ -184,7 +184,7 @@ namespace TransactionProcessor.IntegrationTests.Common
 
         public override ContainerBuilder SetupFileProcessorContainer()
         {
-            this.SkipHealthChecks = false;
+            this.SkipHealthChecks = true;
             return base.SetupFileProcessorContainer();
         }
 
@@ -259,9 +259,13 @@ namespace TransactionProcessor.IntegrationTests.Common
                 new[] { DockerServices.SubscriptionService },
                 new[] { DockerServices.MessagingService },
                 new[] { DockerServices.SecurityService },
-                new[] { DockerServices.CallbackHandler, DockerServices.TestHost },
+                new[] { DockerServices.CallbackHandler },
+                new[] { DockerServices.TestHost },
                 new[] { DockerServices.TransactionProcessor },
-                new[] { DockerServices.FileProcessor, DockerServices.TransactionProcessorAcl, DockerServices.ConfigurationHost, DockerServices.EstateReporting },
+                new[] { DockerServices.FileProcessor },
+                new[] { DockerServices.TransactionProcessorAcl },
+                new[] { DockerServices.ConfigurationHost },
+                new[] { DockerServices.EstateReporting },
                 new[] { DockerServices.EstateManagementUI }
             };
         }
