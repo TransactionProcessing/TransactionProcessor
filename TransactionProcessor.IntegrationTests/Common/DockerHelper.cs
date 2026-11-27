@@ -185,7 +185,7 @@ namespace TransactionProcessor.IntegrationTests.Common
             
             // Setup the base address resolvers
             String SecurityServiceBaseAddressResolver(String api) => $"https://127.0.0.1:{this.SecurityServicePort}";
-            String TransactionProcessorBaseAddressResolver(String api) => $"http://127.0.0.1:{this.TransactionProcessorPort}";
+            String TransactionProcessorBaseAddressResolver(String api) => $"https://127.0.0.1:{this.TransactionProcessorPort}";
             String TestHostServiceBaseAddressResolver(String api) => $"http://127.0.0.1:{this.TestHostServicePort}";
 
             HttpClientHandler clientHandler = new HttpClientHandler
