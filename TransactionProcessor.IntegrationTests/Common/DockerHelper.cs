@@ -109,6 +109,7 @@ namespace TransactionProcessor.IntegrationTests.Common
                 ["HealthMonitoring:Service:HealthUrl"] = "https://localhost:5002/healthui"
             });
 
+            this.SkipHealthChecks = true;
             Dictionary<String, String> environmentVariables = this.GetCommonEnvironmentVariables();
             environmentVariables.Add("urls", $"https://*:{DockerPorts.TransactionProcessorDockerPort}");
             environmentVariables.Add("AppSettings:SubscriptionFilter", "TransactionProcessor");
@@ -161,12 +162,19 @@ namespace TransactionProcessor.IntegrationTests.Common
 
         public override ContainerBuilder SetupSecurityServiceContainer()
         {
+            this.SkipHealthChecks = false;
             Dictionary<String, String> additionalVariables = new();
             additionalVariables.Add("ServiceOptions:OAuth:LegacyGrantTypeClients:password:1", "estateClient");
 
             this.AdditionalVariables.Add(ContainerType.SecurityService, additionalVariables);
 
             return base.SetupSecurityServiceContainer();
+        }
+
+        public override ContainerBuilder SetupFileProcessorContainer()
+        {
+            this.SkipHealthChecks = false;
+            return base.SetupFileProcessorContainer();
         }
 
         public override ContainerBuilder SetupTestHostContainer()
@@ -231,14 +239,32 @@ namespace TransactionProcessor.IntegrationTests.Common
 
         public String AccessToken;
 
+        protected override IReadOnlyList<IReadOnlyList<DockerServices>> GetStartupGroups()
+        {
+            return new IReadOnlyList<DockerServices>[]
+            {
+                new[] { DockerServices.SqlServer },
+                new[] { DockerServices.KurrentDb },
+                new[] { DockerServices.SubscriptionService },
+                new[] { DockerServices.MessagingService },
+                new[] { DockerServices.SecurityService },
+                new[] { DockerServices.CallbackHandler },
+                new[] { DockerServices.TestHost },
+                new[] { DockerServices.TransactionProcessor },
+                new[] { DockerServices.FileProcessor },
+                new[] { DockerServices.TransactionProcessorAcl },
+                new[] { DockerServices.ConfigurationHost },
+                new[] { DockerServices.EstateReporting },
+                new[] { DockerServices.EstateManagementUI }
+            };
+        }
+
         /// <summary>
         /// Starts the containers for scenario run.
         /// </summary>
         /// <param name="scenarioName">Name of the scenario.</param>
         public override async Task StartContainersForScenarioRun(String scenarioName, DockerServices dockerServices, CancellationToken cancellationToken){
             this.HostTraceFolder = Path.Combine(Directory.GetCurrentDirectory(), "trace");
-            // The shared helper's health checks use HTTP for these services, while this test setup serves them over HTTPS.
-            this.SkipHealthChecks = true;
             await base.StartContainersForScenarioRun(scenarioName, dockerServices, cancellationToken);
             
             // Setup the base address resolvers
