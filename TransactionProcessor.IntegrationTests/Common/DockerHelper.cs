@@ -94,6 +94,17 @@ namespace TransactionProcessor.IntegrationTests.Common
                 responseMessage.IsSuccessStatusCode.ShouldBeTrue();
             });
         }
+        public override ContainerBuilder SetupCallbackHandlerContainer()
+        {
+            this.SkipHealthChecks = false;
+            this.AdditionalVariables[ContainerType.CallbackHandler] = new Dictionary<String, String>
+            {
+                ["ASPNETCORE_ENVIRONMENT"] = "IntegrationTest"
+            };
+
+            return base.SetupCallbackHandlerContainer();
+        }
+
         public override ContainerBuilder SetupTransactionProcessorContainer()
         {
             if (this.IntegrationTestCertificate is null)
@@ -248,13 +259,9 @@ namespace TransactionProcessor.IntegrationTests.Common
                 new[] { DockerServices.SubscriptionService },
                 new[] { DockerServices.MessagingService },
                 new[] { DockerServices.SecurityService },
-                new[] { DockerServices.CallbackHandler },
-                new[] { DockerServices.TestHost },
+                new[] { DockerServices.CallbackHandler, DockerServices.TestHost },
                 new[] { DockerServices.TransactionProcessor },
-                new[] { DockerServices.FileProcessor },
-                new[] { DockerServices.TransactionProcessorAcl },
-                new[] { DockerServices.ConfigurationHost },
-                new[] { DockerServices.EstateReporting },
+                new[] { DockerServices.FileProcessor, DockerServices.TransactionProcessorAcl, DockerServices.ConfigurationHost, DockerServices.EstateReporting },
                 new[] { DockerServices.EstateManagementUI }
             };
         }
