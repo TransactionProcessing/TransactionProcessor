@@ -97,10 +97,66 @@ namespace TransactionProcessor.IntegrationTests.Common
         public override ContainerBuilder SetupTransactionProcessorContainer() {
              Dictionary<String, String> additionalVariables = new();
             additionalVariables.Add("OperatorConfiguration:AgencyBanking:Url",$"http://{this.TestHostContainerName}:{DockerPorts.TestHostPort}/api/agencybanking");
+            if (this.IntegrationTestCertificate is null)
+            {
+                throw new InvalidOperationException("Integration test certificate was not initialised before TransactionProcessor container setup.");
+            }
+
+            this.SkipHealthChecks = true;
+            additionalVariables.Add("ServiceOptions:KestrelOptions:Path", this.IntegrationTestCertificate.GetContainerCertificatePath());
+            additionalVariables.Add("ServiceOptions:KestrelOptions:Password", this.IntegrationTestCertificate.Password);
+            additionalVariables.Add("HealthMonitoring:Service:HealthUrl", "https://localhost:5002/healthui");
 
             this.AdditionalVariables.Add(ContainerType.TransactionProcessor, additionalVariables);
 
-            return base.SetupTransactionProcessorContainer();
+            Dictionary<String, String> environmentVariables = this.GetCommonEnvironmentVariables();
+            environmentVariables.Add("urls", $"https://*:{DockerPorts.TransactionProcessorDockerPort}");
+            environmentVariables.Add("AppSettings:SubscriptionFilter", "TransactionProcessor");
+            environmentVariables.Add("OperatorConfiguration:Safaricom:Url", $"http://{this.TestHostContainerName}:{DockerPorts.TestHostPort}/api/safaricom");
+            environmentVariables.Add("OperatorConfiguration:PataPawaPostPay:Url", $"http://{this.TestHostContainerName}:{DockerPorts.TestHostPort}/PataPawaPostPayService/basichttp");
+            environmentVariables.Add("OperatorConfiguration:PataPawaPrePay:Url", $"http://{this.TestHostContainerName}:{DockerPorts.TestHostPort}/api/patapawaprepay");
+            environmentVariables.Add("ConnectionStrings:TransactionProcessorReadModel", this.SetConnectionString("TransactionProcessorReadModel", this.UseSecureSqlServerDatabase));
+
+            foreach (KeyValuePair<String, String> additionalVariable in this.GetAdditionalVariables(ContainerType.TransactionProcessor))
+            {
+                environmentVariables.Add(additionalVariable.Key, additionalVariable.Value);
+            }
+
+            (String imageName, Boolean useLatest) imageDetails = this.GetImageDetails(ContainerType.TransactionProcessor).Data;
+            return new ContainerBuilder(imageDetails.imageName)
+                .WithName(this.TransactionProcessorContainerName)
+                .WithEnvironment(environmentVariables)
+                .MountHostFolder(this.HostTraceFolder)
+                .WithPortBinding(DockerPorts.TransactionProcessorDockerPort, true)
+                .WithResourceMapping(this.IntegrationTestCertificate.CertificateDirectory,
+                                     this.IntegrationTestCertificate.ContainerCertificateDirectory);
+        }
+
+        public override ContainerBuilder SetupMessagingServiceContainer()
+        {
+            if (this.IntegrationTestCertificate is null)
+            {
+                throw new InvalidOperationException("Integration test certificate was not initialised before MessagingService container setup.");
+            }
+
+            this.SkipHealthChecks = true;
+            this.AdditionalVariables[ContainerType.MessagingService] = new Dictionary<String, String>
+            {
+                ["MessagingService:Https:CertificatePath"] = this.IntegrationTestCertificate.GetContainerCertificatePath(),
+                ["MessagingService:Https:CertificatePassword"] = this.IntegrationTestCertificate.Password
+            };
+
+            return base.SetupMessagingServiceContainer()
+                .WithResourceMapping(this.IntegrationTestCertificate.CertificateDirectory,
+                                     this.IntegrationTestCertificate.ContainerCertificateDirectory);
+        }
+
+        public override Dictionary<String, String> GetCommonEnvironmentVariables()
+        {
+            Dictionary<String, String> environmentVariables = base.GetCommonEnvironmentVariables();
+            environmentVariables["AppSettings:TransactionProcessorApi"] = $"https://{this.TransactionProcessorContainerName}:{DockerPorts.TransactionProcessorDockerPort}";
+            environmentVariables["AppSettings:MessagingServiceApi"] = $"https://{this.MessagingServiceContainerName}:{DockerPorts.MessagingServiceDockerPort}";
+            return environmentVariables;
         }
 
         public override ContainerBuilder SetupSecurityServiceContainer()
@@ -181,6 +237,8 @@ namespace TransactionProcessor.IntegrationTests.Common
         /// <param name="scenarioName">Name of the scenario.</param>
         public override async Task StartContainersForScenarioRun(String scenarioName, DockerServices dockerServices, CancellationToken cancellationToken){
             this.HostTraceFolder = Path.Combine(Directory.GetCurrentDirectory(), "trace");
+            // The shared helper's health checks use HTTP for these services, while this test setup serves them over HTTPS.
+            this.SkipHealthChecks = true;
             await base.StartContainersForScenarioRun(scenarioName, dockerServices, cancellationToken);
             
             // Setup the base address resolvers
@@ -264,3 +322,4 @@ namespace TransactionProcessor.IntegrationTests.Common
         #endregion
     }
 }
+
