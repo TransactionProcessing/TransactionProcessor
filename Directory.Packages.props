@@ -85,6 +85,7 @@
     <PackageVersion Include="System.ServiceModel.Security" Version="6.0.0" />
     <PackageVersion Include="TestHosts.Clients" Version="2026.10.3.104" />
     <PackageVersion Include="TransactionProcessing.ApiDefaults" Version="2026.11.7" />
+    <PackageVersion Include="TransactionProcessing.CertificateDefaults" Version="2026.11.8" />
     <PackageVersion Include="xunit.v3" Version="4.0.0" />
     <PackageVersion Include="xunit.v3.mtp-v2" Version="4.0.3" />
     <PackageVersion Include="xunit.v3.extensibility.core" Version="4.0.0" />

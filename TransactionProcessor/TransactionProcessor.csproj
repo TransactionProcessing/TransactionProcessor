@@ -50,6 +50,7 @@
 	  <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />
 	  <PackageReference Include="Sentry.AspNetCore" />
 	  <PackageReference Include="TransactionProcessing.ApiDefaults" />
+	  <PackageReference Include="TransactionProcessing.CertificateDefaults" />
   </ItemGroup>
 
   <ItemGroup>

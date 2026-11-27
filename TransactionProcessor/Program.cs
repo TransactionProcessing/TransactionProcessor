@@ -28,6 +28,7 @@ using Prometheus;
 using TransactionProcessing.Shared.EventStore.Aggregate;
 using TransactionProcessing.Shared.Extensions;
 using TransactionProcessing.ApiDefaults;
+using TransactionProcessing.CertificateDefaults;
 
 namespace TransactionProcessor;
 
@@ -60,6 +61,7 @@ public partial class Program
         });
 
         WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+        builder.WebHost.ConfigureTransactionProcessingHttps();
         builder.Host.UseWindowsService();
         builder.Host.UseLamar();
 
