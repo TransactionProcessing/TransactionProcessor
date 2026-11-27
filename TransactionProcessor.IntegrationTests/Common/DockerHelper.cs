@@ -94,20 +94,20 @@ namespace TransactionProcessor.IntegrationTests.Common
                 responseMessage.IsSuccessStatusCode.ShouldBeTrue();
             });
         }
-        public override ContainerBuilder SetupTransactionProcessorContainer() {
-             Dictionary<String, String> additionalVariables = new();
-            additionalVariables.Add("OperatorConfiguration:AgencyBanking:Url",$"http://{this.TestHostContainerName}:{DockerPorts.TestHostPort}/api/agencybanking");
+        public override ContainerBuilder SetupTransactionProcessorContainer()
+        {
             if (this.IntegrationTestCertificate is null)
             {
                 throw new InvalidOperationException("Integration test certificate was not initialised before TransactionProcessor container setup.");
             }
 
-            this.SkipHealthChecks = true;
-            additionalVariables.Add("ServiceOptions:KestrelOptions:Path", this.IntegrationTestCertificate.GetContainerCertificatePath());
-            additionalVariables.Add("ServiceOptions:KestrelOptions:Password", this.IntegrationTestCertificate.Password);
-            additionalVariables.Add("HealthMonitoring:Service:HealthUrl", "https://localhost:5002/healthui");
-
-            this.AdditionalVariables.Add(ContainerType.TransactionProcessor, additionalVariables);
+            this.AdditionalVariables.Add(ContainerType.TransactionProcessor, new Dictionary<String, String>
+            {
+                ["OperatorConfiguration:AgencyBanking:Url"] = $"http://{this.TestHostContainerName}:{DockerPorts.TestHostPort}/api/agencybanking",
+                ["ServiceOptions:KestrelOptions:Path"] = this.IntegrationTestCertificate.GetContainerCertificatePath(),
+                ["ServiceOptions:KestrelOptions:Password"] = this.IntegrationTestCertificate.Password,
+                ["HealthMonitoring:Service:HealthUrl"] = "https://localhost:5002/healthui"
+            });
 
             Dictionary<String, String> environmentVariables = this.GetCommonEnvironmentVariables();
             environmentVariables.Add("urls", $"https://*:{DockerPorts.TransactionProcessorDockerPort}");
