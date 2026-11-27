@@ -277,7 +277,23 @@ namespace TransactionProcessor.IntegrationTests.Common
         public override async Task StartContainersForScenarioRun(String scenarioName, DockerServices dockerServices, CancellationToken cancellationToken){
             this.HostTraceFolder = Path.Combine(Directory.GetCurrentDirectory(), "trace");
             await base.StartContainersForScenarioRun(scenarioName, dockerServices, cancellationToken);
-            
+
+            // The shared helper cannot probe this container over HTTPS. Wait for its HTTPS endpoint directly
+            // so scenarios do not send requests while Kestrel is still starting.
+            using (HttpClient healthCheckClient = new HttpClient(new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            }))
+            {
+                await Retry.For(async () =>
+                {
+                    using HttpResponseMessage response = await healthCheckClient.GetAsync(
+                        $"https://127.0.0.1:{this.TransactionProcessorPort}/health",
+                        cancellationToken);
+                    response.EnsureSuccessStatusCode();
+                }, TimeSpan.FromMinutes(3));
+            }
+
             // Setup the base address resolvers
             String SecurityServiceBaseAddressResolver(String api) => $"https://127.0.0.1:{this.SecurityServicePort}";
             String TransactionProcessorBaseAddressResolver(String api) => $"https://127.0.0.1:{this.TransactionProcessorPort}";
